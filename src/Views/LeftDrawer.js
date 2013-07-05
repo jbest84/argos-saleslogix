@@ -68,13 +68,8 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             }
         },
         addAccountContact: function(params) {
-            var view = App.getView(this.addAccountContactView);
-            if (view) {
-                App.snapper.close();
-                view.show({
-                    insert: true
-                });
-            }
+            App.snapper.close();
+            App.router.go('_add_account_contact;new');
         },
         navigateToConfigurationView: function() {
             var view = App.getView(this.configurationView);

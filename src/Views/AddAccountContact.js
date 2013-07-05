@@ -6,7 +6,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
     'Mobile/SalesLogix/Validator',
     'Mobile/SalesLogix/Template',
     'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit',
+    'Sage/Platform/Mobile/Edit'
 ], function(
     declare,
     lang,
@@ -76,6 +76,12 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             'SubType',
             'Type'
         ],
+        routes: {
+            '_add_account_contact;new': function(evt) {
+                console.log('hit');
+                this.show({insert: true});
+            }
+        },
         init: function() {
             this.inherited(arguments);
 
