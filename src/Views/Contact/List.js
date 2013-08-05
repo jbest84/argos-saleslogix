@@ -11,7 +11,8 @@ define('Mobile/SalesLogix/Views/Contact/List', [
     'Sage/Platform/Mobile/List',
     '../_MetricListMixin',
      'Mobile/SalesLogix/Views/_CardLayoutListMixin',
-    '../_RightDrawerListMixin'
+    '../_RightDrawerListMixin',
+    'Sage/Platform/Mobile/Store/SData'
 ], function(
     declare,
     string,
@@ -22,7 +23,8 @@ define('Mobile/SalesLogix/Views/Contact/List', [
     List,
     _MetricListMixin,
     _CardLayoutListMixin,
-    _RightDrawerListMixin
+    _RightDrawerListMixin,
+    SDataStore
 ) {
 
     return declare('Mobile.SalesLogix.Views.Contact.List', [List, _RightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin], {
@@ -48,6 +50,16 @@ define('Mobile/SalesLogix/Views/Contact/List', [
                     '{%: $.Email %}',
                 '</h4>',
             '{% } %}',
+        ]),
+        itemRelatedTemplate: new Simplate([
+            '{% if ($.related.length > 0) { %}',
+                '<h3>Notes:</h3>',
+                '<ul>',
+                    '{% for(var i = 0; i < $.related.length; i++) { %}',
+                        '<li>{%: $.related[i].Description %}</li>',
+                    '{% } %}',
+                '</ul>',
+            '{% } %}'
         ]),
 
         //Localization
@@ -155,6 +167,31 @@ define('Mobile/SalesLogix/Views/Contact/List', [
         },
         formatSearchQuery: function(searchQuery) {
             return string.substitute('(LastNameUpper like "${0}%" or upper(FirstName) like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
+        },
+        fetchRelatedRowData: function(entry) {
+            var store, queryOptions, queryResults;
+            queryOptions = {
+                count: this.pageSize,
+                start: this.position,
+                where: "ContactId eq '" + entry.$key + "'"
+            };
+
+            store = this.get('store');
+            queryResults = store.query(null, queryOptions);
+            return queryResults;
+        },
+        createStore: function() {
+            var store = new SDataStore({
+                service: App.services['crm'],
+                resourceKind: 'history',
+                scope: this,
+                where: ' foo'
+            });
+
+            return store;
+        },
+        _getStoreAttr: function() {
+            return this.store || (this.store = this.createStore());
         }
     });
 });

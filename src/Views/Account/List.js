@@ -46,6 +46,19 @@ define('Mobile/SalesLogix/Views/Account/List', [
                 '<h4>',
                     '{%: $$.faxAbbreviationText + Sage.Platform.Mobile.Format.phone($.Fax) %}',
                 '</h4>',
+            '{% } %}',
+            '{%! $$.contactsTemplate %}'
+        ]),
+        contactsTemplate: new Simplate([
+            '{% if ($.Contacts && $.Contacts.$resources.length > 0) { %}',
+                '<hr />',
+                '<h4>Contacts:</h4>',
+                '<ul>',
+                    '{% for(var i = 0;i < $.Contacts.$resources.length; i++) { %}',
+                    '{% var contact = $.Contacts.$resources[i]; %}',
+                    '<li>{%: contact.NameLF %} ({%: contact.Email %})</li>',
+                    '{% } %}',
+                '</ul>',
             '{% } %}'
         ]),
 
@@ -80,6 +93,9 @@ define('Mobile/SalesLogix/Views/Account/List', [
             'AccountManager/UserInfo/LastName',
             'AccountManager/UserInfo/FirstName',
             'Owner/OwnerDescription',
+            'Contacts/NameLF',
+            'Contacts/Email',
+            'Contacts/Mobile',
             'MainPhone',
             'WebAddress',
             'Industry',

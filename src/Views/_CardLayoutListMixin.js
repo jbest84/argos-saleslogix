@@ -64,12 +64,13 @@ define('Mobile/SalesLogix/Views/_CardLayoutListMixin', [
         '</li>'
         ]),
         itemFooterTemplate: new Simplate([
+            '<div class="list-item-content-related"></div>',
             '<div id="list-item-footer" class="list-item-footer">',
-            '<div">',
-            '<button data-action="selectEntry" class="footer-item-selector button ">',
-            '<img src="content/images/icons/Show_Details_active_24.png" alt="Actions" >',
-            '</button>',
-            '</div>',
+                '<div">',
+                    '<button data-action="selectEntry" class="footer-item-selector button ">',
+                        '<img src="content/images/icons/Show_Details_active_24.png" alt="Actions" />',
+                    '</button>',
+                '</div>',
             '</div>'
         ]),
         itemRowContentTemplate: new Simplate([
