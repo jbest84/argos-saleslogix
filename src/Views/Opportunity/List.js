@@ -11,7 +11,8 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
     'Sage/Platform/Mobile/List',
     '../_MetricListMixin',
     '../_RightDrawerListMixin',
-    '../_CardLayoutListMixin'
+    '../_CardLayoutListMixin',
+    'Sage/Platform/Mobile/Store/SData'
 ], function(
     declare,
     string,
@@ -22,7 +23,8 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
     List,
     _MetricListMixin,
     _RightDrawerListMixin,
-    _CardLayoutListMixin
+    _CardLayoutListMixin,
+    SDataStore
 ) {
 
     return declare('Mobile.SalesLogix.Views.Opportunity.List', [List, _RightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin], {
@@ -64,6 +66,17 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
                     '{%: Mobile.SalesLogix.Format.multiCurrency($.SalesPotential, App.getBaseExchangeRate().code) %}',
                 '{% } %}',
                 '</strong></h4>',
+            '{% } %}'
+        ]),
+        itemRelatedTemplate: new Simplate([
+            '{% if ($.related.length > 0) { %}',
+                '<hr />',
+                '<h3>Competitors:</h3>',
+                '<ul>',
+                    '{% for(var i = 0; i < $.related.length; i++) { %}',
+                        '<li>{%: $.related[i].$descriptor %}</li>',
+                    '{% } %}',
+                '</ul>',
             '{% } %}'
         ]),
 
@@ -175,6 +188,30 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
 
         formatSearchQuery: function(searchQuery) {
             return string.substitute('(upper(Description) like "${0}%" or Account.AccountNameUpper like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
+        },
+        fetchRelatedRowData: function(entry) {
+            var store, queryOptions, queryResults;
+            queryOptions = {
+                count: this.pageSize,
+                start: this.position,
+                where: "OpportunityId eq '" + entry.$key + "'"
+            };
+
+            store = this.get('store');
+            queryResults = store.query(null, queryOptions);
+            return queryResults;
+        },
+        createStore: function() {
+            var store = new SDataStore({
+                service: App.services['crm'],
+                resourceKind: 'opportunityCompetitors',
+                scope: this
+            });
+
+            return store;
+        },
+        _getStoreAttr: function() {
+            return this.store || (this.store = this.createStore());
         }
     });
 });

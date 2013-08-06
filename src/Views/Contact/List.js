@@ -184,8 +184,7 @@ define('Mobile/SalesLogix/Views/Contact/List', [
             var store = new SDataStore({
                 service: App.services['crm'],
                 resourceKind: 'history',
-                scope: this,
-                where: ' foo'
+                scope: this
             });
 
             return store;
