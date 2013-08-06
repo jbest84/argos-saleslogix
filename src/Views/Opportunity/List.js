@@ -71,10 +71,10 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         itemRelatedTemplate: new Simplate([
             '{% if ($.related.length > 0) { %}',
                 '<hr />',
-                '<h3>Competitors:</h3>',
+                '<h3>Notes:</h3>',
                 '<ul>',
                     '{% for(var i = 0; i < $.related.length; i++) { %}',
-                        '<li>{%: $.related[i].$descriptor %}</li>',
+                        '<li>{%: $.related[i].UserName %} ({%: $.related[i].Description %}) {%: $.related[i].LongNotes %}</li>',
                     '{% } %}',
                 '</ul>',
             '{% } %}'
@@ -204,7 +204,7 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         createStore: function() {
             var store = new SDataStore({
                 service: App.services['crm'],
-                resourceKind: 'opportunityCompetitors',
+                resourceKind: 'history',
                 scope: this
             });
 
