@@ -192,7 +192,7 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         fetchRelatedRowData: function(entry) {
             var store, queryOptions, queryResults;
             queryOptions = {
-                count: this.pageSize,
+                count: 5,
                 start: this.position,
                 where: "OpportunityId eq '" + entry.$key + "'"
             };
