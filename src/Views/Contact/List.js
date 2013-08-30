@@ -51,16 +51,6 @@ define('Mobile/SalesLogix/Views/Contact/List', [
                 '</h4>',
             '{% } %}',
         ]),
-        itemRelatedTemplate: new Simplate([
-            '{% if ($.related.length > 0) { %}',
-                '<h3>Notes:</h3>',
-                '<ul>',
-                    '{% for(var i = 0; i < $.related.length; i++) { %}',
-                        '<li>{%: $.related[i].Description %}</li>',
-                    '{% } %}',
-                '</ul>',
-            '{% } %}'
-        ]),
 
         //Localization
         titleText: 'Contacts',
@@ -191,6 +181,42 @@ define('Mobile/SalesLogix/Views/Contact/List', [
         },
         _getStoreAttr: function() {
             return this.store || (this.store = this.createStore());
+        },
+        createRelatedViewLayout: function() {
+            return this.relatedViews || (this.relatedViews = [{
+                id: 'relatedNotes',
+                icon: 'content/images/icons/Notes_24.png',
+                title: 'Notes',
+                enabled: true,
+                resourceKind: 'history',
+                selectProperties:['ModifyDate','UserName','Description','LongNotes'],
+                childRelationProperty: 'ContactId',
+                parentRelationProperty: '$key',
+                sortProperty: 'ModifyDate',
+                sortDirection: 'asc',
+                numberOfItems: 2,
+                relatedItemTemplate: new Simplate([
+                         '<h4>By: {%: $.UserName %}</h4>',
+                         '<h4>Regarding: {%: $.Description %}</h4>',
+                         '<h5>{%: $.LongNotes %}</h5>'
+                ])                
+            }, {
+                id: 'relatedOpp',
+                icon: 'content/images/icons/Opp_24.png',
+                title: 'Oppotunities',
+                enabled: true,
+                resourceKind: 'opportunities',
+                selectProperties: ['ModifyDate', 'SalesPotential', 'Status'],
+                childRelationProperty: 'ContactId',
+                parentRelationProperty: '$key',
+                sortProperty: 'ModifyDate',
+                sortDirection: 'asc',
+                numberOfItems: 3,
+                relatedItemTemplate: new Simplate([
+                         '<h4>{%: $.Description %}</h4>',
+                         '<h4>{%: $.Status %}</h5>'
+                ])
+            }]);
         }
     });
 });

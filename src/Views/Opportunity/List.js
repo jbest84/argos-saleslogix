@@ -68,17 +68,6 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
                 '</strong></h4>',
             '{% } %}'
         ]),
-        itemRelatedTemplate: new Simplate([
-            '{% if ($.related.length > 0) { %}',
-                '<hr />',
-                '<h3>Notes:</h3>',
-                '<ul>',
-                    '{% for(var i = 0; i < $.related.length; i++) { %}',
-                        '<li>{%: $.related[i].UserName %} ({%: $.related[i].Description %}) {%: $.related[i].LongNotes %}</li>',
-                    '{% } %}',
-                '</ul>',
-            '{% } %}'
-        ]),
 
         //Localization
         titleText: 'Opportunities',
@@ -145,7 +134,6 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         entityName: 'Opportunity',
         allowSelection: true,
         enableActions: true,
-
         createActionLayout: function() {
             return this.actions || (this.actions = [{
                         id: 'edit',
@@ -189,30 +177,37 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         formatSearchQuery: function(searchQuery) {
             return string.substitute('(upper(Description) like "${0}%" or Account.AccountNameUpper like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         },
-        fetchRelatedRowData: function(entry) {
-            var store, queryOptions, queryResults;
-            queryOptions = {
-                count: 5,
-                start: this.position,
-                where: "OpportunityId eq '" + entry.$key + "'"
-            };
-
-            store = this.get('store');
-            queryResults = store.query(null, queryOptions);
-            return queryResults;
-        },
-        createStore: function() {
-            var store = new SDataStore({
-                service: App.services['crm'],
+        createRelatedViewLayout: function() {
+            return this.relatedViews || (this.relatedViews = [{
+                id: 'relatedNotes',
+                icon: 'content/images/icons/Notes_24.png',
+                title: 'Notes',
+                enabled: true,
                 resourceKind: 'history',
-                scope: this
-            });
-
-            return store;
-        },
-        _getStoreAttr: function() {
-            return this.store || (this.store = this.createStore());
+                selectProperties:['ModifyDate','UserName','Description','LongNotes'],
+                childRelationProperty: 'OpportunityId',
+                parentRelationProperty: '$key',
+                sortProperty: 'ModifyDate',
+                sortDirection: 'asc',
+                numberOfItems: 5,
+               relatedItemTemplate: new Simplate([
+                        '<h4>By: {%: $.UserName %}</h4>',
+                        '<h4>Regarding: {%: $.Description %}</h4>',
+                        '<h5>{%: $.LongNotes %}</h5>'
+                ]),
+                xfetchData: function(entry) {
+                    var queryOptions, queryResults;
+                    queryOptions = {
+                       count: 5,
+                       start: 0, //this.position,
+                        where: "OpportunityId eq '" + entry.$key + "'"
+                    };
+                    queryResults = this.store.query(null, queryOptions);
+                    return queryResults;
+                }
+            }]);
         }
+        
     });
 });
 

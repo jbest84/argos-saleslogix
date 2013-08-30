@@ -46,19 +46,6 @@ define('Mobile/SalesLogix/Views/Account/List', [
                 '<h4>',
                     '{%: $$.faxAbbreviationText + Sage.Platform.Mobile.Format.phone($.Fax) %}',
                 '</h4>',
-            '{% } %}',
-            '{%! $$.contactsTemplate %}'
-        ]),
-        contactsTemplate: new Simplate([
-            '{% if ($.Contacts && $.Contacts.$resources.length > 0) { %}',
-                '<hr />',
-                '<h4>Contacts:</h4>',
-                '<ul>',
-                    '{% for(var i = 0;i < $.Contacts.$resources.length; i++) { %}',
-                    '{% var contact = $.Contacts.$resources[i]; %}',
-                    '<li>{%: contact.NameLF %} ({%: contact.Email %})</li>',
-                    '{% } %}',
-                '</ul>',
             '{% } %}'
         ]),
 
@@ -169,6 +156,53 @@ define('Mobile/SalesLogix/Views/Account/List', [
         },
         formatSearchQuery: function(searchQuery) {
             return string.substitute('AccountNameUpper like "${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
+        },
+        createRelatedViewLayout: function() {
+            return this.relatedViews || (this.relatedViews = [{
+                id: 'relatedContacts',
+                icon: 'content/images/icons/ContactProfile_48x48.png',
+                title: 'Contacts',
+                enabled: true,
+                parentCollection:true,
+                parentCollectionProperty: 'Contacts',
+                relatedItemTemplate: new Simplate([
+                    '<h4>{%: $.NameLF %} ({%: $.Email %})</h4>'
+                ])
+            },{
+                id: 'relatedNotes',
+                icon: 'content/images/icons/Note_24.png',
+                title: 'Notes',
+                enabled: true,
+                resourceKind: 'history',
+                selectProperties: ['ModifyDate', 'UserName', 'Description', 'LongNotes'],
+                childRelationProperty: 'AccountId',
+                parentRelationProperty: '$key',
+                sortProperty: 'ModifyDate',
+                sortDirection: 'asc',
+                numberOfItems: 2,
+                relatedItemTemplate: new Simplate([
+                         '<h4>By: {%: $.UserName %}</h4>',
+                         '<h4>Regarding: {%: $.Description %}</h4>',
+                         '<h5>{%: $.LongNotes %}</h5>'
+                ])
+            }, {
+                id: 'relatedOpp',
+                icon: 'content/images/icons/Opportunity_24.png',
+                title: 'Oppotunities',
+                enabled: true,
+                resourceKind: 'opportunities',
+                selectProperties: ['ModifyDate', 'SalesPotential', 'Status'],
+                childRelationProperty: 'Account.Id',
+                parentRelationProperty: '$key',
+                sortProperty: 'ModifyDate',
+                sortDirection: 'asc',
+                numberOfItems: 3,
+                relatedItemTemplate: new Simplate([
+                         '<h4>{%: $.$descriptor %}</h4>',
+                         '<h4>{%: $.Status %}</h4>',
+                         '<h4>{%: $.SalesPotential %}</h4>'
+                ])
+            }]);
         }
     });
 });
