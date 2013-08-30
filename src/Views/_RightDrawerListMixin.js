@@ -25,7 +25,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
 
         _hasChangedKPIPrefs: false,// Dirty flag so we know when to reload the widgets
 
-        onShow: function() {
+        onBeforeTransitionTo: function() {
             var drawer = App.getView('right_drawer');
             if (drawer) {
                 domConstruct.place(this.searchWidget.domNode, drawer.domNode, 'first');
@@ -39,8 +39,6 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                 drawer.getGroupForEntry = lang.hitch(this, function(entry) {
                     return this.getGroupForRightDrawerEntry(entry);
                 });
-
-                domConstruct.place(this.searchWidget.domNode, drawer.domNode, 'first');
 
                 if (this.rebuildWidgets) {
                     App.snapper.on('close', lang.hitch(this, function() {
@@ -80,7 +78,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                     prefs = App.preferences && App.preferences.metrics && App.preferences.metrics[this.resourceKind];
 
                     results = array.filter(prefs, function(pref) {
-                        return pref.metricTitleText === params.title;
+                        return pref.title === params.title;
                     });
 
                     if (results.length > 0) {
@@ -153,13 +151,13 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
 
             if (prefs) {
                 array.forEach(prefs, function(pref, i) {
-                    if (pref.metricTitleText) {
+                    if (pref.title) {
                         kpiSection.children.push({
                             'name': 'KPI' + i,
                             'action': 'kpiClicked',
-                            'title': pref.metricTitleText,
+                            'title': pref.title,
                             'dataProps': {
-                                'title': pref.metricTitleText,
+                                'title': pref.title,
                                 'enabled': !!pref.enabled
                             }
                         });

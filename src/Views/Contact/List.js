@@ -59,11 +59,13 @@ define('Mobile/SalesLogix/Views/Contact/List', [
         scheduleText: 'Schedule',
         editActionText: 'Edit',
         callMainActionText: 'Call Main',
+        callWorkActionText: 'Call Work',
         callMobileActionText: 'Call Mobile',
         sendEmailActionText: 'Email',
         viewAccountActionText: 'Account',
         addNoteActionText: 'Add Note',
         addActivityActionText: 'Add Activity',
+        addAttachmentActionText: 'Add Attachment',
         phoneAbbreviationText: 'Work: ',
         mobileAbbreviationText: 'Mobile: ',
 
@@ -89,7 +91,11 @@ define('Mobile/SalesLogix/Views/Contact/List', [
         resourceKind: 'contacts',
         entityName: 'Contact',
         enableActions: true,
+        defaultSearchTerm: '#my-contacts',
         hashTagQueries: {
+            'my-contacts': function() {
+                return 'AccountManager.Id eq "' + App.context.user.$key + '"';
+            },
             'primary': 'IsPrimary eq true',
             'not-primary': 'IsPrimary eq false',
             'can-email': 'DoNotEmail eq false',
@@ -99,6 +105,7 @@ define('Mobile/SalesLogix/Views/Contact/List', [
             'can-solicit': 'DoNotSolicit eq false'
         },
         hashTagQueriesText: {
+            'my-contacts': 'my-contacts',
             'primary': 'primary',
             'not-primary': 'not-primary',
             'can-email': 'can-email',
@@ -115,9 +122,9 @@ define('Mobile/SalesLogix/Views/Contact/List', [
                         label: this.editActionText,
                         action: 'navigateToEditView'
                     }, {
-                        id: 'callMain',
+                        id: 'callWork',
                         icon: 'content/images/icons/Call_24x24.png',
-                        label: this.callMainActionText,
+                        label: this.callWorkActionText,
                         enabled: action.hasProperty.bindDelegate(this, 'WorkPhone'),
                         fn: action.callPhone.bindDelegate(this, 'WorkPhone')
                     }, {
@@ -152,6 +159,11 @@ define('Mobile/SalesLogix/Views/Contact/List', [
                         icon: 'content/images/icons/Schedule_ToDo_24x24.png',
                         label: this.addActivityActionText,
                         fn: action.addActivity.bindDelegate(this)
+                    }, {
+                        id: 'addAttachment',
+                        icon: 'content/images/icons/Attachment_24.png',
+                        label: this.addAttachmentActionText,
+                        fn: action.addAttachment.bindDelegate(this)
                     }]
             );
         },

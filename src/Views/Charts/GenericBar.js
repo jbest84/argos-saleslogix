@@ -6,23 +6,27 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
     'dojo/_base/lang',
     'dojo/_base/array',
     'dojo/dom-geometry',
+    'dojo/dom-attr',
     'dojox/charting/Chart',
     'dojox/charting/plot2d/Bars',
     'dojox/charting/axis2d/Default',
     'dojox/charting/themes/Julie',
-    'Sage/Platform/Mobile/View'
+    'Sage/Platform/Mobile/View',
+    './_ChartMixin'
 ], function(
     declare,
     lang,
     array,
     domGeo,
+    domAttr,
     Chart,
     PlotType,
     Default,
     JulieTheme,
-    View
+    View,
+    _ChartMixin
 ) {
-    return declare('Mobile.SalesLogix.Views.Charts.GenericBar', [View], {
+    return declare('Mobile.SalesLogix.Views.Charts.GenericBar', [View, _ChartMixin], {
         id: 'chart_generic_bar',
         titleText: '',
         otherText: 'Other',
@@ -40,6 +44,7 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
 
         widgetTemplate: new Simplate([
             '<div id="{%= $.id %}" title="{%= $.titleText %}" class="list {%= $.cls %}">',
+                '<div class="chart-hash" data-dojo-attach-point="searchExpressionNode"></div>',
                 '<div class="chart-content" data-dojo-attach-point="contentNode"></div>',
                 '<div class="chart-legend" data-dojo-attach-point="legendNode"></div>',
             '</div>'
@@ -49,9 +54,13 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
                 this.chart.destroy(true);
             }
 
-            var labels, box;
+            var labels, box, searchExpressionHeight;
+
+            this.showSearchExpression();
+            searchExpressionHeight = this.getSearchExpressionHeight();
 
             box = domGeo.getMarginBox(this.domNode);
+            box.h = box.h - searchExpressionHeight;
             labels = this._labels(feedData);
 
             this.chart = new Chart(this.contentNode);
@@ -61,7 +70,7 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
                 markers: false,
                 gap: 5,
                 majorLabels: true,
-                minorTickets: false,
+                minorTicks: false,
                 minorLabels: false,
                 microTicks: false
             });
@@ -69,6 +78,9 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
             this.chart.addAxis('x', {
                 vertical: true,
                 title: '',
+                minorTicks: false,
+                minorLabels: false,
+                microTicks: false,
                 labels: labels,
                 labelFunc: function(formattedValue, rawValue) {
                     var item = labels[rawValue - 1];
@@ -86,7 +98,8 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
             this.chart.resize(box.w, box.h);
         },
         _labels: function(feedData) {
-            var data = [], MAX_ITEMS = 5, otherY = 0, otherText;
+            var data = [], MAX_ITEMS = 5, MIN_ITEMS= 1, otherY = 0, otherText;
+
             array.forEach(feedData, function(item, index) {
                 if (index < MAX_ITEMS) {
                     data.push({
@@ -96,14 +109,15 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
                     });
                 } else {
                     otherY = otherY + item.value;
-                    otherText = this.otherText + ' (' + this.formatter(otherY) + ')';
-                    data[MAX_ITEMS] = {
-                        y: otherY,
-                        text: otherText,
-                        value: MAX_ITEMS
-                    };
+                    this._insertOther(data, MAX_ITEMS, otherY);
+
                 }
             }, this);
+
+            // Dojo won't draw a single bar, insert a Other group with a 0 value
+            if (feedData.length === MIN_ITEMS) {
+                this._insertOther(data, MIN_ITEMS, 0);
+            }
 
             // Reverse sort to show larger number up top
             data.sort(function(a, b) {
@@ -119,6 +133,14 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
             });
 
             return data;
+        },
+        _insertOther: function(data, index, value) {
+            otherText = this.otherText + ' (' + this.formatter(value) + ')';
+            data[index] = {
+                y: value,
+                text: otherText,
+                value: index
+            };
         }
     });
 });

@@ -11,8 +11,7 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
     'Sage/Platform/Mobile/List',
     '../_MetricListMixin',
     '../_RightDrawerListMixin',
-    '../_CardLayoutListMixin',
-    'Sage/Platform/Mobile/Store/SData'
+    '../_CardLayoutListMixin'
 ], function(
     declare,
     string,
@@ -23,8 +22,7 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
     List,
     _MetricListMixin,
     _RightDrawerListMixin,
-    _CardLayoutListMixin,
-    SDataStore
+    _CardLayoutListMixin
 ) {
 
     return declare('Mobile.SalesLogix.Views.Opportunity.List', [List, _RightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin], {
@@ -66,7 +64,8 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
                     '{%: Mobile.SalesLogix.Format.multiCurrency($.SalesPotential, App.getBaseExchangeRate().code) %}',
                 '{% } %}',
                 '</strong></h4>',
-            '{% } %}'
+            '{% } %}',
+            '<h4>{%: $$.formatDate($) %}</h4>'
         ]),
 
         //Localization
@@ -80,7 +79,12 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         viewProductsActionText: 'Products',
         addNoteActionText: 'Add Note',
         addActivityActionText: 'Add Activity',
+        addAttachmentActionText: 'Add Attachment',
+        actualCloseText: 'Closed ',
+        estimatedCloseText: 'Estimated close ',
+
         hashTagQueriesText: {
+            'my-opportunities': 'my-opportunities',
             'open': 'open',
             'closed': 'closed',
             'won': 'won',
@@ -100,7 +104,11 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
         icon: 'content/images/icons/opportunity_24.png',
         detailView: 'opportunity_detail',
         insertView: 'opportunity_edit',
+        defaultSearchTerm: '#my-opportunities',
         hashTagQueries: {
+            'my-opportunities': function() {
+                return 'AccountManager.Id eq "' + App.context.user.$key + '"';
+            },
             'open': 'Status eq "Open"',
             'won': 'Status eq "Closed - Won"',
             'lost': 'Status eq "Closed - Lost"',
@@ -128,49 +136,66 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
             'SalesPotential',
             'ExchangeRate',
             'ExchangeRateCode',
-            'ModifyDate'
+            'ModifyDate',
+            'ActualClose',
+            'EstimatedClose'
         ],
         resourceKind: 'opportunities',
         entityName: 'Opportunity',
         allowSelection: true,
         enableActions: true,
+
+        formatDate: function(entry) {
+            if (entry.Status === 'Open' && entry.EstimatedClose) {
+                return this.estimatedCloseText + format.relativeDate(entry.EstimatedClose);
+            } else if (entry.ActualClose) {
+                return this.actualCloseText + format.relativeDate(entry.ActualClose);
+            }
+
+            return '';
+        },
         createActionLayout: function() {
             return this.actions || (this.actions = [{
-                        id: 'edit',
-                        icon: 'content/images/icons/edit_24.png',
-                        label: this.editActionText,
-                        action: 'navigateToEditView'
-                    }, {
-                        id: 'viewAccount',
-                        icon: 'content/images/icons/Company_24.png',
-                        label: this.viewAccountActionText,
-                        enabled: action.hasProperty.bindDelegate(this, 'Account.$key'),
-                        fn: action.navigateToEntity.bindDelegate(this, {
-                            view: 'account_detail',
-                            keyProperty: 'Account.$key',
-                            textProperty: 'Account.AccountName'
-                        })
-                    }, {
-                        id: 'viewContacts',
-                        icon: 'content/images/icons/Contacts_24x24.png',
-                        label: 'Contacts',
-                        fn: this.navigateToRelatedView.bindDelegate(this, 'opportunitycontact_related', 'Opportunity.Id eq "${0}"')
-                    }, {
-                        id: 'viewProducts',
-                        icon: 'content/images/icons/product_24.png',
-                        label: this.viewProductsActionText,
-                        fn: this.navigateToRelatedView.bindDelegate(this, 'opportunityproduct_related', 'Opportunity.Id eq "${0}"')
-                    }, {
-                        id: 'addNote',
-                        icon: 'content/images/icons/New_Note_24x24.png',
-                        label: this.addNoteActionText,
-                        fn: action.addNote.bindDelegate(this)
-                    }, {
-                        id: 'addActivity',
-                        icon: 'content/images/icons/Schedule_ToDo_24x24.png',
-                        label: this.addActivityActionText,
-                        fn: action.addActivity.bindDelegate(this)
-                    }]
+                id: 'edit',
+                icon: 'content/images/icons/edit_24.png',
+                label: this.editActionText,
+                action: 'navigateToEditView'
+            }, {
+                id: 'viewAccount',
+                icon: 'content/images/icons/Company_24.png',
+                label: this.viewAccountActionText,
+                enabled: action.hasProperty.bindDelegate(this, 'Account.$key'),
+                fn: action.navigateToEntity.bindDelegate(this, {
+                    view: 'account_detail',
+                    keyProperty: 'Account.$key',
+                    textProperty: 'Account.AccountName'
+                })
+            }, {
+                id: 'viewContacts',
+                icon: 'content/images/icons/Contacts_24x24.png',
+                label: 'Contacts',
+                fn: this.navigateToRelatedView.bindDelegate(this, 'opportunitycontact_related', 'Opportunity.Id eq "${0}"')
+            }, {
+                id: 'viewProducts',
+                icon: 'content/images/icons/product_24.png',
+                label: this.viewProductsActionText,
+                fn: this.navigateToRelatedView.bindDelegate(this, 'opportunityproduct_related', 'Opportunity.Id eq "${0}"')
+            }, {
+                id: 'addNote',
+                icon: 'content/images/icons/New_Note_24x24.png',
+                label: this.addNoteActionText,
+                fn: action.addNote.bindDelegate(this)
+            }, {
+                id: 'addActivity',
+                icon: 'content/images/icons/Schedule_ToDo_24x24.png',
+                label: this.addActivityActionText,
+                fn: action.addActivity.bindDelegate(this)
+            }, {
+                id: 'addAttachment',
+                icon: 'content/images/icons/Attachment_24.png',
+                label: this.addAttachmentActionText,
+                fn: action.addAttachment.bindDelegate(this)
+            }]
             );
         },
 
@@ -189,25 +214,14 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
                 parentRelationProperty: '$key',
                 sortProperty: 'ModifyDate',
                 sortDirection: 'asc',
-                numberOfItems: 5,
-               relatedItemTemplate: new Simplate([
-                        '<h4>By: {%: $.UserName %}</h4>',
-                        '<h4>Regarding: {%: $.Description %}</h4>',
-                        '<h5>{%: $.LongNotes %}</h5>'
-                ]),
-                xfetchData: function(entry) {
-                    var queryOptions, queryResults;
-                    queryOptions = {
-                       count: 5,
-                       start: 0, //this.position,
-                        where: "OpportunityId eq '" + entry.$key + "'"
-                    };
-                    queryResults = this.store.query(null, queryOptions);
-                    return queryResults;
-                }
+                numberOfItems: 3,
+                relatedItemTemplate: new Simplate([
+                         '<h4>By: {%: $.UserName %}</h4>',
+                         '<h4>Regarding: {%: $.Description %}</h4>',
+                         '<h4>{%: $.LongNotes %}</h4>'
+                ])
             }]);
-        }
-        
+        },
     });
 });
 

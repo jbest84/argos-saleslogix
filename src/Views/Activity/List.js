@@ -7,30 +7,42 @@ define('Mobile/SalesLogix/Views/Activity/List', [
     'dojo/query',
     'dojo/dom-class',
     'Mobile/SalesLogix/Views/_RightDrawerListMixin',
-    'Sage/Platform/Mobile/GroupedList',
+    'Sage/Platform/Mobile/List',
     'Mobile/SalesLogix/Views/_CardLayoutListMixin',
     'Sage/Platform/Mobile/Groups/DateTimeSection',
     'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/Convert'
+    'Sage/Platform/Mobile/Utility',
+    'Sage/Platform/Mobile/Convert',
+    'Mobile/SalesLogix/Action',
+    'Mobile/SalesLogix/Environment',
+    'moment'
 ], function(
     declare,
     string,
     query,
     domClass,
     _RightDrawerListMixin,
-    GroupedList,
+    List,
     _CardLayoutListMixin,
     DateTimeSection,
     format,
-    convert
+    Utility,
+    convert,
+    action,
+    environment,
+    moment
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Activity.List', [GroupedList, _RightDrawerListMixin, _CardLayoutListMixin], {
+    return declare('Mobile.SalesLogix.Views.Activity.List', [List, _RightDrawerListMixin, _CardLayoutListMixin], {
        
         // Localization
-        startDateFormatText: 'ddd M/d/yy',
+        startDateFormatText: 'ddd M/D/YYYY',
         startTimeFormatText: 'h:mm',
         allDayText: 'All-Day',
+        completeActivityText: 'Complete',
+        callText: 'Call',
+        calledText: 'Called',
+        addAttachmentActionText: 'Add Attachment',
 
         //Card View 
         itemIcon: 'content/images/icons/ContactProfile_48x48.png',
@@ -52,13 +64,7 @@ define('Mobile/SalesLogix/Views/Activity/List', [
             '</li>'
         ]),
         activityTimeTemplate: new Simplate([
-            '{% if ($.Timeless) { %}',
-            '{%: $$.allDayText %},',
-            '{% } else { %}',
-            '{%: Mobile.SalesLogix.Format.date($.StartDate, $$.startTimeFormatText) %}',
-            '&nbsp;{%: Mobile.SalesLogix.Format.date($.StartDate, "tt") %},',
-            '{% } %}',
-            '&nbsp;{%: Mobile.SalesLogix.Format.date($.StartDate, $$.startDateFormatText, Sage.Platform.Mobile.Convert.toBoolean($.Timeless)) %}'
+            '{%: Mobile.SalesLogix.Format.relativeDate($.StartDate, Sage.Platform.Mobile.Convert.toBoolean($.Timeless)) %}'
         ]),
         itemTemplate: new Simplate([
             '<h3>',
@@ -98,7 +104,7 @@ define('Mobile/SalesLogix/Views/Activity/List', [
             'atNote': 'note_24.png',
             'atEMail': 'letters_24.png'
         },
-        activityTextByType: {
+        activityTypeText: {
             'atToDo': 'To-Do',
             'atPhoneCall': 'Phone Call',
             'atAppointment': 'Meeting',
@@ -127,15 +133,24 @@ define('Mobile/SalesLogix/Views/Activity/List', [
         icon: 'content/images/icons/To_Do_24x24.png',
         detailView: 'activity_detail',
         insertView: 'activity_types_list',
-        queryOrderBy: 'Timeless desc, StartDate desc',
+        historyEditView: 'history_edit',
+        enableActions: true,
+        queryOrderBy: 'StartDate desc',
         querySelect: [
             'Description',
             'StartDate',
             'Type',
+            'AccountId',
             'AccountName',
+            'ConatactId',
             'ContactName',
+            'PhoneNumber',
             'LeadId',
             'LeadName',
+            'TicketId',
+            'OpportunityId',
+            'Leader/$key',
+            'Leader/$descriptor',
             'UserId',
             'Timeless',
             'Alarm',
@@ -146,30 +161,90 @@ define('Mobile/SalesLogix/Views/Activity/List', [
         ],
         resourceKind: 'activities',
         contractName: 'system',
+        pageSize: 105,
 
         hashTagQueries: {
+            'alarm':'Alarm eq true',
             'recurring': 'Recurring eq true',
             'timeless': 'Timeless eq true'
         },
-        hashTagQueriesText: {
-            'recurring': 'recurring',
-            'timeless': 'timeless'
-        },
+        hashTagQueries: {
+            'alarm': 'Alarm eq true',
+            'recurring': 'Recurring eq true',
+            'timeless': 'Timeless eq true',
+            'yesterday': function() {
+                var now, yesterdayStart, yesterdayEnd, query;
 
+                now = moment();
+
+                yesterdayStart = now.clone().subtract(1, 'days').startOf('day');
+                yesterdayEnd = yesterdayStart.clone().endOf('day');
+
+                query = string.substitute(
+                        '((Timeless eq false and StartDate between @${0}@ and @${1}@) or (Timeless eq true and StartDate between @${2}@ and @${3}@))',
+                        [
+                        convert.toIsoStringFromDate(yesterdayStart.toDate()),
+                        convert.toIsoStringFromDate(yesterdayEnd.toDate()),
+                        yesterdayStart.format('YYYY-MM-DDT00:00:00[Z]'),
+                        yesterdayEnd.format('YYYY-MM-DDT23:59:59[Z]')
+                        ]
+                );
+                return query;
+            },
+            'today': function() {
+                var now, todayStart, todayEnd, query;
+
+                now = moment();
+
+                todayStart = now.clone().startOf('day');
+                todayEnd = todayStart.clone().endOf('day');
+
+                query = string.substitute(
+                        '((Timeless eq false and StartDate between @${0}@ and @${1}@) or (Timeless eq true and StartDate between @${2}@ and @${3}@))',
+                        [
+                        convert.toIsoStringFromDate(todayStart.toDate()),
+                        convert.toIsoStringFromDate(todayEnd.toDate()),
+                        todayStart.format('YYYY-MM-DDT00:00:00[Z]'),
+                        todayEnd.format('YYYY-MM-DDT23:59:59[Z]')
+                        ]
+                );
+                return query;
+            },
+            'this-week': function() {
+                var now, weekStartDate, weekEndDate, query;
+
+                now = moment();
+
+                weekStartDate = now.clone().startOf('week');
+                weekEndDate = weekStartDate.clone().endOf('week');
+
+                query = string.substitute(
+                        '((Timeless eq false and StartDate between @${0}@ and @${1}@) or (Timeless eq true and StartDate between @${2}@ and @${3}@))',
+                        [
+                        convert.toIsoStringFromDate(weekStartDate.toDate()),
+                        convert.toIsoStringFromDate(weekEndDate.toDate()),
+                        weekStartDate.format('YYYY-MM-DDT00:00:00[Z]'),
+                        weekEndDate.format('YYYY-MM-DDT23:59:59[Z]')
+                        ]
+                );
+                return query;
+            },
+        },
+        hashTagQueriesText: {
+            'alarm': 'alarm',
+            'recurring': 'recurring',
+            'timeless': 'timeless',
+            'today': 'today',
+            'this-week': 'this-week',
+            'yesterday': 'yesterday'
+        },
+        defaultSearchTerm: '#this-week',
         formatSearchQuery: function(searchQuery) {
             return string.substitute('upper(Description) like "%${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         },
         formatDateTime: function(dateTime) {
             return 'StartTime';
         },
-        getGroupBySections: function() {
-            var groupBySections = [{
-                id: 'section_StartDate',
-                description: null,
-                section: new DateTimeSection({ groupByProperty: 'StartDate', sortDirection: 'asc' })
-            }];
-            return groupBySections;
-        }, //Card View
         getItemActionKey: function(entry) {
             return entry.$key
         },
@@ -179,66 +254,65 @@ define('Mobile/SalesLogix/Views/Activity/List', [
         getItemTabValue: function(entry){
             var value = '';
             if ((entry['$groupTag'] === 'Today') || (entry['$groupTag'] === 'Tomorrow') || (entry['$groupTag'] === 'Yesterday')) {
-                value = format.date(entry.StartDate, this.startTimeFormatText) + " " + format.date(entry.StartDate, "tt");
-            } else {
-                value = format.date(entry.StartDate, this.startDateFormatText);
-            }
-            return value;
-        },
-        getItemColorClass: function(entry) {
-            return  this.activityColorClassByType[entry.Type] || this.itemColorClass;
-        },
-        getItemIconSource: function(entry) {
-            return this.itemIcon || this.activityIconByType[entry.Type] || this.icon || this.selectIcon
-        },        
-        createIndicatorLayout: function() {
-            return this.itemIndicators || (this.itemIndicators = [{
-                id: '1',
-                icon: 'AlarmClock_24x24.png',
-                label: 'Alarm',
-                onApply: function(entry, parent) {
-                    this.isEnabled = parent.hasAlarm(entry);
+                value = format.date(entry.StartDate, this.startTimeFormatText) + " " + format.date(entry.StartDate, "A");
+                } else {
+                    value = format.date(entry.StartDate, this.startDateFormatText, entry.Timeless);
                 }
-            }, {
-                id: '2',
-                icon: 'Touched_24x24.png',
-                label: 'Touched',
-                onApply: function(entry, parent) {
-                    this.isEnabled = parent.hasBeenTouched(entry);
-                }
-            }, {
-                id: '3',
-                icon: 'Bang_24x24.png',
-                label: 'Bang',
-                onApply: function(entry, parent) {
-                    this.isEnabled = parent.isImportant(entry);
-                }
-            }, {
-                id: '4',
-                icon: '',
-                cls: 'indicator_Important',
-                label: 'overdue',
-                valueText: 'overdue',
-                showIcon: false,
-                location:'top',
-                onApply: function(entry, parent) {
-                    this.isEnabled = parent.isOverdue(entry);
-                }
-            }, {
-                id: '5',
-                icon: 'Recurring_24x24.png',
-                label: 'Recurring',
-                onApply: function(entry, parent) {
-                    this.isEnabled = parent.isRecurring(entry, this);
-                }
-            }, {
-                id: '6',
-                icon: '',
-                label: 'Activity',
-                onApply: function(entry, parent) {
-                    parent.applyActivityIndicator(entry, this);
-                }
-            }]
+                return value;
+            },
+            getItemColorClass: function(entry) {
+                return  this.activityColorClassByType[entry.Type] || this.itemColorClass;
+            },
+            getItemIconSource: function(entry) {
+                return this.itemIcon || this.activityIconByType[entry.Type] || this.icon || this.selectIcon
+            },        
+            createIndicatorLayout: function() {
+                return this.itemIndicators || (this.itemIndicators = [{
+                    id: 'alarm',
+                    icon: 'AlarmClock_24x24.png',
+                    label: 'Alarm',
+                    onApply: function(entry, parent) {
+                        this.isEnabled = parent.hasAlarm(entry);
+                    }
+                }, {
+                    id: 'touched',
+                    icon: 'Touched_24x24.png',
+                    label: 'Touched',
+                    onApply: function(entry, parent) {
+                        this.isEnabled = parent.hasBeenTouched(entry);
+                    }
+                }, {
+                    id: 'important',
+                    icon: 'Bang_24x24.png',
+                    label: 'Important',
+                    onApply: function(entry, parent) {
+                        this.isEnabled = parent.isImportant(entry);
+                    }
+                }, {
+                    id: 'overdue',
+                    cls: 'indicator_Important',
+                    label: 'overdue',
+                    valueText: 'overdue',
+                    showIcon: false,
+                    location: 'top',
+                    onApply: function(entry, parent) {
+                        this.isEnabled = parent.isOverdue(entry);
+                    }
+                }, {
+                    id: 'recurring',
+                    icon: 'Recurring_24x24.png',
+                    label: 'Recurring',
+                    onApply: function(entry, parent) {
+                        this.isEnabled = parent.isRecurring(entry, this);
+                    }
+                }, {
+                    id: 'activityType',
+                    icon: '',
+                    label: 'Activity',
+                    onApply: function(entry, parent) {
+                        parent.applyActivityIndicator(entry, this);
+                    }
+                }]
             );
         },
         onApplyRowActionPanel: function(actionsNode, rowNode) {
@@ -255,16 +329,14 @@ define('Mobile/SalesLogix/Views/Activity/List', [
             }
         },
         hasBeenTouched: function(entry) {
-            var modifydDate, currentDate, seconds, hours, days;
+            var modifiedDate, currentDate, weekAgo;
             if (entry['ModifyDate']) {
-                modifydDate = convert.toDateFromString(entry['ModifyDate']);
-                currentDate = new Date();
-                seconds = Math.round((currentDate - modifydDate) / 1000);
-                hours = seconds / 360;
-                days = hours / 24;
-                if (days <= 7) {
-                    return true;
-                }
+                modifiedDate = moment(convert.toDateFromString(entry['ModifyDate']));
+                currentDate = moment().endOf('day');
+                weekAgo = moment().subtract(1, 'weeks');
+
+                return modifiedDate.isAfter(weekAgo) &&
+                    modifiedDate.isBefore(currentDate);
             }
             return false;
         },
@@ -297,6 +369,12 @@ define('Mobile/SalesLogix/Views/Activity/List', [
             }
             return false;
         },
+        hasAlarm: function(entry) {
+            if (entry['Alarm'] === true) {
+                return true;
+            }            
+            return false;
+        },
        applyActivityIndicator: function(entry, indicator) {
            this._applyActivityIndicator(entry['Type'], indicator);
        },
@@ -305,11 +383,133 @@ define('Mobile/SalesLogix/Views/Activity/List', [
             indicator.showIcon = false;
             if (type) {
                 indicator.icon = this.activityIndicatorIconByType[type];
-                indicator.label = this.activityTextByType[type];
+                indicator.label = this.activityTypeText[type];
                 indicator.isEnabled = true;
                 indicator.showIcon = true;
             }
-        }
+       },
+       createActionLayout: function() {
+           return this.actions || (this.actions = [{
+               id: 'complete',
+               icon: 'content/images/icons/Clear_Activity_24x24.png',
+               label: this.completeActivityText,
+               enabled: function(action, selection) {
+                   var recur, entry = selection && selection.data;
+                   if (!entry) {
+                       return false;
+                   }
+                   recur = false;
+                   if (entry['RecurrenceState'] === 'rstOccurrence') {
+                       recur = true;
+                   }
+
+                   return entry['Leader']['$key'] === App.context['user']['$key'] && !recur;
+               },
+               fn: (function(action, selection) {
+                   var entry;
+
+                   entry = selection && selection.data && selection.data;
+
+                   entry['CompletedDate'] = new Date();
+                   entry['Result'] = 'Complete';
+
+                   environment.refreshActivityLists();
+                   this.completeActivity(entry);
+
+               }).bindDelegate(this)
+           }, {
+               id: 'call',
+               icon: 'content/images/icons/Dial_24x24.png',
+               label: this.callText,
+               enabled: function(action, selection) {
+                   var entry;
+                   entry = selection && selection.data;
+                   return entry && entry.PhoneNumber;
+               },
+               fn: function(action, selection) {
+                   var entry, phone;
+                   entry = selection && selection.data;
+                   phone = entry && entry.PhoneNumber;
+                   if (phone) {
+                       this.recordCallToHistory(function() {
+                           App.initiateCall(phone);
+                       }.bindDelegate(this), entry);
+                   }
+               }.bindDelegate(this)
+           }, {
+               id: 'addAttachment',
+               icon: 'content/images/icons/Attachment_24.png',
+               label: this.addAttachmentActionText,
+               fn: action.addAttachment.bindDelegate(this)
+           }]
+           );
+       },
+       recordCallToHistory: function(complete, entry) {
+           var entry = {
+               '$name': 'History',
+               'Type': 'atPhoneCall',
+               'ContactName': entry['ContactName'],
+               'ContactId': entry['ContactId'],
+               'AccountName': entry['AccountName'],
+               'AccountId': entry['AccountId'],
+               'Description': string.substitute("${0} ${1}", [this.calledText, (entry['ContactName'] || '')]),
+               'UserId': App.context && App.context.user['$key'],
+               'UserName': App.context && App.context.user['UserName'],
+               'Duration': 15,
+               'CompletedDate': (new Date())
+           };
+
+           this.navigateToHistoryInsert('atPhoneCall', entry, complete);
+       },
+       navigateToHistoryInsert: function(type, entry, complete) {
+           var view = App.getView(this.historyEditView);
+           if (view) {
+               environment.refreshActivityLists();
+               view.show({
+                   title: this.activityTypeText[type],
+                   template: {},
+                   entry: entry,
+                   insert: true
+               }, {
+                   complete: complete
+               });
+           }
+       },
+       completeActivity: function(entry) {
+           var completeActivity, request;
+
+           completeActivityEntry = {
+               "$name": "ActivityComplete",
+               "request": {
+                   "entity": { '$key': entry['$key'] },
+                   "ActivityId": entry['$key'],
+                   "userId": entry['Leader']['$key'],
+                   "result": entry['Result'],
+                   "completeDate": entry['CompletedDate']
+               }
+           };
+
+           request = new Sage.SData.Client.SDataServiceOperationRequest(this.getService())
+               .setResourceKind('activities')
+               .setContractName('system')
+               .setOperationName('Complete');
+
+           request.execute(completeActivityEntry, {
+               success: function() {
+                   connect.publish('/app/refresh', [{
+                       resourceKind: 'history'
+                   }]);
+
+                   this.clear();
+                   this.refresh();
+               },
+               failure: this.onRequestFailure,
+               scope: this
+           });
+       },
+       onRequestFailure: function(response, o) {
+           ErrorManager.addError(response, o, {}, 'failure');
+       }
     });
 });
 

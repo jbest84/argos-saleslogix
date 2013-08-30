@@ -15,7 +15,8 @@ define('Mobile/SalesLogix/Application', [
     'Mobile/SalesLogix/Environment',
     'Sage/Platform/Mobile/Application',
     'dojo/_base/sniff',
-    'dojox/mobile/sniff'
+    'dojox/mobile/sniff',
+    'moment'
 ], function(
     win,
     declare,
@@ -30,7 +31,8 @@ define('Mobile/SalesLogix/Application', [
     environment,
     Application,
     sniff,
-    mobileSniff
+    mobileSniff,
+    moment
 ) {
 
     return declare('Mobile.SalesLogix.Application', [Application], {
@@ -51,7 +53,7 @@ define('Mobile/SalesLogix/Application', [
             'General;InsertSecCodeID',
             'General;Currency',
             'Calendar;DayStartTime',
-            'Calendar;FirstDayofWeek',
+            'Calendar;WeekStart',
             'ActivityMeetingOptions;AlarmEnabled',
             'ActivityMeetingOptions;AlarmLead',
             'ActivityMeetingOptions;Duration',
@@ -417,7 +419,8 @@ define('Mobile/SalesLogix/Application', [
             request.read({
                 success: this.onRequestUserDetailsSuccess,
                 failure: this.onRequestUserDetailsFailure,
-                scope: this
+                scope: this,
+                async: false
             });
         },
         onRequestUserDetailsSuccess: function(entry) {
@@ -471,6 +474,39 @@ define('Mobile/SalesLogix/Application', [
             if (insertSecCode && (!currentDefaultOwner || (currentDefaultOwner != insertSecCode))) {
                 this.requestOwnerDescription(insertSecCode);
             }
+
+            this.loadCustomizedMoment();
+        },
+        /*
+         * Loads a custom object to pass into the current moment language. The object for the language gets built in buildCustomizedMoment.
+         */
+        loadCustomizedMoment: function() {
+            var custom = this.buildCustomizedMoment(),
+                currentLang;
+
+            currentLang = moment.lang();
+            moment.lang(currentLang, custom);
+        },
+        /*
+         * Builds an object that will get passed into moment.lang()
+         */
+        buildCustomizedMoment: function() {
+            if (!App.context.userOptions) {
+                return;
+            }
+
+            var userWeekStartDay = parseInt(App.context.userOptions['Calendar:WeekStart'], 10),
+                results = {};// 0-6, Sun-Sat
+
+            if (!isNaN(userWeekStartDay)) {
+                results = {
+                    week: {
+                        dow: userWeekStartDay
+                    }
+                };
+            }
+
+            return results;
         },
         onRequestUserOptionsFailure: function(response, o) {
             ErrorManager.addError(response, o, {}, 'failure');
