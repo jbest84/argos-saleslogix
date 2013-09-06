@@ -114,7 +114,6 @@ define('Mobile/SalesLogix/Views/Contact/List', [
             'can-mail': 'can-mail',
             'can-solicit': 'can-solicit'
         },
-
         createActionLayout: function() {
             return this.actions || (this.actions = [{
                         id: 'edit',
@@ -169,67 +168,8 @@ define('Mobile/SalesLogix/Views/Contact/List', [
         },
         formatSearchQuery: function(searchQuery) {
             return string.substitute('(LastNameUpper like "${0}%" or upper(FirstName) like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
-        },
-        fetchRelatedRowData: function(entry) {
-            var store, queryOptions, queryResults;
-            queryOptions = {
-                count: this.pageSize,
-                start: this.position,
-                where: "ContactId eq '" + entry.$key + "'"
-            };
-
-            store = this.get('store');
-            queryResults = store.query(null, queryOptions);
-            return queryResults;
-        },
-        createStore: function() {
-            var store = new SDataStore({
-                service: App.services['crm'],
-                resourceKind: 'history',
-                scope: this
-            });
-
-            return store;
-        },
-        _getStoreAttr: function() {
-            return this.store || (this.store = this.createStore());
-        },
-        createRelatedViewLayout: function() {
-            return this.relatedViews || (this.relatedViews = [{
-                id: 'relatedNotes',
-                icon: 'content/images/icons/Notes_24.png',
-                title: 'Notes',
-                enabled: true,
-                resourceKind: 'history',
-                selectProperties:['ModifyDate','UserName','Description','LongNotes'],
-                childRelationProperty: 'ContactId',
-                parentRelationProperty: '$key',
-                sortProperty: 'ModifyDate',
-                sortDirection: 'asc',
-                numberOfItems: 2,
-                relatedItemTemplate: new Simplate([
-                         '<h4>By: {%: $.UserName %}</h4>',
-                         '<h4>Regarding: {%: $.Description %}</h4>',
-                         '<h5>{%: $.LongNotes %}</h5>'
-                ])                
-            }, {
-                id: 'relatedOpp',
-                icon: 'content/images/icons/Opp_24.png',
-                title: 'Oppotunities',
-                enabled: true,
-                resourceKind: 'opportunities',
-                selectProperties: ['ModifyDate', 'SalesPotential', 'Status'],
-                childRelationProperty: 'ContactId',
-                parentRelationProperty: '$key',
-                sortProperty: 'ModifyDate',
-                sortDirection: 'asc',
-                numberOfItems: 3,
-                relatedItemTemplate: new Simplate([
-                         '<h4>{%: $.Description %}</h4>',
-                         '<h4>{%: $.Status %}</h5>'
-                ])
-            }]);
         }
+
     });
 });
 

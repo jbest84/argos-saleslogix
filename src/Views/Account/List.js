@@ -9,6 +9,10 @@ define('Mobile/SalesLogix/Views/Account/List', [
     'Sage/Platform/Mobile/Format',
     'Sage/Platform/Mobile/Utility',
     'Sage/Platform/Mobile/Convert',
+    'Mobile/SalesLogix/Views/History/RelatedViewWidget',
+    'Mobile/SalesLogix/Views/Account/ContactRelatedViewWidget',
+    'Mobile/SalesLogix/Views/Activity/RelatedViewWidget',
+    'Mobile/SalesLogix/Views/Opportunity/RelatedViewWidget',
     'Sage/Platform/Mobile/List',
     '../_MetricListMixin',
     '../_CardLayoutListMixin',
@@ -21,6 +25,10 @@ define('Mobile/SalesLogix/Views/Account/List', [
     format,
     utility,
     Convert,
+    HistoryRelatedViewWidget,
+    ContactRelatedViewWidget,
+    ActivityRelatedViewWidget,
+    OpportunityRelatedViewWidget,
     List,
     _MetricListMixin,
     _CardLayoutListMixin,
@@ -170,51 +178,40 @@ define('Mobile/SalesLogix/Views/Account/List', [
         },
         createRelatedViewLayout: function() {
             return this.relatedViews || (this.relatedViews = [{
-                id: 'relatedContacts',
-                icon: 'content/images/icons/ContactProfile_48x48.png',
-                title: 'Contacts',
-                enabled: true,
-                parentCollection:true,
-                parentCollectionProperty: 'Contacts',
-                relatedItemTemplate: new Simplate([
-                    '<h4>{%: $.NameLF %} ({%: $.Email %})</h4>'
-                ])
+                widgetType:ActivityRelatedViewWidget,
+                id: 'account_relatedActivites',
+                title: 'Activites for today',
+                enabled:true,
+                listViewWhere: function(entry) { return "AccountId eq '" + entry.$key + "'"; },
+                where: function(entry) {
+                    var query = "(AccountId eq '" + entry.$key + "')";
+                    query = query + ' and ' + this['today']();
+                    return query;
+                },
             },{
-                id: 'relatedNotes',
-                icon: 'content/images/icons/Note_24.png',
-                title: 'Notes',
-                enabled: true,
-                resourceKind: 'history',
-                selectProperties: ['ModifyDate', 'UserName', 'Description', 'LongNotes'],
-                childRelationProperty: 'AccountId',
-                parentRelationProperty: '$key',
-                sortProperty: 'ModifyDate',
-                sortDirection: 'asc',
-                numberOfItems: 2,
-                relatedItemTemplate: new Simplate([
-                         '<h4>By: {%: $.UserName %}</h4>',
-                         '<h4>Regarding: {%: $.Description %}</h4>',
-                         '<h5>{%: $.LongNotes %}</h5>'
-                ])
+                widgetType:HistoryRelatedViewWidget,
+                id: 'account_relatedNotes',
+                title: 'Latest notes',
+                enabled:true,
+                listViewWhere: function(entry) { return "AccountId eq '" + entry.$key + "'"; },
+                where: function(entry) { return "AccountId eq '" + entry.$key + "'"; },
             }, {
-                id: 'relatedOpp',
-                icon: 'content/images/icons/Opportunity_24.png',
-                title: 'Oppotunities',
+                widgetType: OpportunityRelatedViewWidget,
+                id: 'account_relatedOpps',
+                title: 'Latest opportunites',
                 enabled: true,
-                resourceKind: 'opportunities',
-                selectProperties: ['ModifyDate', 'SalesPotential', 'Status'],
-                childRelationProperty: 'Account.Id',
-                parentRelationProperty: '$key',
-                sortProperty: 'ModifyDate',
-                sortDirection: 'asc',
-                numberOfItems: 3,
-                relatedItemTemplate: new Simplate([
-                         '<h4>{%: $.$descriptor %}</h4>',
-                         '<h4>{%: $.Status %}</h4>',
-                         '<h4>{%: $.SalesPotential %}</h4>'
-                ])
+                listViewWhere: function(entry) { return "Account.Id eq '" + entry.$key + "'"; },
+                where: function(entry) {
+                    return "Account.Id eq '" + entry.$key + "'";
+                },
+            }, {
+                id: 'account_relateContacts',
+                enabled: true,
+                listViewWhere: function(entry) { return "Account.Id eq '" + entry.$key + "'"; },
+                widgetType: ContactRelatedViewWidget,
             }]);
         }
+        
     });
 });
 

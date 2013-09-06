@@ -201,27 +201,7 @@ define('Mobile/SalesLogix/Views/Opportunity/List', [
 
         formatSearchQuery: function(searchQuery) {
             return string.substitute('(upper(Description) like "${0}%" or Account.AccountNameUpper like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
-        },
-        createRelatedViewLayout: function() {
-            return this.relatedViews || (this.relatedViews = [{
-                id: 'relatedNotes',
-                icon: 'content/images/icons/Notes_24.png',
-                title: 'Notes',
-                enabled: true,
-                resourceKind: 'history',
-                selectProperties:['ModifyDate','UserName','Description','LongNotes'],
-                childRelationProperty: 'OpportunityId',
-                parentRelationProperty: '$key',
-                sortProperty: 'ModifyDate',
-                sortDirection: 'asc',
-                numberOfItems: 3,
-                relatedItemTemplate: new Simplate([
-                         '<h4>By: {%: $.UserName %}</h4>',
-                         '<h4>Regarding: {%: $.Description %}</h4>',
-                         '<h4>{%: $.LongNotes %}</h4>'
-                ])
-            }]);
-        },
+        }
     });
 });
 

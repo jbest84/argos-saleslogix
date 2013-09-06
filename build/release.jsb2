@@ -345,6 +345,22 @@
           "path": "../src/Views/Attachment"
         },
         {
+          "text": "ContactRelatedViewWidget.js",
+          "path": "../src/Views/Account"
+        },
+        {
+          "text": "RelatedViewWidget.js",
+          "path": "../src/Views/History"
+        },
+        {
+          "text": "RelatedViewWidget.js",
+          "path": "../src/Views/Activity"
+        },
+        {
+          "text": "RelatedViewWidget.js",
+          "path": "../src/Views/Opportunity"
+        },
+        {
           "text": "List.js",
           "path": "../src/Views/Account"
         },
