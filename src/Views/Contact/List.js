@@ -49,7 +49,7 @@ define('Mobile/SalesLogix/Views/Contact/List', [
                 '<h4>',
                     '{%: $.Email %}',
                 '</h4>',
-            '{% } %}',
+            '{% } %}'
         ]),
 
         //Localization

@@ -43,6 +43,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                 if (this.rebuildWidgets) {
                     App.snapper.on('close', lang.hitch(this, function() {
                         if (this._hasChangedKPIPrefs) {
+                            this.destroyWidgets();
                             this.rebuildWidgets();
                             this._hasChangedKPIPrefs = false;
                         }
@@ -133,7 +134,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                             'action': 'hashTagClicked', 
                             'title': this.hashTagQueriesText[hashTag] || hashTag,
                             'dataProps': {
-                                'hashtag': this.hashTagQueriesText[hashTag] || hashTag,
+                                'hashtag': this.hashTagQueriesText[hashTag] || hashTag
                             }
                         });
                     }
