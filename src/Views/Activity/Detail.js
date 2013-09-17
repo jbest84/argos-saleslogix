@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/Activity/Detail', [
     'dojo/_base/declare',
     'dojo/string',
@@ -8,7 +11,9 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
     'Mobile/SalesLogix/Environment',
     'Sage/Platform/Mobile/Convert',
     'Sage/Platform/Mobile/Detail',
-    'Mobile/SalesLogix/Recurrence'
+    'Mobile/SalesLogix/Recurrence',
+    'Mobile/SalesLogix/Utility',
+    'Sage/Platform/Mobile/Utility'
 ], function(
     declare,
     string,
@@ -19,7 +24,9 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
     environment,
     convert,
     Detail,
-    recur
+    recur,
+    utility,
+    platformUtility
 ) {
 
     return declare('Mobile.SalesLogix.Views.Activity.Detail', [Detail], {
@@ -61,14 +68,15 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
         ticketNumberText: 'ticket',
         whenText: 'When',
         whoText: 'Who',
-        startDateFormatText: 'M/d/yyyy h:mm:ss tt',
-        timelessDateFormatText: 'M/d/yyyy',
-        alarmDateFormatText: 'M/d/yyyy h:mm:ss tt',
+        startDateFormatText: 'M/D/YYYY h:mm:ss A',
+        timelessDateFormatText: 'M/D/YYYY',
+        alarmDateFormatText: 'M/D/YYYY h:mm:ss A',
         recurrenceText: 'recurrence',
         confirmEditRecurrenceText: 'Edit all Occurrences?\nCancel to edit single Occurrence.',
         relatedAttachmentText: 'Attachments',
         relatedAttachmentTitleText: 'Activity Attachments',
         relatedItemsText:'Related Items',
+        phoneText: 'phone',
 
         //View Properties
         id: 'activity_detail',
@@ -94,6 +102,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             'LongNotes',
             'OpportunityId',
             'OpportunityName',
+            'PhoneNumber',
             'Priority',
             'Rollover',
             'StartDate',
@@ -282,6 +291,14 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                 this.requestRecurrence(entry['$key'].split(this.recurringActivityIdSeparator).shift());
             }
         },
+        formatRelatedQuery: function(entry, fmt, property) {
+            if (property === 'activityId') {
+                  return string.substitute(fmt, [utility.getRealActivityId(entry.$key)]);
+            } else {
+                property = property || '$key';
+                return string.substitute(fmt, [platformUtility.getValue(entry, property, "")]);
+            }
+        },
         createLayout: function() {
             return this.layout || (this.layout = [{
                     list: true,
@@ -342,6 +359,11 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             name: 'LongNotes',
                             property: 'LongNotes',
                             label: this.longNotesText
+                        }, {
+                            name: 'PhoneNumber',
+                            property: 'PhoneNumber',
+                            label: this.phoneText,
+                            renderer: format.phone.bindDelegate(this, false)
                         }]
                 }, {
                     title: this.whenText,
@@ -459,7 +481,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                         name: 'AttachmentRelated',
                         icon: 'content/images/icons/Attachment_24.png',
                         label: this.relatedAttachmentText,
-                        where: this.formatRelatedQuery.bindDelegate(this, 'ActivityId eq "${0}"'),
+                        where: this.formatRelatedQuery.bindDelegate(this, 'ActivityId eq "${0}"','activityId'),
                         view: 'activity_attachment_related',
                         title: this.relatedAttachmentTitleText
                     }]
