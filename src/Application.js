@@ -88,9 +88,21 @@ define('Mobile/SalesLogix/Application', [
                 window.location.href = 'unsupported.html';
             }
 
-            this.inherited(arguments);
             this._loadNavigationState();
             this._loadPreferences();
+            this.initConfiguration();
+
+            this.inherited(arguments);
+        },
+        initConfiguration: function() {
+            if (!this.preferences || !this.preferences.configuration) {
+                return;
+            }
+
+            this.connections.crm.url = this.preferences.configuration.connections.crm.url;
+            this.enableUpdateNotification = this.preferences.configuration.enableUpdateNotification;
+            this.multiCurrency = this.preferences.configuration.multiCurrency;
+            this.maxUploadFileSize = this.preferences.configuration.maxUploadFileSize;
         },
         initConnects: function() {
             this.inherited(arguments);

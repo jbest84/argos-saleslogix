@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Settings', [
+define('Mobile/SalesLogix/Views/Settings/Main', [
     'dojo/_base/declare',
     'dojo/_base/connect',
     'Sage/Platform/Mobile/List'
@@ -11,7 +11,7 @@ define('Mobile/SalesLogix/Views/Settings', [
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Settings', [List], {
+    return declare('Mobile.SalesLogix.Views.Settings.Main', [List], {
         //Templates
         rowTemplate: new Simplate([
         '<li data-action="{%= $.action %}" {% if ($.view) { %}data-view="{%= $.view %}"{% } %}>',
@@ -35,6 +35,8 @@ define('Mobile/SalesLogix/Views/Settings', [
         localStorageClearedText: 'Local storage cleared successfully.',
         credentialsClearedText: 'Saved credentials cleared successfully.',
         titleText: 'Settings',
+        updateConfigText: 'Update Configuration',
+        updateLocaleText: 'Language',
 
         //View Properties
         id: 'settings',
@@ -45,12 +47,22 @@ define('Mobile/SalesLogix/Views/Settings', [
         allowSelection: false,
         actions: null,
         actionOrder: [
+            'updateLocale',
+            'updateConfig',
             'clearAuthentication',
             'clearLocalStorage',
             'viewErrorLogs'
         ],
         createActions: function() {
             this.actions = {
+                'updateLocale': {
+                    title: this.updateLocaleText,
+                    icon: ''
+                },
+                'updateConfig': {
+                    title: this.updateConfigText,
+                    icon: ''
+                },
                 'clearLocalStorage': {
                     title: this.clearLocalStorageTitleText,
                     icon: 'content/images/icons/database_24.png'
@@ -64,6 +76,18 @@ define('Mobile/SalesLogix/Views/Settings', [
                     icon: 'content/images/icons/Ticket_24x24.png'
                 }
             };
+        },
+        updateLocale: function() {
+            var view = App.getView('settings_locale');
+            if (view) {
+                view.show();
+            }
+        },
+        updateConfig: function () {
+            var view = App.getView('settings_config');
+            if (view) {
+                view.show();
+            }
         },
         viewErrorLogs: function() {
             var view = App.getView('errorlog_list');

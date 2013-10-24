@@ -39,6 +39,17 @@
   cursor: pointer;
   font-size: .9em;
 }
+#login .settings-button {
+  width: auto;
+}
+#login .settings-button span {
+  background-image: url(../images/icons/settings_24.png);
+  background-repeat: no-repeat;
+  padding: 0 0 0 25px;
+  margin: 2px;
+  display: inline-block;
+  line-height: 25px;
+}
 #login h2 {
   display: none;
 }

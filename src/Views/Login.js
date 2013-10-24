@@ -16,6 +16,7 @@ define('Mobile/SalesLogix/Views/Login', [
             '<p class="logo"><img src="content/images/logo.png"></img></p>',
             '<div class="panel-content" data-dojo-attach-point="contentNode"></div>',
             '<button class="button actionButton" data-action="authenticate"><span>{%: $.logOnText %}</span></button>',
+            '<button class="button actionButton settings-button" data-action="navSettings"><span>{%: $.settingsText %}</span></button>',
             '<span class="copyright">{%= $.copyrightText %}</span>',
             '<span class="copyright">{%= App.getVersionInfo() %}</span>',
             '</div>'
@@ -26,6 +27,7 @@ define('Mobile/SalesLogix/Views/Login', [
         busy: false,
         copyrightText: '&copy; 2013 SalesLogix, NA, LLC. All rights reserved.',
         logOnText: 'Log on to Saleslogix',
+        settingsText: 'Settings',
         passText: 'password',
         rememberText: 'remember',
         titleText: 'Log On',
@@ -63,6 +65,12 @@ define('Mobile/SalesLogix/Views/Login', [
                     type: 'boolean'
                 }
             ]);
+        },
+        navSettings: function() {
+            var view = App.getView('settings');
+            if (view) {
+                view.show();
+            }
         },
         authenticate: function() {
             if (this.busy) {

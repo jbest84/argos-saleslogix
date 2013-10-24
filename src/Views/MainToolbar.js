@@ -18,16 +18,23 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
     return declare('Mobile.SalesLogix.Views.MainToolbar', [MainToolbar], {
         titleText: 'Saleslogix',
         showTools: function(tools) {
-            var hasLeftDrawer, isOnFirstView, isOnEdit, history;
+            var hasLeftDrawer, history, currentView, enableBackButton;
 
             history = ReUI && ReUI.context && ReUI.context.history;
+            currentView = App.getPrimaryActiveView();
 
             if (history.length > 0) {
                 if (history[0].page === 'login') {
-                    isOnFirstView = history.length === 2;
+                    // The login page was the first entry in history, the landing page would be the second
+                    enableBackButton = history.length > 2;
                 } else {
-                    isOnFirstView = history.length === 1;
+                    // The login page was skipped (due to saving credentials), the landing page is the first page
+                    enableBackButton = history.length > 1;
                 }
+            }
+
+            if (currentView && currentView.id === 'settings') {
+                enableBackButton = true;
             }
 
             if (tools) {
@@ -41,7 +48,8 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
                     }
 
                     if (tools[i].id === 'cancel') {
-                        isOnEdit = true;
+                        // The cancel button is effectively a back button already
+                        enableBackButton = false;
                     }
                 }
             }
@@ -58,7 +66,7 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
                     });
                 }
 
-                if (!isOnEdit && !isOnFirstView) {
+                if (enableBackButton) {
                     tools = tools.concat([{
                             id: 'back',
                             side: 'left',

@@ -25,7 +25,9 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/LeftDrawer',
     'Mobile/SalesLogix/Views/RightDrawer',
     'Mobile/SalesLogix/Views/Login',
-    'Mobile/SalesLogix/Views/Settings',
+    'Mobile/SalesLogix/Views/Settings/Main',
+    'Mobile/SalesLogix/Views/Settings/UpdateConfig',
+    'Mobile/SalesLogix/Views/Settings/UpdateLocale',
     'Mobile/SalesLogix/Views/Configure',
     'Mobile/SalesLogix/Views/MetricConfigure',
     'Mobile/SalesLogix/Views/MetricFilterLookup',
@@ -134,7 +136,9 @@ define('Mobile/SalesLogix/ApplicationModule', [
     LeftDrawer,
     RightDrawer,
     Login,
-    Settings,
+    SettingsMain,
+    UpdateConfig,
+    UpdateLocale,
     Configure,
     MetricConfigure,
     MetricFilterLookup,
@@ -226,7 +230,15 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new RightDrawer(), query('.right-drawer')[0]);
 
             this.registerView(new Help());
-            this.registerView(new Settings());
+
+            this.registerView(new SettingsMain());
+            this.registerView(new UpdateConfig({
+                expose: false
+            }));
+            this.registerView(new UpdateLocale({
+                expose: false
+            }));
+
             this.registerView(new Configure());
             this.registerView(new MetricConfigure());
             this.registerView(new MetricFilterLookup());

@@ -513,6 +513,18 @@
           "path": "../src/Views/ProductProgram"
         },
         {
+          "text": "Main.js",
+          "path": "../src/Views/Settings"
+        },
+        {
+          "text": "UpdateConfig.js",
+          "path": "../src/Views/Settings"
+        },
+        {
+          "text": "UpdateLocale.js",
+          "path": "../src/Views/Settings"
+        },
+        {
           "text": "List.js",
           "path": "../src/Views/Ticket"
         },
