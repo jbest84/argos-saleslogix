@@ -7,6 +7,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
     'dojo/_base/lang',
     'dojo/dom-construct',
     'dojo/dom-attr',
+    'dojo/query',
     'Mobile/SalesLogix/Views/_RightDrawerBaseMixin'
 ], function(
     declare,
@@ -14,6 +15,7 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
     lang,
     domConstruct,
     domAttr,
+    query,
     _RightDrawerBaseMixin
 ) {
 
@@ -21,8 +23,10 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
         //Localization
         hashTagsSectionText: 'Hash Tags',
         kpiSectionText: 'KPI',
+        sortSectionText: 'Sorting',
 
         _hasChangedKPIPrefs: false,// Dirty flag so we know when to reload the widgets
+        _hasChangedSort: false, // Dirty flag so we know when to refresh view if a re-sort has been requested
 
         onBeforeTransitionTo: function() {
             var drawer = App.getView('right_drawer');
@@ -45,6 +49,14 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                             this.destroyWidgets();
                             this.rebuildWidgets();
                             this._hasChangedKPIPrefs = false;
+                        }
+
+                        if (this._hasChangedSort) {
+                            // Refresh
+                            this.refreshRequired = true;
+                            this.clear();
+                            this.refresh();
+                            this._hasChangedSort = false;
                         }
                     }));
                 }
@@ -98,10 +110,37 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                         view.show({ returnTo: -1 });
                         this.toggleRightDrawer();
                     }
+                }),
+                sortClicked: lang.hitch(this, function(params) {
+                    var current;
+                    current = domAttr.get(params.$source, 'data-sort');
+                    this._clearSortFlagsExceptCurrent(params.field);
+
+                    if (current === 'asc') {
+                        current = 'desc';
+                    } else if (current === 'desc') {
+                        current = 'asc';
+                    } else {
+                        current = 'asc';
+                    }
+
+                    this._hasChangedSort = true;
+                    this.queryOrderBy = params.field + ' ' + current;
+                    console.log(this.queryOrderBy);
+                    domAttr.set(params.$source, 'data-sort', current);
                 })
             };
 
             return actions;
+        },
+        _clearSortFlagsExceptCurrent: function(currentName) {
+            var all = query('[data-action="sortClicked"]');
+            all.forEach(function(el) {
+                var name = domAttr.get(el, 'data-field');
+                if (name !== currentName) {
+                    domAttr.set(el, 'data-sort', '');
+                }
+            });
         },
         getGroupForRightDrawerEntry: function(entry) {
             if (entry.dataProps && entry.dataProps.hashtag) {
@@ -111,13 +150,20 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
                 };
             }
 
+            if (entry.action === 'sortClicked') {
+                return {
+                    tag: 'sorts',
+                    title: this.sortSectionText
+                };
+            }
+
             return {
                 tag: 'kpi',
                 title: this.kpiSectionText
             };
         },
         createRightDrawerLayout: function() {
-            var hashTagsSection, hashTag, kpiSection, layout, prefs, i, len;
+            var hashTagsSection, hashTag, kpiSection, layout, prefs, i, len, sortSection, sortFieldName, sortFieldDir;
             layout = [];
 
             hashTagsSection = {
@@ -141,6 +187,53 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
             }
 
             layout.push(hashTagsSection);
+
+            sortSection = {
+                id: 'sorts',
+                children: []
+            };
+
+            sortFieldName = this._getFieldFromQueryOrderBy();
+            sortFieldName = sortFieldName.replace(/\//gi, '.');
+            sortFieldDir = (this.queryOrderBy.toLowerCase().indexOf('desc') > -1) ? 'desc' : 'asc';
+
+            array.forEach(this.querySelect, function(field, i) {
+                /*if (field && field.indexOf('/') > -1) {
+                    return;
+                }*/
+
+                var f = field.replace(/\//gi, '.'),
+                    child = {
+                        'name': f,
+                        'action': 'sortClicked',
+                        'title': f,
+                        'dataProps': {
+                            'field': f
+                        }
+                };
+
+                if (sortFieldName === f) {
+                    // ASC is default if not specified, so check for DESC
+                    child.dataProps.sort = sortFieldDir;
+                }
+            
+                sortSection.children.push(child);
+            }, this);
+
+            if (!array.some(sortSection.children, function(c) { return c.dataProps.field === sortFieldName; }, this)) {
+                sortSection.children.push({
+                    'name': sortFieldName,
+                    'action': 'sortClicked',
+                    'title': sortFieldName,
+                    'dataProps': {
+                        'field': sortFieldName,
+                        'sort': sortFieldDir
+                    }
+                });
+            }
+
+
+            layout.push(sortSection);
  
             prefs = App.preferences && App.preferences.metrics && App.preferences.metrics[this.resourceKind];
 
@@ -168,6 +261,9 @@ define('Mobile/SalesLogix/Views/_RightDrawerListMixin', [
             }
 
             return layout;
+        },
+        _getFieldFromQueryOrderBy: function() {
+            return this.queryOrderBy.replace(/desc|asc|\s/gi, '');
         }
     });
 });

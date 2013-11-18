@@ -1,8 +1,25 @@
 @import "../../../../argos-sdk/content/css/themes/swiftpage/variables.less";
 
-.list-content > [data-enabled="false"]
+.list-content
 {
-    opacity: 0.5;
+    > [data-enabled="false"] 
+    {
+        opacity: 0.5;
+    }
+
+    > [data-sort="asc"]
+    {
+        background-image: url(../images/icons/Sort_Down_24.png);
+        background-repeat: no-repeat;
+        background-position: 5px 5px;
+    }
+
+    > [data-sort="desc"]
+    {
+        background-image: url(../images/icons/Sort_Up_24.png);
+        background-repeat: no-repeat;
+        background-position: 5px 5px;
+    }
 }
 
 .viewContainer

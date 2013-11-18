@@ -2,6 +2,16 @@
 .list-content > [data-enabled="false"] {
   opacity: 0.5;
 }
+.list-content > [data-sort="asc"] {
+  background-image: url(../images/icons/Sort_Down_24.png);
+  background-repeat: no-repeat;
+  background-position: 5px 5px;
+}
+.list-content > [data-sort="desc"] {
+  background-image: url(../images/icons/Sort_Up_24.png);
+  background-repeat: no-repeat;
+  background-position: 5px 5px;
+}
 .viewContainer > .list {
   background-color: #a1a1a1;
 }
