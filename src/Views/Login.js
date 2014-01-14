@@ -1,12 +1,15 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ * @jsx React.DOM
  */
 define('Mobile/SalesLogix/Views/Login', [
     'dojo/_base/declare',
-    'Sage/Platform/Mobile/Edit'
+    'Sage/Platform/Mobile/Edit',
+    'React/LoginComponent'
 ], function(
     declare,
-    Edit
+    Edit,
+    LoginComponent
 ) {
 
     return declare('Mobile.SalesLogix.Views.Login', [Edit], {
@@ -34,6 +37,11 @@ define('Mobile/SalesLogix/Views/Login', [
         missingUserText: 'The user record was not found.',
         serverProblemText: 'A problem occured on the server.',
         requestAbortedText: 'The request was aborted.',
+
+        show: function() {
+            this.inherited(arguments);
+            //React.renderComponent(LoginComponent(null), this.domNode);
+        },
 
         createToolLayout: function() {
             return this.tools || (this.tools = {

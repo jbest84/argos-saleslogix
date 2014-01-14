@@ -23,6 +23,15 @@ module.exports = function(grunt) {
                 template: 'GruntRunner.tmpl'
             }
         },
+        react: {
+            files: {
+                expand: true,
+                cwd: 'jsx_src',
+                src: ['**/*.js'],
+                dest: 'jsx_out',
+                ext: '.js'
+            }
+        },
         less: {
             development: {
                 options: {
@@ -59,6 +68,13 @@ module.exports = function(grunt) {
                 options: {
                     spawn: false
                 }
+            },
+            react: {
+                files: ['jsx_src/**/*.js'],
+                tasks: ['react'],
+                options: {
+                    spawn: false
+                }
             }
         }
     });
@@ -68,6 +84,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-react');
 
     grunt.registerTask('test', ['connect', 'jasmine']);
     grunt.registerTask('default', ['test']);
