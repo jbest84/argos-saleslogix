@@ -80,7 +80,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             'Type'
         ],
         routes: {
-            '_add_account_contact;new': function(evt) {
+            '_add_account_contact': function(evt) {
                 console.log('hit');
                 this.show({insert: true});
             }
