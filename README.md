@@ -17,6 +17,8 @@ GruntJS is a task runner. We have defined tasks to run in Gruntfile.coffee. Here
 * Unit tests: `grunt test`
 * Missing a web server? Run `grunt connect:server:keepalive` and open your browsser to http://localhost:8000/
 * JSHint: `grunt jshint`
+* csslint: `grunt csslint`
+* cssmin: `grunt cssmin` - cssmin will output to the min/css folder. This folder is included in the build\release.cmd script
 * Plus many more: http://gruntjs.com/plugins
 
 ### Clone repository
@@ -37,6 +39,14 @@ GruntJS is a task runner. We have defined tasks to run in Gruntfile.coffee. Here
 1.	On your web server, create a Virtual Directory (IIS6), an Application (IIS7), or an Alias (Apache), or functional equivalent, called `mobile`, pointing to the base directory where you cloned [Argos SDK][argos-sdk], eg:
 
 		cd \projects\sage\mobile
+3. 	Ensure you have a MIME type setup for .less files. Example using web.config in IIS7:
+	```    
+	<system.webServer>
+        	<staticContent>
+            		<mimeMap fileExtension=".less" mimeType="text/css" />
+        	</staticContent>
+    	</system.webServer>
+	```
 2.	In your browser, navigate to the path `/mobile/products/argos-saleslogix/index-dev.html` on your web server, eg:
 
 		http://localhost/mobile/products/argos-saleslogix/index-dev.html
@@ -51,10 +61,10 @@ GruntJS is a task runner. We have defined tasks to run in Gruntfile.coffee. Here
 		c:\Program Files (x86)\Java\jre6
 
 #### Steps
-1.	Save this [gist](https://gist.github.com/457973) as `build-product.cmd` (or for *nix save this [gist](https://gist.github.com/1209392) instead as `build-product.sh`) to directory where you cloned [Argos SDK][argos-sdk].
+1.	Save this [gist](https://gist.github.com/jbest84/6943860) as `build-product.cmd` (or for *nix save this [gist](https://gist.github.com/jbest84/5391340) instead as `build-product.sh`) to directory where you cloned [Argos SDK][argos-sdk].
 2.	Open a command prompt and excute the following, changing paths as appropriate, eg:
 
-		cd \projects\sage\mobile
+		cd \projects\mobile
 		build-product saleslogix
 3.	The deployed product will be in a `deploy` folder in the directory where you cloned [Argos SDK][argos-sdk].
 
@@ -78,12 +88,12 @@ GruntJS is a task runner. We have defined tasks to run in Gruntfile.coffee. Here
 3.	Copy the entire contents of the product's deploy folder (eg: `mobile\deploy\argos-saleslogix`) to a location on the webserver that will be hosting the mobile content (hereafter, mobile server).
 4.	On the mobile server, create a Virtual Directory (IIS6), an Application (IIS7), or an Alias (Apache), or functional equivalent, called `mobile`, pointing to the directory where you copied the content to.  In the recommended configuration, on the same server where SData is being hosted, this mapping should be at the same level as the `sdata` mapping.
 5.	On the mobile server, ensure that the MIME type corresponding to the `.manifest` extension is `text/cache-manifest`.  This is a requirement for application caching/offline access.
-6.	If SData is being hosted on a different server than the mobile host, CORS (Cross Origin Resource Sharing), must be enabled on the SData server.  You can find documentation for setting it up on IIS at: [Setting-Up-CORS](https://github.com/SageSalesLogix/argos-sdk/wiki/Setting-Up-CORS).
+6.	If SData is being hosted on a different server than the mobile host, CORS (Cross Origin Resource Sharing), must be enabled on the SData server.  You can find documentation for setting it up on IIS at: [Setting-Up-CORS](https://github.com/Saleslogix/argos-sdk/wiki/Setting-Up-CORS).
 
 ### Customization
 *       You can customize the product without modifying the core views.
 *       See the [Argos Sample][argos-sample] customization module for a set of customization scenario examples.
 
-[argos-sdk]: https://github.com/SageSalesLogix/argos-sdk "Argos SDK Source"
-[argos-sample]: https://github.com/SageSalesLogix/argos-sample "Customization module for argos-saleslogix"
-[argos]: https://github.com/SageSalesLogix/argos "Argos SDK API Documentation"
+[argos-sdk]: https://github.com/Saleslogix/argos-sdk "Argos SDK Source"
+[argos-sample]: https://github.com/Saleslogix/argos-sample "Customization module for argos-saleslogix"
+[argos]: https://github.com/Saleslogix/argos "Argos SDK API Documentation"

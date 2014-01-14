@@ -1,17 +1,22 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Application', [
     'dojo/_base/window',
     'dojo/_base/declare',
     'dojo/_base/array',
     'dojo/_base/connect',
-    'dojo/_base/json',
+    'dojo/json',
     'dojo/_base/lang',
     'dojo/has',
     'dojo/string',
+    'dojo/text!Mobile/SalesLogix/DefaultMetrics.txt',
     'Sage/Platform/Mobile/ErrorManager',
     'Mobile/SalesLogix/Environment',
     'Sage/Platform/Mobile/Application',
-    'dojo/_base/sniff',
-    'dojox/mobile/sniff'
+    'dojo/sniff',
+    'dojox/mobile/sniff',
+    'moment'
 ], function(
     win,
     declare,
@@ -21,11 +26,13 @@ define('Mobile/SalesLogix/Application', [
     lang,
     has,
     string,
+    DefaultMetrics,
     ErrorManager,
     environment,
     Application,
     sniff,
-    mobileSniff
+    mobileSniff,
+    moment
 ) {
 
     return declare('Mobile.SalesLogix.Application', [Application], {
@@ -46,7 +53,7 @@ define('Mobile/SalesLogix/Application', [
             'General;InsertSecCodeID',
             'General;Currency',
             'Calendar;DayStartTime',
-            'Calendar;FirstDayofWeek',
+            'Calendar;WeekStart',
             'ActivityMeetingOptions;AlarmEnabled',
             'ActivityMeetingOptions;AlarmLead',
             'ActivityMeetingOptions;Duration',
@@ -72,10 +79,11 @@ define('Mobile/SalesLogix/Application', [
             'revision': 0
         },
         mobileVersion: {
-            'major': 2,
-            'minor': 2,
-            'revision': 0
+            'major': 3,
+            'minor': 0,
+            'revision': 2
         },
+        versionInfoText: 'Mobile v${0}.${1}.${2} / Saleslogix v${3} platform',
         init: function() {
             if (has('ie') && has('ie') < 9) {
                 window.location.href = 'unsupported.html';
@@ -90,6 +98,11 @@ define('Mobile/SalesLogix/Application', [
 
             if (window.applicationCache) {
                 this._connects.push(connect.connect(window.applicationCache, 'updateready', this, this._checkForUpdate));
+            }
+        },
+        onSetOrientation: function(value) {
+            if (App.snapper) {
+                App.snapper.close();
             }
         },
         _viewTransitionTo: function(view) {
@@ -117,7 +130,7 @@ define('Mobile/SalesLogix/Application', [
         _saveNavigationState: function() {
             try {
                 if (window.localStorage) {
-                    window.localStorage.setItem('navigationState', json.toJson(ReUI.context.history));
+                    window.localStorage.setItem('navigationState', json.stringify(ReUI.context.history));
                 }
             } catch(e) {
             }
@@ -189,10 +202,10 @@ define('Mobile/SalesLogix/Application', [
             return results;
         },
         getCurrentOpportunityExchangeRate: function() {
-            var rate, found, results = {code: '', rate: 1};
+            var rate, found, results = {code: '', rate: 1}, code;
 
             found = this.queryNavigationContext(function(o) {
-                return /^(opportunities)$/.test(o.resourceKind) && o.key;
+                return (/^(opportunities)$/).test(o.resourceKind) && o.key;
             });
 
             found = found && found.options;
@@ -248,7 +261,7 @@ define('Mobile/SalesLogix/Application', [
             if (credentials.remember) {
                 try {
                     if (window.localStorage) {
-                        window.localStorage.setItem('credentials', Base64.encode(json.toJson({
+                        window.localStorage.setItem('credentials', Base64.encode(json.stringify({
                             username: credentials.username,
                             password: credentials.password || ''
                         })));
@@ -327,11 +340,13 @@ define('Mobile/SalesLogix/Application', [
             this.reload();
         },
         handleAuthentication: function() {
+            var stored, encoded, credentials;
+
             try {
                 if (window.localStorage) {
-                    var stored = window.localStorage.getItem('credentials'),
-                        encoded = stored && Base64.decode(stored),
-                        credentials = encoded && json.fromJson(encoded);
+                    stored = window.localStorage.getItem('credentials');
+                    encoded = stored && Base64.decode(stored);
+                    credentials = encoded && json.parse(encoded);
                 }
             } catch(e) {
             }
@@ -375,7 +390,7 @@ define('Mobile/SalesLogix/Application', [
         _loadPreferences: function() {
             try {
                 if (window.localStorage) {
-                    this.preferences = json.fromJson(window.localStorage.getItem('preferences'));
+                    this.preferences = json.parse(window.localStorage.getItem('preferences'));
                 }
             } catch(e) {
             }
@@ -395,6 +410,14 @@ define('Mobile/SalesLogix/Application', [
                 };
             }
         },
+        setDefaultMetricPreferences: function() {
+            var defaults;
+            if (!this.preferences.metrics) {
+                defaults = json.parse(DefaultMetrics);
+                this.preferences.metrics = defaults;
+                this.persistPreferences();
+            }
+        },
         requestUserDetails: function() {
             var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
                 .setResourceKind('users')
@@ -404,7 +427,8 @@ define('Mobile/SalesLogix/Application', [
             request.read({
                 success: this.onRequestUserDetailsSuccess,
                 failure: this.onRequestUserDetailsFailure,
-                scope: this
+                scope: this,
+                async: false
             });
         },
         onRequestUserDetailsSuccess: function(entry) {
@@ -413,6 +437,7 @@ define('Mobile/SalesLogix/Application', [
 
             this.requestUserOptions();
             this.requestSystemOptions();
+            this.setDefaultMetricPreferences();
         },
         onRequestUserDetailsFailure: function(response, o) {
         },
@@ -457,6 +482,39 @@ define('Mobile/SalesLogix/Application', [
             if (insertSecCode && (!currentDefaultOwner || (currentDefaultOwner != insertSecCode))) {
                 this.requestOwnerDescription(insertSecCode);
             }
+
+            this.loadCustomizedMoment();
+        },
+        /*
+         * Loads a custom object to pass into the current moment language. The object for the language gets built in buildCustomizedMoment.
+         */
+        loadCustomizedMoment: function() {
+            var custom = this.buildCustomizedMoment(),
+                currentLang;
+
+            currentLang = moment.lang();
+            moment.lang(currentLang, custom);
+        },
+        /*
+         * Builds an object that will get passed into moment.lang()
+         */
+        buildCustomizedMoment: function() {
+            if (!App.context.userOptions) {
+                return;
+            }
+
+            var userWeekStartDay = parseInt(App.context.userOptions['Calendar:WeekStart'], 10),
+                results = {};// 0-6, Sun-Sat
+
+            if (!isNaN(userWeekStartDay)) {
+                results = {
+                    week: {
+                        dow: userWeekStartDay
+                    }
+                };
+            }
+
+            return results;
         },
         onRequestUserOptionsFailure: function(response, o) {
             ErrorManager.addError(response, o, {}, 'failure');
@@ -549,14 +607,13 @@ define('Mobile/SalesLogix/Application', [
         persistPreferences: function() {
             try {
                 if (window.localStorage) {
-                    window.localStorage.setItem('preferences', json.toJson(App.preferences));
+                    window.localStorage.setItem('preferences', json.stringify(App.preferences));
                 }
             } catch(e) {
             }
         },
         getDefaultViews: function() {
             return [
-                'speedsearch_list',
                 'myactivity_list',
                 'calendar_daylist',
                 'history_list',
@@ -609,7 +666,7 @@ define('Mobile/SalesLogix/Application', [
 
             try {
                 var restoredState = this.navigationState,
-                    restoredHistory = restoredState && json.fromJson(restoredState),
+                    restoredHistory = restoredState && json.parse(restoredState),
                     cleanedHistory = this.cleanRestoredHistory(restoredHistory);
 
                 this._clearNavigationState();
@@ -646,6 +703,12 @@ define('Mobile/SalesLogix/Application', [
                 view.show();
             }
         },
+        showRightDrawer: function() {
+            var view = this.getView('right_drawer');
+            if (view) {
+                view.show();
+            }
+        },
         navigateToHomeView: function() {
             this.loadSnapper();
             this.router.go('_myactivity_list');
@@ -666,13 +729,13 @@ define('Mobile/SalesLogix/Application', [
             environment.showMapForAddress.apply(this, arguments);
         },
         getVersionInfo: function() {
-            var info = string.substitute('Mobile v${0}.${1}.${2} / Saleslogix v${3}.${4}.${5}',
-                [this.mobileVersion.major,
+            var info = string.substitute(this.versionInfoText,
+                [
+                    this.mobileVersion.major,
                     this.mobileVersion.minor,
                     this.mobileVersion.revision,
-                    this.serverVersion.major,
-                    this.serverVersion.minor,
-                    this.serverVersion.revision]);
+                    this.serverVersion.major
+                ]);
             return info;
         }
     });

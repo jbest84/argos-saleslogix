@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('spec/Format.spec', ['Mobile/SalesLogix/Format'],function(Format) {
     // Verify the the argos-saleslogix version of these work OK - SDK really contains the phone formatter.
     describe('Mobile/SalesLogix/Format', function() {
@@ -25,9 +28,12 @@ define('spec/Format.spec', ['Mobile/SalesLogix/Format'],function(Format) {
         });
 
         describe('bigNumber', function() {
+            it('should contain an B', function() {
+                expect(Format.bigNumber(9999999999)).toEqual('10.0B');
+            });
+
             it('should contain an M', function() {
                 expect(Format.bigNumber(1000000)).toEqual('1.0M');
-                expect(Format.bigNumber(9999999999)).toEqual('10,000.0M');
             });
 
             it('should contain a K', function() {

@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/MetricConfigure', [
        'dojo/_base/declare',
        'dojo/_base/lang',
@@ -21,19 +24,15 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
         metricFilterText: 'filter',
         metricText: 'metric',
         chartTypeText: 'chart type',
-        metricQueryText: 'sdata query filter',
         advancedText: 'advanced options',
-        formatTypeText: 'format type',
-        formatFuncText: 'format function',
-        valueTypeText: 'value type',
-        valueFuncText: 'value function',
+        formatterText: 'formatter',
+        aggregateText: 'aggregate',
         reportViewText: 'chart view id',
-        metricsSupported: 3,
+        metricsSupported: 10,
 
         // Default advanced options
         defaultFormatType: 'Mobile/SalesLogix/Format',
         defaultFormatFunc: 'bigNumber',
-        defaultValueType: 'Mobile/SalesLogix/Aggregate',
         defaultValueFunc: 'sum',
 
         createToolLayout: function() {
@@ -129,30 +128,17 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                             }
                         },{
                             title: this.metricText + ' ' + (i + 1) + ' ' + this.advancedText,
-                            collapsed: true,
+                            collapsed: false,
                             children: [
                                 {
-                                    name: key + '-query',
-                                    label: this.metricQueryText,
+                                    name: key + '-formatter',
+                                    label: this.formatterText,
                                     type: 'text'
                                 },{
-                                    name: key + '-formatType',
-                                    label: this.formatTypeText,
+                                    name: key + '-aggregate',
+                                    label: this.aggregateText,
                                     type: 'text'
                                 },{
-                                    name: key + '-formatFunc',
-                                    label: this.formatFuncText,
-                                    type: 'text'
-                                },{
-                                    name: key + '-valueType',
-                                    label: this.valueTypeText,
-                                    type: 'text'
-                                },{
-                                    name: key + '-valueFunc',
-                                    label: this.valueFuncText,
-                                    type: 'text'
-                                },{
-                                    name: key + '-reportViewId',
                                     label: this.reportViewText, 
                                     type: 'text'
                                 }
@@ -171,7 +157,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
             array.forEach(metrics, function(item, i) {
                 var o = {}, key = 'metric' + i;
 
-                o[key + '-title'] = item.metricTitleText;
+                o[key + '-title'] = item.title;
 
                 // Hidden fields
                 o[key + '-filterName'] = item.queryArgs._filterName;
@@ -189,13 +175,9 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                     $descriptor: item.metricDisplayName
                 };
 
-                o[key + '-query'] = item.queryArgs._activeFilter;
                 o[key + '-chartType'] = item.chartType;
-                o[key + '-reportViewId'] = item.reportViewId;
-                o[key + '-formatType'] = item.formatType || this.defaultFormatType;
-                o[key + '-formatFunc'] = item.formatFunc || this.defaultFormatFunc;
-                o[key + '-valueType'] = item.valueType || this.defaultValueType;
-                o[key + '-valueFunc'] = item.valueFunc || this.defaultValueFunc;
+                o[key + '-formatter'] = item.formatter || this.defaultFormatFunc;
+                o[key + '-aggregate'] = item.aggregate || this.defaultValueFunc;
                 this.setValues(o, true);
             }, this);
         },
@@ -203,10 +185,11 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
             var values = this.getValues();
             App.preferences.metrics = App.preferences.metrics || {};
 
-            var i, key, items = [], filterItem, metricItem, filterHidden, metricHidden;
+            var i, key, items = [], filterItem, metricItem, filterHidden, metricHidden, titleText;
 
             for (i = 0; i < this.metricsSupported; i++) {
                 key = 'metric' + i;
+                titleText = this.fields[key + '-title'].getValue();//'Open Sales Potential',
 
                 // Display name (object)
                 filterItem = this.fields[key + '-filter'].getValue();
@@ -216,24 +199,22 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                 filterHidden = this.fields[key + '-filterName'].getValue();
                 metricHidden = this.fields[key + '-metricName'].getValue();
 
-                items.push({
-                    resourceKind: this.resourceKind,
-                    metricTitleText: this.fields[key + '-title'].getValue(),//'Open Sales Potential',
-                    queryName: 'executeMetric',
-                    queryArgs: {
-                        '_filterName': filterHidden,
-                        '_metricName': metricHidden, 
-                        '_activeFilter': this.fields[key + '-query'].getValue() //'Closed eq false'
-                    },
-                    formatType: this.fields[key + '-formatType'].getValue() || this.defaultFormatType,
-                    formatFunc: this.fields[key + '-formatFunc'].getValue() || this.defaultFormatFunc,
-                    valueType: this.fields[key + '-valueType'].getValue() || this.defaultValueType,
-                    valueFunc: this.fields[key + '-valueFunc'].getValue() || this.defaultValueFunc,
-                    reportViewId: this.fields[key + '-reportViewId'].getValue(),
-                    chartType: this.fields[key + '-chartType'].getValue(), //'pie', 'bar'
-                    metricDisplayName: metricItem && metricItem.$descriptor, 
-                    filterDisplayName: filterItem && filterItem.$descriptor 
-                });
+                if (titleText) {
+                    items.push({
+                        title: titleText,//'Open Sales Potential',
+                        queryName: 'executeMetric',
+                        queryArgs: {
+                            '_filterName': filterHidden,
+                            '_metricName': metricHidden
+                        },
+                        formatter: this.fields[key + '-formatter'].getValue() || this.defaultFormatFunc,
+                        aggregate: this.fields[key + '-aggregate'].getValue() || this.defaultValueFunc,
+                        chartType: this.fields[key + '-chartType'].getValue(), //'pie', 'bar'
+                        metricDisplayName: metricItem && metricItem.$descriptor, 
+                        filterDisplayName: filterItem && filterItem.$descriptor,
+                        enabled: false
+                    });
+                }
             }
 
             App.preferences.metrics[this.resourceKind] = items;

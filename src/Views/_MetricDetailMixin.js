@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/_MetricDetailMixin', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -11,7 +14,7 @@ define('Mobile/SalesLogix/Views/_MetricDetailMixin', [
     aspect,
     MetricWidget
 ) {
-    return declare('Mobile.SalesLogix.Views._MetricListMixin', null, {
+    return declare('Mobile.SalesLogix.Views._MetricDetailMixin', null, {
         // Metrics
         metricNode: null,
         metricWidgets: null,
@@ -60,7 +63,7 @@ define('Mobile/SalesLogix/Views/_MetricDetailMixin', [
             return options 
                 && options.queryArgs 
                 && options.queryArgs._filterName 
-                && options.queryArgs._metricName
+                && options.queryArgs._metricName;
         }
     });
 });

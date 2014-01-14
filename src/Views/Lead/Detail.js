@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/Lead/Detail', [
     'dojo/_base/declare',
     'dojo/string',
@@ -38,8 +41,9 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
         sicCodeText: 'sic code',
         titleText: 'Lead',
         tollFreeText: 'toll free',
+        mobileText: 'mobile phone',
         webText: 'web',
-        workText: 'phone',
+        workText: 'work phone',
         actionsText: 'Quick Actions',
         callWorkNumberText: 'Call main number',
         scheduleActivityText: 'Schedule activity',
@@ -71,6 +75,7 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
             'LeadNameLastFirst',
             'LeadSource/Description',
             'MiddleName',
+            'Mobile',
             'Notes',
             'Owner/OwnerDescription',
             'Prefix',
@@ -229,6 +234,16 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                             name: 'Title',
                             property: 'Title'
                         }, {
+                            label: this.workText,
+                            name: 'WorkPhone',
+                            property: 'WorkPhone',
+                            renderer: format.phone
+                        }, {
+                            label: this.mobileText,
+                            name: 'Mobile',
+                            property: 'Mobile',
+                            renderer: format.phone
+                        }, {
                             label: this.tollFreeText,
                             name: 'TollFree',
                             property: 'TollFree',
@@ -288,7 +303,7 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                             name: 'AttachmentRelated',
                             icon: 'content/images/icons/Attachment_24.png',
                             label: this.relatedAttachmentText,
-                            where: this.formatRelatedQuery.bindDelegate(this, 'LeadId eq "${0}"'),
+                            where: this.formatRelatedQuery.bindDelegate(this, 'leadId eq "${0}"'),// must be lower case because of feed
                             view: 'lead_attachment_related',
                             title:  this.relatedAttachmentTitleText
                         }]

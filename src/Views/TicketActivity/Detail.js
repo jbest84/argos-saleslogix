@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/query',
     'dojo/dom-class',
     'Mobile/SalesLogix/Format',
+    'Sage/Platform/Mobile/Format',
     'Mobile/SalesLogix/Template',
     'Sage/Platform/Mobile/ErrorManager',
     'Sage/Platform/Mobile/Detail',
@@ -14,6 +18,7 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
     query,
     domClass,
     format,
+    pltFormat,
     template,
     ErrorManager,
     Detail
@@ -99,8 +104,10 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
 
         onRequestCodeDataSuccess: function(row, node, value, entry, data) {
             var codeText = this.processCodeDataFeed(data, entry[row.property]);
-            this.setNodeText(node, codeText);
-            this.entry[row.name] = codeText;
+            if (codeText) {
+                this.setNodeText(node, codeText);
+                this.entry[row.name] = codeText;
+            }
         },
 
         onRequestCodeDataFailure: function(response, o) {
@@ -195,7 +202,8 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                         }, {
                             label: this.elapsedUnitsText,
                             name: 'ElapsedUnits',
-                            property: 'ElapsedUnits'
+                            property: 'ElapsedUnits',
+                            renderer: pltFormat.fixed
                         }, {
                             label: this.rateTypeDescriptionText,
                             name: 'RateTypeDescription.RateTypeCode',

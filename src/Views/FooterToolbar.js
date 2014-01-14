@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/FooterToolbar', [
     'dojo/_base/declare',
     'Sage/Platform/Mobile/MainToolbar'
@@ -8,7 +11,7 @@ define('Mobile/SalesLogix/Views/FooterToolbar', [
 
     return declare('Mobile.SalesLogix.Views.FooterToolbar', [MainToolbar], {
         // Localization
-        copyrightText: '&copy; 2013 Sage Software, Inc. All rights reserved.',
+        copyrightText: '&copy; 2013 SalesLogix, NA, LLC. All rights reserved.',
 
         widgetTemplate: new Simplate([
             '<div class="footer-toolbar {%= $.cls %}">',

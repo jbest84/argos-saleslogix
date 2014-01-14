@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/MetricWidget', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/_base/array',
-    'dojo/_base/Deferred',
+    'dojo/Deferred',
+    'dojo/when',
+    'dojo/promise/all',
     'dojo/dom-construct',
     'dojo/aspect',
     'dijit/_Widget',
@@ -13,6 +18,8 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
     lang,
     array,
     Deferred,
+    when,
+    all,
     domConstruct,
     aspect,
     _Widget,
@@ -25,12 +32,13 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
          * Simple that defines the HTML Markup
         */
         widgetTemplate: new Simplate([
-            '<li class="metric-widget">',
+            '<div class="metric-widget">',
                 '<button data-dojo-attach-event="onclick:navToReportView">',
                     '<div data-dojo-attach-point="metricDetailNode" class="metric-detail">',
+                        '{%! $.loadingTemplate %}',
                     '</div>',
                 '</button>',
-            '</li>'
+            '</div>'
         ]),
 
         /**
@@ -38,11 +46,23 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
          * HTML markup for the metric detail (name/value) 
         */
         itemTemplate: new Simplate([
-            '<div class="metric-title">{%: $$.metricTitleText %}</div>',
+            '<div class="metric-title">{%: $$.title %}</div>',
             '<div class="metric-value">{%: $$.formatter($.value) %}</div>'
         ]),
 
-        metricTitleText: '',
+        /**
+         * @property {Simplate}
+         * HTML markup for the loading text and icon 
+        */
+        loadingTemplate: new Simplate([
+            '<div class="metric-title list-loading">',
+                '<span class="list-loading-indicator"><div>{%= $.loadingText %}</div></span>',
+            '</div>'
+        ]),
+
+        // Localization
+        title: '',
+        loadingText: 'loading...',
 
         // Store Options
         querySelect: null, 
@@ -59,44 +79,35 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
 
         store: null,
 
-        // Chart Properties
         _data: null,
         requestDataDeferred: null,
-
         metricDetailNode: null,
-        reportViewId: null,
+        currentSearchExpression: '',
+
+        // Chart Properties
         chartType: null,
         chartTypeMapping: {
             'pie': 'chart_generic_pie',
             'bar': 'chart_generic_bar'
         },
 
-        /**
-         * Formats the value shown in the metric widget button.
-         * @param {int} val Value to format
-         * @return {String} Return formatted value
-        */
-        formatter: function(val) {
-            return val;
-        },
-
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
-        formatType: 'Mobile/SalesLogix/Format',// AMD Module
-        formatFunc: 'bigNumber',// Function of formatType module 
+        formatModule: 'Mobile/SalesLogix/Format',// AMD Module
+        formatter: 'bigNumber',// Function of formatModule module 
 
         /**
          * Loads a module/function via AMD and wraps it in a deferred 
          * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getFormatterFnDeferred: function() {
-            if (this.formatType && this.formatFunc) {
-                return this._loadModuleFunction(this.formatType, this.formatFunc);
+            if (this.formatModule && this.formatter) {
+                return this._loadModuleFunction(this.formatModule, this.formatter);
             }
 
-            // Return the default fn if valueType and valueFunc were not assigned
+            // Return the default fn if aggregateModule and aggregate were not assigned
             var d = new Deferred();
             d.resolve(this.formatter);
-            return d;
+            return d.promise;
         },
 
         /**
@@ -114,22 +125,22 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         },
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
-        valueType: null,//'Mobile/SalesLogix/Views/MetricWidget',
-        valueFunc: null,//'valueFn',
+        aggregateModule: 'Mobile/SalesLogix/Aggregate',
+        aggregate: null,//'valueFn',
 
         /**
          * Loads a module/function via AMD and wraps it in a deferred 
          * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getValueFnDeferred: function() {
-            if (this.valueType && this.valueFunc) {
-                return this._loadModuleFunction(this.valueType, this.valueFunc);
+            if (this.aggregateModule && this.aggregate) {
+                return this._loadModuleFunction(this.aggregateModule, this.aggregate);
             }
 
-            // Return the default fn if valueType and valueFunc were not assigned
+            // Return the default fn if aggregateModule and aggregate were not assigned
             var d = new Deferred();
             d.resolve(this.valueFn);
-            return d;
+            return d.promise;
         },
         _loadModuleFunction: function(module, fn) {
             // Attempt to load the function fn from the AMD module 
@@ -149,64 +160,65 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
                 def.reject(err);
             }
 
-            return def.promise;
+            // the promise property prevents consumer from calling resolve/reject on the Deferred while still allowing access to the value
+            return def.promise; 
         },
         /**
          * Requests the widget's data, value fn, format fn, and renders it's itemTemplate 
         */
         requestData: function() {
+            var loadFormatter, loadValueFn;
+
             this.inherited(arguments);
+
             if (this._data && this._data.length > 0) {
                 return;
             }
 
             this._data = [];
-
             this.requestDataDeferred = new Deferred();
             this._getData();
 
-            var loadFormatter = this.getFormatterFnDeferred();// deferred for loading in our formatter
-            var loadValueFn = this.getValueFnDeferred();// deferred for loading in value function
+            loadFormatter = this.getFormatterFnDeferred();// deferred for loading in our formatter
+            loadValueFn = this.getValueFnDeferred();// deferred for loading in value function
 
-            // Chained deferreds
-            // Load the value function -> format function -> then load the data
-            loadValueFn.then(lang.hitch(this, function(fn) {
-                // value fn deferred.then
-                if (typeof fn === 'function') {
-                    this.valueFn = fn;
+            all([loadValueFn, loadFormatter, this.requestDataDeferred]).then(lang.hitch(this, function(results) {
+                var valueFn, formatterFn, data, value;
+                if (!results[0] || !results[1] || !results[2]) {
+                    throw new Error('An error occurred loading the KPI widget data.');
                 }
 
-                // Return the deferred for the next part of the chain
-                return loadFormatter;
-            })).then(lang.hitch(this, function(fn) {
-                // Formatter deferred.then
-                if (typeof fn === 'function') {
-                    this.formatter = fn;
+                valueFn = results[0];
+                formatterFn = results[1];
+                data = results[2];
+
+                if (typeof valueFn === 'function') {
+                    this.valueFn = valueFn;
                 }
 
-                // Return the deferred for the next part of the chain
-                return this.requestDataDeferred;
-            })).then(lang.hitch(this, function(data) {
-                // Data deferred.then
-                var value = this.valueFn.call(this, data);
+                if (typeof formatterFn === 'function') {
+                    this.formatter = formatterFn;
+                }
+
+                value = this.valueFn.call(this, data);
                 domConstruct.place(this.itemTemplate.apply({value: value}, this), this.metricDetailNode, 'replace');
             }));
         },
         navToReportView: function() {
             var view, signal;
-            view = App.getView(this.chartTypeMapping[this.chartType] || this.reportViewId);
+            view = App.getView(this.chartTypeMapping[this.chartType]);
 
             if (view) {
+                view.titleText = this.title;
+                view.formatter = this.formatter;
                 signal = aspect.after(view, 'show', lang.hitch(this, function() {
                     setTimeout(lang.hitch(this, function() {
-                        view.titleText = this.metricTitleText;
-                        view.formatter = this.formatter;
                         view.createChart(this._data);
                         signal.remove();
                     }), 1);
                 }));
 
-                view.show({ returnTo: -1 });
+                view.show({ returnTo: this.returnToId, currentSearchExpression: this.currentSearchExpression });
             }
         },
         _getData: function() {
@@ -219,7 +231,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
             store = this.get('store');
             queryResults = store.query(null, queryOptions);
 
-            Deferred.when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
+            when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
         },
         _onQuerySuccess: function(queryResults, items) {
             var total = queryResults.total;
@@ -236,7 +248,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
                 this._getData();
             } else {
                 // Signal complete
-                this.requestDataDeferred.callback(this._data);
+                this.requestDataDeferred.resolve(this._data);
             }
         },
         _processItem: function(item) {
@@ -246,7 +258,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         },
         createStore: function() {
             var store = new SDataStore({
-                service: App.services['crm'],
+                service: App.services.crm,
                 resourceKind: this.resourceKind,
                 resourcePredicate: this.resourcePredicate,
                 contractName: this.contractName,

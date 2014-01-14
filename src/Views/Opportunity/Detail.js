@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/Opportunity/Detail', [
     'dojo/_base/declare',
     'dojo/dom-construct',
@@ -16,7 +19,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
     _MetricDetailMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Opportunity.Detail', [Detail, /*_MetricDetailMixin*/], {
+    return declare('Mobile.SalesLogix.Views.Opportunity.Detail', [Detail /*, _MetricDetailMixin*/], {
         //Localization
         accountText: 'acct',
         acctMgrText: 'acct mgr',
@@ -53,7 +56,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
         multiCurrencyCodeText: 'code',
         multiCurrencyDateText: 'rate date',
         multiCurrencyLockedText: 'rate locked',
-        exchangeRateDateFormatText: 'M/d/yyyy h:mm tt',
+        exchangeRateDateFormatText: 'M/D/YYYY h:mm A',
 
         //View Properties
         id: 'opportunity_detail',
@@ -125,36 +128,32 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
             /*return [{
                     chartType: 'bar',
                     filterDisplayName: 'Account Manager',
-                    formatFunc: 'bigNumber',
-                    formatType: 'Mobile/SalesLogix/Format',
+                    formatter: 'bigNumber',
                     metricDisplayName: 'Sum Sales Potential',
-                    metricTitleText: 'Sales potential for ' + entry.Account.AccountName,
+                    title: 'Sales potential for ' + entry.Account.AccountName,
                     queryArgs: {
                         _activeFilter: 'Account.Id eq "' + entry.Account.$key + '"',
                         _filterName: 'AccountManager',
                         _metricName: 'SumSalesPotential'
                     },
                     queryName: 'executeMetric',
-                    reportViewId: '',
                     resourceKind: 'opportunities',
-                    valueFunc: 'sum',
+                    aggregate: 'sum',
                     valueType: 'Mobile/SalesLogix/Aggregate'
                 }, {
                     chartType: 'bar',
                     filterDisplayName: 'Stage',
-                    formatFunc: 'bigNumber',
-                    formatType: 'Mobile/SalesLogix/Format',
+                    formatter: 'bigNumber',
                     metricDisplayName: 'Sum Sales Potential',
-                    metricTitleText: 'Total opportunties for ' + entry.Account.AccountName,
+                    title: 'Total opportunties for ' + entry.Account.AccountName,
                     queryArgs: {
                         _activeFilter: 'Account.Id eq "' + entry.Account.$key + '"',
                         _filterName: 'Stage',
                         _metricName: 'CountOpportunities'
                     },
                     queryName: 'executeMetric',
-                    reportViewId: '',
                     resourceKind: 'opportunities',
-                    valueFunc: 'sum',
+                    aggregate: 'sum',
                     valueType: 'Mobile/SalesLogix/Aggregate'
                 }
             ];*/
@@ -249,7 +248,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                         label: this.multiCurrencyDateText,
                         name: 'ExchangeRateDate',
                         property: 'ExchangeRateDate',
-                        renderer: format.date.bindDelegate(this, this.exchangeRateDateFormatText, false),
+                        renderer: format.date.bindDelegate(this, this.exchangeRateDateFormatText, false)
                     }, {
                         label: this.multiCurrencyLockedText,
                         name: 'ExchangeRateLocked',
@@ -308,7 +307,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                         name: 'AttachmentRelated',
                         icon: 'content/images/icons/Attachment_24.png',
                         label: this.relatedAttachmentText,
-                        where: this.formatRelatedQuery.bindDelegate(this, 'OpportunityId eq "${0}"'),
+                        where: this.formatRelatedQuery.bindDelegate(this, 'opportunityId eq "${0}"'),// must be lower case because of feed
                         view: 'opportunity_attachment_related',
                         title: this.relatedAttachmentTitleText
                     }]

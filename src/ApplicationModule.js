@@ -1,4 +1,6 @@
-
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/ApplicationModule', [
     'dojo/_base/declare',
     'dojo/_base/lang',
@@ -7,6 +9,9 @@ define('Mobile/SalesLogix/ApplicationModule', [
     
     'Sage/Platform/Mobile/ApplicationModule',
     'Sage/Platform/Mobile/Calendar',
+    'Sage/Platform/Mobile/RelatedViewManager',
+    'Sage/Platform/Mobile/RelatedViewWidget',
+
     'Sage/Platform/Mobile/List',
     'Sage/Platform/Mobile/Views/Signature',
     'Sage/Platform/Mobile/SearchWidget',
@@ -18,6 +23,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/MainToolbar',
     'Mobile/SalesLogix/Views/UpdateToolbar',
     'Mobile/SalesLogix/Views/LeftDrawer',
+    'Mobile/SalesLogix/Views/RightDrawer',
     'Mobile/SalesLogix/Views/Login',
     'Mobile/SalesLogix/Views/Settings',
     'Mobile/SalesLogix/Views/Configure',
@@ -29,7 +35,6 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/SelectList',
     'Mobile/SalesLogix/Views/SpeedSearchList',
     'Mobile/SalesLogix/Views/TextEdit',
-
     'Mobile/SalesLogix/Views/Account/List',
     'Mobile/SalesLogix/Views/Account/Detail',
     'Mobile/SalesLogix/Views/Account/Edit',
@@ -88,6 +93,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/History/List',
     'Mobile/SalesLogix/Views/History/Detail',
     'Mobile/SalesLogix/Views/History/Edit',
+    'Mobile/SalesLogix/Views/History/RelatedView',
     'Mobile/SalesLogix/Views/User/List',
     'Mobile/SalesLogix/Views/Attachment/ViewAttachment',
     'Mobile/SalesLogix/Views/Attachment/List',
@@ -114,6 +120,8 @@ define('Mobile/SalesLogix/ApplicationModule', [
     win,
     ApplicationModule,
     Calendar,
+    RelatedViewManager,
+    RelatedViewWidget,
     List,
     Signature,
     SearchWidget,
@@ -124,6 +132,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     MainToolbar,
     UpdateToolbar,
     LeftDrawer,
+    RightDrawer,
     Login,
     Settings,
     Configure,
@@ -191,6 +200,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     HistoryList,
     HistoryDetail,
     HistoryEdit,
+    HistoryRelatedView,
     UserList,
     ViewAttachment,
     AttachmentList,
@@ -213,6 +223,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new Login());
 
             this.registerView(new LeftDrawer(), query('.left-drawer')[0]);
+            this.registerView(new RightDrawer(), query('.right-drawer')[0]);
 
             this.registerView(new Help());
             this.registerView(new Settings());
@@ -231,7 +242,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new TextEdit());
             this.registerView(new AddressList({
                 id: 'address_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AddressEdit());
 
@@ -240,7 +254,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new AccountEdit());
             this.registerView(new AccountList({
                 id: 'account_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new CalendarMonthView());
@@ -253,7 +270,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
 
             this.registerView(new CompetitorList({
                 id: 'competitor_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new ContactList());
@@ -261,12 +281,18 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new ContactEdit());
             this.registerView(new ContactList({
                 id: 'contact_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new ContractList({
                 id: 'contract_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new ErrorLogList());
@@ -277,7 +303,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new EventDetail());
             this.registerView(new EventList({
                 id: 'event_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new OpportunityEdit());
@@ -285,7 +314,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new OpportunityDetail());
             this.registerView(new OpportunityList({
                 id: 'opportunity_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new OpportunityContactEdit());
@@ -293,12 +325,18 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new OpportunityContactDetail());
             this.registerView(new OpportunityContactList({
                 id: 'opportunitycontact_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new OpportunityProductList({
                 id: 'opportunityproduct_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new OpportunityProductDetail({
@@ -316,7 +354,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new LeadDetail());
             this.registerView(new LeadList({
                 id: 'lead_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new TicketList());
@@ -324,7 +365,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new TicketEdit());
             this.registerView(new TicketList({
                 id: 'ticket_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new TicketActivityList());
@@ -333,14 +377,20 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new TicketActivityRateLookup());
             this.registerView(new TicketActivityList({
                 id: 'ticketactivity_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new TicketActivityItemList());
             this.registerView(new TicketActivityItemDetail());
             this.registerView(new TicketActivityItemList({
                 id: 'ticketactivityitem_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new ActivityDetail());
@@ -349,7 +399,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new ActivityTypesList());
             this.registerView(new ActivityList({
                 id: 'activity_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new MyActivityList());
@@ -360,7 +413,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new HistoryEdit());
             this.registerView(new HistoryList({
                 id: 'history_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new UserList({
@@ -373,12 +429,18 @@ define('Mobile/SalesLogix/ApplicationModule', [
 
             this.registerView(new ProductList({
                 id: 'product_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new ProductProgramList({
                 id: 'productprogram_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
 
             this.registerView(new LeadSourceList({
@@ -394,31 +456,52 @@ define('Mobile/SalesLogix/ApplicationModule', [
             this.registerView(new MyAttachmentList());
             this.registerView(new AttachmentList({
                 id: 'account_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'contact_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'lead_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'ticket_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'opportunity_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'activity_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
             this.registerView(new AttachmentList({
                 id: 'history_attachment_related',
-                expose: false
+                expose: false,
+                defaultSearchTerm: function() {
+                    return '';
+                }
             }));
         },
         loadToolbars: function() {

@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('spec/Application.spec', [
        'Mobile/SalesLogix/Application',
        'configuration/development' // TODO: Should we add a test configuration?
@@ -14,7 +17,6 @@ define('spec/Application.spec', [
                 spyOn(instance, 'initServices').andCallThrough();
                 spyOn(instance, 'initModules');
                 spyOn(instance, 'initToolbars');
-                spyOn(instance, 'initViews');
                 spyOn(instance, 'initReUI');
                 spyOn(instance, 'run').andCallThrough();
 
@@ -27,7 +29,6 @@ define('spec/Application.spec', [
                 expect(instance.initServices).toHaveBeenCalled();
                 expect(instance.initModules).toHaveBeenCalled();
                 expect(instance.initToolbars).toHaveBeenCalled();
-                expect(instance.initViews).toHaveBeenCalled();
                 expect(instance.initReUI).toHaveBeenCalled();
 
                 instance.run();

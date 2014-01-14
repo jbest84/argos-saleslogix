@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/History/Edit', [
     'dojo/_base/declare',
     'dojo/_base/array',
     'dojo/string',
+    'Mobile/SalesLogix/Environment',
     'Mobile/SalesLogix/Validator',
     'Sage/Platform/Mobile/Utility',
     'Sage/Platform/Mobile/Edit'
@@ -9,6 +13,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
     declare,
     array,
     string,
+    environment,
     validator,
     utility,
     Edit
@@ -26,7 +31,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
         regardingText: 'regarding',
         isLeadText: 'for lead',
         startingText: 'time',
-        startingFormatText: 'M/d/yyyy h:mm tt',
+        startingFormatText : 'M/D/YYYY h:mm A',
         titleText: 'Note',
         companyText: 'company',
         leadText: 'lead',
@@ -59,7 +64,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
             'LeadName',
             'StartDate'
         ],
-
+        existsRE: /^[\w]{12}$/,
         init: function() {
             this.inherited(arguments);
 
@@ -72,14 +77,20 @@ define('Mobile/SalesLogix/Views/History/Edit', [
             this.connect(this.fields['Ticket'], 'onChange', this.onAccountDependentChange);
         },
         isHistoryForLead: function(entry) {
-            return entry && /^[\w]{12}$/.test(entry['LeadId']);
+            return entry &&  this.existsRE.test(entry['LeadId']);
         },
         isInLeadContext: function() {
-            var insert = this.options && this.options.insert,
-                entry = this.options && this.options.entry,
-                lead = (insert && App.isNavigationFromResourceKind('leads', function(o, c) {
-                    return c.resourceKind === 'leads';
-                })) || this.isHistoryForLead(entry);
+            var insert, entry, isLeadContext, lead;
+            insert = this.options && this.options.insert;
+            entry = this.options && this.options.entry;
+            isLeadContext = App.isNavigationFromResourceKind('leads', function(o, c) {
+                    var result = false;
+                    if (c.resourceKind === 'leads'){
+                        result = true;
+                    }
+                    return result;
+                });
+            lead = (insert && isLeadContext) || this.isHistoryForLead(entry);
             return !!lead;
         },
         beforeTransitionTo: function() {
@@ -89,7 +100,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
             // the value for the 'IsLead' field will be set later, based on the value derived here.
 
             // todo: there is an issue when refreshing the edit view as options.isLead is persisted in the navigation state.
-            if (this.options.isForLead != undefined) {
+            if (this.options.isForLead !== undefined) {
                 return;
             }
 
@@ -148,7 +159,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
             }
         },
         showFieldsForLead: function() {
-            array.forEach(this.fieldsForStandard.concat(this.fieldsForLeads), function(item) {
+            array.forEach(this.fieldsForStandard.concat(this.fieldsForStandard), function(item) {
                 if (this.fields[item]) {
                     this.fields[item].hide();
                 }
@@ -173,10 +184,14 @@ define('Mobile/SalesLogix/Views/History/Edit', [
                 }
             }, this);
         },
+        onInsertSuccess: function() {
+            environment.refreshStaleDetailViews();
+            this.inherited(arguments);
+        },
         applyContext: function() {
             var found = App.queryNavigationContext(function(o) {
                 var context = (o.options && o.options.source) || o;
-                return /^(accounts|contacts|opportunities|leads|tickets)$/.test(context.resourceKind) && context.key;
+                return (/^(accounts|contacts|opportunities|leads|tickets)$/).test(context.resourceKind) && context.key;
             });
 
             found = (found && found.options && found.options.source) || found;
@@ -326,21 +341,32 @@ define('Mobile/SalesLogix/Views/History/Edit', [
             }
         },
         setValues: function(values) {
-            this.inherited(arguments);
+            var isLeadField, field, value, leadCompany, longNotes, insert;
 
+            this.inherited(arguments);
+            isLeadField = this.fields['IsLead'];
             if (this.isInLeadContext()) {
-                var isLeadField = this.fields['IsLead'];
                 isLeadField.setValue(true);
                 this.onIsLeadChange(true, isLeadField);
-
-                var leadCompany = utility.getValue(values, 'Company');
+                field = this.fields['Lead'];
+                value = utility.getValue(values, field.applyTo, {});
+                field.setValue(value, true);
+                leadCompany = utility.getValue(values, 'AccountName');
                 if (leadCompany) {
                     this.fields['AccountName'].setValue(leadCompany);
                 }
+            } else {
+                isLeadField.setValue(false);
             }
 
+            longNotes = utility.getValue(values, 'LongNotes');
+            if (longNotes) {
+                this.fields['Text'].setValue(longNotes);
+            }
+
+            insert = this.options && this.options.insert;
             // entry may have been passed as full entry, reapply context logic to extract properties
-            if (this.context && this.context.resourceKind) {
+            if (insert && this.context && this.context.resourceKind) {
                 var lookup = {
                     'accounts': this.applyAccountContext,
                     'contacts': this.applyContactContext,
@@ -438,8 +464,7 @@ define('Mobile/SalesLogix/Views/History/Edit', [
                             applyTo: '.',
                             valueKeyProperty: 'AccountId',
                             valueTextProperty: 'AccountName',
-                            view: 'account_related',
-                            validator: validator.exists
+                            view: 'account_related'
                         }, {
                             dependsOn: 'Account',
                             label: this.contactText,

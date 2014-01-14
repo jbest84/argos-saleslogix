@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Aggregate', [
     'dojo/_base/lang',
     'dojo/_base/array'
@@ -5,10 +8,11 @@ define('Mobile/SalesLogix/Aggregate', [
     lang,
     array
 ) {
-    return lang.setObject('Mobile.SalesLogix.Aggregate', lang.mixin({}, {
+    var results = lang.setObject('Mobile.SalesLogix.Aggregate', {
         avg: function(data) {
-            var aggr = Mobile.SalesLogix.Aggregate;
-            return aggr.sum(data) / aggr.count(data);
+            var aggr = Mobile.SalesLogix.Aggregate, results;
+            results = aggr.sum(data) / aggr.count(data);
+            return isNaN(results) ? 0 : results;
         },
         count: function(data) {
             return data && data.length;
@@ -33,7 +37,7 @@ define('Mobile/SalesLogix/Aggregate', [
                 flatten.push(item.value);
             });
 
-            return Math.min.apply(null, flatten);
+            return flatten.length > 0 ? Math.min.apply(null, flatten) : 0;
         },
         sum: function(data) {
             var total = 0;
@@ -43,5 +47,8 @@ define('Mobile/SalesLogix/Aggregate', [
 
             return total;
         }
-    }));
+    });
+
+    return results;
 });
+

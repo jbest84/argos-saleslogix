@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/_MetricListMixin', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -17,104 +20,98 @@ define('Mobile/SalesLogix/Views/_MetricListMixin', [
         metricWidgets: null,
         configurationView: 'metric_configure',
         entityName: '',
-        _insertedToolItem: false,
+
+        metricWidgetsBuilt: false,
 
         postMixInProperties: function() {
+            this.inherited(arguments);
             this.widgetTemplate =  new Simplate([
-            '<div id="{%= $.id %}" title="{%= $.titleText %}" class="overthrow list {%= $.cls %}" {% if ($.resourceKind) { %}data-resource-kind="{%= $.resourceKind %}"{% } %}>',
-            '{%! $.listHeaderTemplate %}',
-            '<a href="#" class="android-6059-fix">fix for android issue #6059</a>',                
-            '{%! $.emptySelectionTemplate %}',
-            '<ul class="list-content" data-dojo-attach-point="contentNode"></ul>',
-            '{%! $.moreTemplate %}',
-            '{%! $.listActionTemplate %}',
-            '</div>'
+                '<div id="{%= $.id %}" title="{%= $.titleText %}" class="overthrow list {%= $.cls %}" {% if ($.resourceKind) { %}data-resource-kind="{%= $.resourceKind %}"{% } %}>',
+                '<div data-dojo-attach-point="searchNode"></div>',
+                '<div data-dojo-attach-point="metricNode" class="metric-list"></div>',
+                '{%! $.emptySelectionTemplate %}',
+                '<ul class="list-content" data-dojo-attach-point="contentNode"></ul>',
+                '{%! $.moreTemplate %}',
+                '{%! $.listActionTemplate %}',
+                '</div>'
             ]);
         },
-        /**
-         * @property {Simplate}
-         * The template used to render the list views header menu.
-         *
-         */
-        listHeaderTemplate: new Simplate([
-            '<div class="list-header list-header-hidden" data-dojo-attach-point="listHeader">',
-                '<div data-dojo-attach-point="searchNode"></div>',
-                '<div class="list-hash-tags" data-dojo-attach-point="hashTagsNode"></div>',
-                '<ul data-dojo-attach-point="metricNode" class="metric-list"></ul>',
-            '</div>'
-        ]),
         createMetricWidgetsLayout: function() {
-            return App.preferences && App.preferences.metrics && App.preferences.metrics[this.resourceKind];
-        },
-        createToolLayout: function() {
-            this.inherited(arguments);
-            var tbarItem = {
-                id: 'configure',
-                action: 'navigateToConfigurationView'
-            };
+            var filtered = [],
+                prefs;
+            prefs = App.preferences && App.preferences.metrics && App.preferences.metrics[this.resourceKind];
 
-            if (this.tools && this.tools.tbar) {
-                if (!this._insertedToolItem) {
-                    this.tools.tbar.unshift(tbarItem);
-                    this._insertedToolItem = true;
-                }
-            } else {
-                this.tools = {
-                    tbar: [
-                        tbarItem
-                    ]
-                };
+            if (prefs) {
+                filtered = array.filter(prefs, function(item) {
+                    return item.enabled;
+                });
             }
 
-            return this.tools;
-        },
-        navigateToConfigurationView: function() {
-            var view = App.getView(this.configurationView);
-            if (view) {
-                view.resourceKind = this.resourceKind;
-                view.entityName = this.entityName;
-                view.show({ returnTo: -1 });
-            }
+            return filtered;
         },
         postCreate: function() {
             this.inherited(arguments);
-
         },
         destroyWidgets: function() {
             array.forEach(this.metricWidgets, function(widget) {
                 widget.destroy();
             }, this);
+
+            this.metricWidgetsBuilt = false;
         },
-        // TODO: Be smart about a refresh required (when prefs change)
-        onShow: function() {
+        requestData: function() {
             this.inherited(arguments);
-            this._rebuildWidgets();
+            this.rebuildWidgets();
         },
-        onActivate: function() {
+        clear: function() {
             this.inherited(arguments);
-            this._rebuildWidgets();
+            this.destroyWidgets();
         },
-        _rebuildWidgets: function() {
+        rebuildWidgets: function() {
+            if (this.metricWidgetsBuilt) {
+                return;
+            }
+
             this.destroyWidgets();
             this.metricWidgets = [];
+
+            if (this.options && this.options.simpleMode && (this.options.simpleMode === true)) {
+                return;
+            }
 
             var widgetOptions;
             // Create metrics widgets and place them in the metricNode
             widgetOptions = this.createMetricWidgetsLayout() || [];
             array.forEach(widgetOptions, function(options) {
                 if (this._hasValidOptions(options)) {
+                    options.returnToId = this.id;
+                    options.parentResourceKind = this.resourceKind;
+                    options.resourceKind = this.resourceKind;
+                    options.currentSearchExpression = this.currentSearchExpression;
+                    options.queryArgs._activeFilter = this._getCurrentQuery();
+
                     var widget = new MetricWidget(options);
                     widget.placeAt(this.metricNode, 'last');
                     widget.requestData();
                     this.metricWidgets.push(widget);
                 }
             }, this);
+
+            this.metricWidgetsBuilt = true;
+        },
+        _getCurrentQuery: function() {
+            // Get the current query from the search box, and any context query located in options.where
+            var query = this.query,
+                where = this.options && this.options.where;
+            return array.filter([query, where], function(item) {
+                return !!item;
+            }).join(' and ');
         },
         _hasValidOptions: function(options) {
             return options 
                 && options.queryArgs 
                 && options.queryArgs._filterName 
-                && options.queryArgs._metricName
+                && options.queryArgs._metricName;
         }
     });
 });

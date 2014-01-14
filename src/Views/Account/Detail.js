@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+ */
 define('Mobile/SalesLogix/Views/Account/Detail', [
     'dojo/_base/declare',
     'dojo/string',
@@ -14,7 +17,7 @@ define('Mobile/SalesLogix/Views/Account/Detail', [
     _MetricDetailMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Account.Detail', [Detail, /*_MetricDetailMixin*/], {
+    return declare('Mobile.SalesLogix.Views.Account.Detail', [Detail /*, _MetricDetailMixin*/], {
         //Localization
         accountText: 'account',
         acctMgrText: 'acct mgr',
@@ -143,48 +146,42 @@ define('Mobile/SalesLogix/Views/Account/Detail', [
         createMetricWidgetsLayout: function (entry) {
             return [{
                     chartType: 'bar',
-                    formatFunc: 'bigNumber',
-                    formatType: 'Mobile/SalesLogix/Format',
-                    metricTitleText: 'Sales Potential',
+                    formatter: 'bigNumber',
+                    title: 'Sales Potential',
                     queryArgs: {
                         _activeFilter: 'Account.Id eq "' + entry.$key + '" and Status eq "Open"',
                         _filterName: 'Stage',
                         _metricName: 'SumSalesPotential'
                     },
                     queryName: 'executeMetric',
-                    reportViewId: '',
                     resourceKind: 'opportunities',
-                    valueFunc: 'sum',
+                    aggregate: 'sum',
                     valueType: 'Mobile/SalesLogix/Aggregate'
                 }, {
                     chartType: 'bar',
-                    formatFunc: 'bigNumber',
-                    formatType: 'Mobile/SalesLogix/Format',
-                    metricTitleText: 'Total Opportunties',
+                    formatter: 'bigNumber',
+                    title: 'Total Opportunties',
                     queryArgs: {
                         _activeFilter: 'Account.Id eq "' + entry.$key + '"',
                         _filterName: 'Stage',
                         _metricName: 'CountOpportunities'
                     },
                     queryName: 'executeMetric',
-                    reportViewId: '',
                     resourceKind: 'opportunities',
-                    valueFunc: 'sum',
+                    aggregate: 'sum',
                     valueType: 'Mobile/SalesLogix/Aggregate'
                 }, {
                     chartType: 'bar',
-                    formatFunc: 'bigNumber',
-                    formatType: 'Mobile/SalesLogix/Format',
-                    metricTitleText: 'Total Tickets',
+                    formatter: 'bigNumber',
+                    title: 'Total Tickets',
                     queryArgs: {
                         _activeFilter: 'Account.Id eq "' + entry.$key + '"',
                         _filterName: 'AssignedTo',
                         _metricName: 'TicketCount'
                     },
                     queryName: 'executeMetric',
-                    reportViewId: '',
                     resourceKind: 'tickets',
-                    valueFunc: 'sum',
+                    aggregate: 'sum',
                     valueType: 'Mobile/SalesLogix/Aggregate'
                 }
             ];
@@ -326,7 +323,7 @@ define('Mobile/SalesLogix/Views/Account/Detail', [
                             name: 'AttachmentRelated',
                             icon: 'content/images/icons/Attachment_24.png',
                             label: this.relatedAttachmentText,
-                            where: this.formatRelatedQuery.bindDelegate(this, 'AccountId eq "${0}"'),
+                            where: this.formatRelatedQuery.bindDelegate(this, 'accountId eq "${0}"'), // must be lower case because of feed
                             view: 'account_attachment_related',
                             title:  this.relatedAttachmentTitleText
                         }]
