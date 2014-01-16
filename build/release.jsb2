@@ -612,6 +612,10 @@
           "path": "../../../argos-sdk/libraries/dojo/dojo"
         },
         {
+          "text": "cache.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo"
+        },
+        {
           "text": "number.js",
           "path": "../../../argos-sdk/libraries/dojo/dojo"
         },
@@ -653,6 +657,14 @@
         },
         {
           "text": "_WidgetBase.js",
+          "path": "../../../argos-sdk/libraries/dojo/dijit"
+        },
+        {
+          "text": "_AttachMixin.js",
+          "path": "../../../argos-sdk/libraries/dojo/dijit"
+        },
+        {
+          "text": "_TemplatedMixin.js",
           "path": "../../../argos-sdk/libraries/dojo/dijit"
         },
         {
