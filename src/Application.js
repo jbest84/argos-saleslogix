@@ -643,6 +643,10 @@ define('Mobile/SalesLogix/Application', [
             return exposed;
         },
         cleanRestoredHistory: function(restoredHistory) {
+            if (!restoredHistory) {
+                return;
+            }
+
             var result = [],
                 hasRoot = false;
 
