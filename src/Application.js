@@ -696,10 +696,11 @@ define('Mobile/SalesLogix/Application', [
             } catch(e) {
                 this._clearNavigationState();
                 this.navigateToHomeView();
+                throw e;
             }
         },
         navigateToLoginView: function() {
-            this.router.go('_login');
+            this.router.go('login');
         },
         showLeftDrawer: function() {
             var view = this.getView('left_drawer');
@@ -715,10 +716,10 @@ define('Mobile/SalesLogix/Application', [
         },
         navigateToHomeView: function() {
             this.loadSnapper();
-            this.router.go('_myactivity_list');
+            this.router.go('myactivity_list');
         },
         navigateToActivityInsertView: function() {
-            this.router.go('_activity_types_list');
+            this.router.go('activity_types_list');
         },
         initiateCall: function() {
             // shortcut for environment call
