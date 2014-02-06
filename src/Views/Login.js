@@ -5,10 +5,12 @@
 define('Mobile/SalesLogix/Views/Login', [
     'dojo/_base/declare',
     'Sage/Platform/Mobile/Edit',
-    'React/LoginComponent'
+    'React',
+    'Components/LoginComponent'
 ], function(
     declare,
     Edit,
+    React,
     LoginComponent
 ) {
 
@@ -21,6 +23,7 @@ define('Mobile/SalesLogix/Views/Login', [
             '<button class="button actionButton" data-action="authenticate"><span>{%: $.logOnText %}</span></button>',
             '<span class="copyright">{%= $.copyrightText %}</span>',
             '<span class="copyright">{%= App.getVersionInfo() %}</span>',
+            '<div data-dojo-attach-point="componentNode" class="panel-content"></div>',
             '</div>'
         ]),
 
@@ -40,7 +43,28 @@ define('Mobile/SalesLogix/Views/Login', [
 
         show: function() {
             this.inherited(arguments);
-            //React.renderComponent(LoginComponent(null), this.domNode);
+            var layout = this.createLayout();
+            var components = [];
+            layout.forEach(function(item) {
+                if (item.component) {
+                    components.push(item.component);
+                }
+            });
+
+            var container = React.createClass({
+                displayName: 'container',
+                render: function() {
+                    return React.DOM.fieldset(null,
+                                              components.map(function(c, i) { 
+                                                  return (
+                                                      React.DOM.div({'className': 'row row-edit', 'key': i},
+                                                                    c())
+                                                  );
+                                              }));
+                }
+            });
+
+            //React.renderComponent(container(), this.componentNode);
         },
 
         createToolLayout: function() {
@@ -53,17 +77,43 @@ define('Mobile/SalesLogix/Views/Login', [
             return {id: this.id};
         },
         createLayout: function() {
+            var userText = this.userText;
+            var passText = this.passText;
             return this.layout || (this.layout = [
                 {
                     name: 'username',
                     label: this.userText,
-                    type: 'text'
+                    type: 'text',
+                    component: React.createClass({
+                        displayName: 'text',
+                        render: function() {
+                            return (
+                                React.DOM.div(null, 
+                                              React.DOM.label(null, userText),
+                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input'}),
+                                              React.DOM.button({'className': 'clear-button'})
+                                             )
+                            );
+                        }
+                    })
                 },
                 {
                     name: 'password',
                     label: this.passText,
                     type: 'text',
-                    inputType: 'password'
+                    inputType: 'password',
+                    component: React.createClass({
+                        displayName: 'password',
+                        render: function() {
+                            return (
+                                React.DOM.div(null, 
+                                              React.DOM.label(null, passText),
+                                              React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input'}),
+                                              React.DOM.button({'className': 'clear-button'})
+                                             )
+                            );
+                        }
+                    })
                 },
                 {
                     name: 'remember',
