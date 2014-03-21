@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.AddAccountContact
+ *
+ *
+ * @extends Sage.Platform.Mobile.Edit
+ *
+ */
 define('Mobile/SalesLogix/Views/AddAccountContact', [
     'dojo/_base/declare',
     'dojo/_base/lang',
@@ -79,6 +87,11 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             'SubType',
             'Type'
         ],
+        routes: {
+            '_add_account_contact': function(evt) {
+                this.show({insert: true});
+            }
+        },
         init: function() {
             this.inherited(arguments);
 

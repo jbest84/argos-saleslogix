@@ -1,6 +1,13 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+/**
+ * @class Mobile.SalesLogix.Views.Settings.Main
+ *
+ *
+ * @extends Sage.Platform.Mobile.List
+ *
+ */
 define('Mobile/SalesLogix/Views/Settings/Main', [
     'dojo/_base/declare',
     'dojo/_base/connect',
@@ -130,7 +137,7 @@ define('Mobile/SalesLogix/Views/Settings/Main', [
                 }
             }
 
-            this.processFeed({'$resources': list});
+            this.processData(list);
         },
         init: function() {
             this.inherited(arguments);

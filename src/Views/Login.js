@@ -1,11 +1,21 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Login
+ *
+ *
+ * @extends Sage.Platform.Mobile.Edit
+ *
+ */
 define('Mobile/SalesLogix/Views/Login', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'Sage/Platform/Mobile/Edit'
 ], function(
     declare,
+    lang,
     Edit
 ) {
 
@@ -14,7 +24,7 @@ define('Mobile/SalesLogix/Views/Login', [
         widgetTemplate: new Simplate([
             '<div id="{%= $.id %}" title="{%: $.titleText %}" class="panel {%= $.cls %}" hideBackButton="true">',
             '<p class="logo"><img src="content/images/logo.png"></img></p>',
-            '<div class="panel-content" data-dojo-attach-point="contentNode"></div>',
+            '<div class="panel-content" data-dojo-attach-event="onkeypress: _onKeyPress" data-dojo-attach-point="contentNode"></div>',
             '<button class="button actionButton" data-action="authenticate"><span>{%: $.logOnText %}</span></button>',
             '<button class="button actionButton settings-button" data-action="navSettings"><span>{%: $.settingsText %}</span></button>',
             '<span class="copyright">{%= $.copyrightText %}</span>',
@@ -25,7 +35,7 @@ define('Mobile/SalesLogix/Views/Login', [
         //Localization
         id: 'login',
         busy: false,
-        copyrightText: '&copy; 2013 SalesLogix, NA, LLC. All rights reserved.',
+        copyrightText: '&copy; 2014 SalesLogix, NA, LLC. All rights reserved.',
         logOnText: 'Log on to Saleslogix',
         settingsText: 'Settings',
         passText: 'password',
@@ -37,6 +47,26 @@ define('Mobile/SalesLogix/Views/Login', [
         serverProblemText: 'A problem occured on the server.',
         requestAbortedText: 'The request was aborted.',
 
+        ENTER_KEY: 13,
+
+        _onKeyPress: function(evt) {
+            if (evt.charOrCode === this.ENTER_KEY) {
+                this.authenticate();
+            }
+        },
+        onShow: function() {
+            window.setTimeout(lang.hitch(this, function() {
+                this.fields.username.inputNode.focus();
+            }), 100);
+        },
+        // Override the Views registerDefaultRoute to include the entity id in the route
+        registerDefaultRoute: function() {
+            var router = App.router;
+            router.register(['_', this.id].join(''), lang.hitch(this, this.onDefaultRoute));
+        },
+        onDefaultRoute: function(evt) {
+            this.show();
+        },
         createToolLayout: function() {
             return this.tools || (this.tools = {
                 bbar: false,

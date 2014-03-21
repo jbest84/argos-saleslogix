@@ -33,10 +33,6 @@
         {
           "text": "de.js",
           "path": "../localization/"
-        },
-        {
-          "text": "de.js",
-          "path": "../../../argos-sdk/libraries/moment/min/lang"
         }
       ]
     },
@@ -59,10 +55,6 @@
         {
           "text": "fr.js",
           "path": "../localization/"
-        },
-        {
-          "text": "fr.js",
-          "path": "../../../argos-sdk/libraries/moment/min/lang"
         }
       ]
     },
@@ -85,10 +77,6 @@
         {
           "text": "ru.js",
           "path": "../localization/"
-        },
-        {
-          "text": "ru.js",
-          "path": "../../../argos-sdk/libraries/moment/min/lang"
         }
       ]
     },
@@ -111,10 +99,6 @@
         {
           "text": "it.js",
           "path": "../localization/"
-        },
-        {
-          "text": "it.js",
-          "path": "../../../argos-sdk/libraries/moment/min/lang"
         }
       ]
     },
@@ -137,10 +121,6 @@
         {
           "text": "en-GB.js",
           "path": "../localization/"
-        },
-        {
-          "text": "en-gb.js",
-          "path": "../../../argos-sdk/libraries/moment/min/lang"
         }
       ]
     },
@@ -608,6 +588,18 @@
       "isDebug": true,
       "fileIncludes": [
         {
+          "text": "hash.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo"
+        },
+        {
+          "text": "RouterBase.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo/router"
+        },
+        {
+          "text": "router.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo"
+        },
+        {
           "text": "i18n.js",
           "path": "../../../argos-sdk/libraries/dojo/dojo"
         },
@@ -617,6 +609,10 @@
         },
         {
           "text": "string.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo"
+        },
+        {
+          "text": "cache.js",
           "path": "../../../argos-sdk/libraries/dojo/dojo"
         },
         {
@@ -661,6 +657,14 @@
         },
         {
           "text": "_WidgetBase.js",
+          "path": "../../../argos-sdk/libraries/dojo/dijit"
+        },
+        {
+          "text": "_AttachMixin.js",
+          "path": "../../../argos-sdk/libraries/dojo/dijit"
+        },
+        {
+          "text": "_TemplatedMixin.js",
           "path": "../../../argos-sdk/libraries/dojo/dijit"
         },
         {
@@ -718,6 +722,14 @@
         {
           "text": "QueryResults.js",
           "path": "../../../argos-sdk/libraries/dojo/dojo/store/util"
+        },
+        {
+          "text": "SimpleQueryEngine.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo/store/util"
+        },
+        {
+          "text": "Memory.js",
+          "path": "../../../argos-sdk/libraries/dojo/dojo/store"
         },
         {
           "text": "wai.js",

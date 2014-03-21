@@ -2,7 +2,13 @@
 
 /**
  * @class Mobile.SalesLogix.Views._CardLayoutListMixin
- 
+ *
+ * Mixin for card list layouts.
+ *
+ * @since 3.0
+ *
+ * @requires Sage.Platform.Mobile.Convert
+ *
  */
 define('Mobile/SalesLogix/Views/_CardLayoutListMixin', [
     'dojo/_base/array',
@@ -249,12 +255,6 @@ define('Mobile/SalesLogix/Views/_CardLayoutListMixin', [
         requestData: function(){
             this.showSearchExpression();
             this.inherited(arguments);
-        },
-        getSearchQuery:function(){
-            if (this.searchWidget) {
-                return this.searchWidget.getFormattedSearchQuery();
-            }
-            return null;
         },
         showSearchExpression: function() {
             var html, searchNode;

@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.PickList
+ *
+ *
+ * @extends Sage.Platform.Mobile.List
+ *
+ */
 define('Mobile/SalesLogix/Views/PickList', [
     'dojo/_base/declare',
     'dojo/string',
@@ -22,20 +30,21 @@ define('Mobile/SalesLogix/Views/PickList', [
         expose: false,
         resourceKind: 'picklists',
         resourceProperty: 'items',
+        contractName: 'system',
 
+        activateEntry: function(params) {
+            if (this.options.keyProperty === 'text' && !this.options.singleSelect) {
+                params.key = params.descriptor;
+            }
+
+            this.inherited(arguments);
+        },
         show: function(options) {
             this.set('title', options && options.title || this.title);
             this.inherited(arguments);
         },
-        processFeed: function(feed) {
-            this.inherited(arguments);
-            this._loadPreviousSelections();
-        },
         formatSearchQuery: function(searchQuery) {
             return string.substitute('upper(text) like "${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
-        },
-        createRequest: function() {
-            return this.inherited(arguments).setContractName('system');
         }
     });
 });

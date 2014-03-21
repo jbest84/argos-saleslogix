@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Configure
+ *
+ *
+ * @extends Sage.Platform.Mobile.List
+ *
+ */
 define('Mobile/SalesLogix/Views/Configure', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -9,6 +17,7 @@ define('Mobile/SalesLogix/Views/Configure', [
     'dojo/string',
     'dojo/dom-attr',
     'dojo/dom-class',
+    'dojo/store/Memory',
     'Sage/Platform/Mobile/List',
     'dojo/NodeList-traverse'
 ], function(
@@ -19,7 +28,9 @@ define('Mobile/SalesLogix/Views/Configure', [
     string,
     domAttr,
     domClass,
-    List
+    Memory,
+    List,
+    NodeList
 ) {
 
     return declare('Mobile.SalesLogix.Views.Configure', [List], {
@@ -110,7 +121,7 @@ define('Mobile/SalesLogix/Views/Configure', [
         hasMoreData: function() {
             return false;
         },
-        requestData: function() {
+        createStore: function() {
             var list = [],
                 lookup = {},
                 exposed = App.getExposedViews(),
@@ -147,9 +158,9 @@ define('Mobile/SalesLogix/Views/Configure', [
                 }
             }
 
-            this.processFeed({'$resources': list});
+            return Memory({data: list});
         },
-        processFeed: function(feed) {
+        processData: function(entries) {
             this.inherited(arguments);
 
             var visible = (App.preferences.home && App.preferences.home.visible) || [];

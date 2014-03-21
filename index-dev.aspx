@@ -26,7 +26,53 @@
     <link rel="apple-touch-icon" sizes="120x120" href="content/images/touch-icon-iphone-retina.png" />
     <link rel="apple-touch-icon" sizes="144x144" href="content/images/144x144.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="content/images/touch-icon-ipad-retina.png" />
-    <link rel="apple-touch-startup-image" href="content/images/loading.png">
+    <!-- Startup images -->
+
+    <!-- iOS 6 & 7 iPad (retina, portrait) -->
+    <link href="content/images/apple-touch-startup-image-1536x2008.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: portrait)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPad (retina, landscape) -->
+    <link href="content/images/apple-touch-startup-image-1496x2048.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: landscape)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPad (portrait) -->
+    <link href="content/images/apple-touch-startup-image-768x1004.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: portrait)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPad (landscape) -->
+    <link href="content/images/apple-touch-startup-image-748x1024.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: landscape)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPhone 5 -->
+    <link href="content/images/apple-touch-startup-image-640x1096.png"
+          media="(device-width: 320px) and (device-height: 568px)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPhone (retina) -->
+    <link href="content/images/apple-touch-startup-image-640x920.png"
+          media="(device-width: 320px) and (device-height: 480px)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPhone -->
+    <link href="content/images/apple-touch-startup-image-320x480.png"
+          media="(device-width: 320px) and (device-height: 480px)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
 
     <!-- less files -->
     <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/swiftpage.less" />
@@ -49,21 +95,10 @@
                                 //resource
         };
     </script>
-    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.4.1.min.js"></script>
+    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.7.0.min.js"></script>
 
     <!-- JSON -->
     <script type="text/javascript" src="../../argos-sdk/libraries/json2.js"></script>
-
-    <!-- ReUI -->
-    <script type="text/javascript">
-    reConfig = {
-        autoInit: false,
-        legacyMode: false,
-        showInitialPage: false,
-        updateBackButtonText: false
-    };
-    </script>
-    <script type="text/javascript" src="../../argos-sdk/libraries/reui/reui.js"></script>
 
     <!-- SData Client Library -->
     <script type="text/javascript" src="../../argos-sdk/libraries/sdata/sdata-client-dependencies-debug.js"></script>
@@ -88,8 +123,7 @@
             { name: 'dijit', location: '../../argos-sdk/libraries/dojo/dijit' },
             { name: 'dojox', location: '../../argos-sdk/libraries/dojo/dojox' },
             { name: 'snap', location: '../../argos-sdk/libraries/snap', main: 'snap' },
-            { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment' },
-            { name: 'moment_langs', location: '../../argos-sdk/libraries/moment/min', main: 'langs' },
+            { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment-with-langs.min' },
             { name: 'Sage/Platform/Mobile', location: '../../argos-sdk/src' },
             { name: 'Mobile/SalesLogix', location: 'src' },
             { name: 'configuration', location: 'configuration' },
@@ -108,19 +142,43 @@
             configuration = [
                 'configuration/development'
             ];
-        require([application].concat(configuration), function(application, configuration) {
-            var localization = <%= Serialize(
+        require(['moment', application].concat(configuration), function(moment, application, configuration) {
+            var localization, bootstrap, fallBackLocalization, completed = false;
+            bootstrap = function(requires) {
+                require(requires.concat('dojo/domReady!'), function() {
+                    if (completed) {
+                        return;
+                    }
+
+                    moment.lang('<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.ToString().ToLower() %>');
+                    var instance = new application(configuration);
+
+                    instance.activate();
+                    instance.init();
+                    instance.run();
+                    completed = true;
+                });
+            };
+
+            localization = <%= Serialize(
                 EnumerateLocalizations("localization")
                     .Select(item => item.Path.Substring(0, item.Path.Length - 3))
             ) %>;
-            require(localization.concat(['moment_langs', 'dojo/domReady!']), function() {
-                moment.lang('<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.ToString().ToLower() %>');
-                var instance = new application(configuration);
 
-                instance.activate();
-                instance.init();
-                instance.run();
+            require.on('error', function(error) {
+                console.log('Error loading localization, falling back to "en"');
+                bootstrap(fallBackLocalization);
             });
+
+            if (localization.length === 0) {
+                fallBackLocalization = <%= Serialize(
+                        EnumerateLocalizations(string.Empty, "localization", "en")
+                            .Select(item => item.Path.Substring(0, item.Path.Length - 3))
+                    ) %>;
+                bootstrap(fallBackLocalization);
+            } else {
+                bootstrap(localization);
+            }
         });
     })();
     </script>
@@ -190,10 +248,10 @@
 
     protected IEnumerable<FileItem> EnumerateLocalizations(string path)
     {
-        return EnumerateLocalizations(String.Empty, path);
+        return EnumerateLocalizations(String.Empty, path, null);
     }
 
-    protected IEnumerable<FileItem> EnumerateLocalizations(string root, string path)
+    protected IEnumerable<FileItem> EnumerateLocalizations(string root, string path, string culture)
     {
         var currentCulture = System.Globalization.CultureInfo.CurrentUICulture;
         var rootDirectory = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Request.PhysicalPath), root));
@@ -201,9 +259,9 @@
         
         if (includeDirectory.Exists)
         {
-            var parentFileName = String.Format(@"{0}.js", currentCulture.Parent.Name);
+            var parentFileName = String.Format(@"{0}.js", culture ?? currentCulture.Parent.Name);
             var parentFile = new FileInfo(Path.Combine(includeDirectory.FullName, parentFileName));
-            var targetFileName = String.Format(@"{0}.js", currentCulture.Name);
+            var targetFileName = String.Format(@"{0}.js", culture ?? currentCulture.Name);
             var targetFile = new FileInfo(Path.Combine(includeDirectory.FullName, targetFileName)); 
                                   
             if (targetFile.Exists)            

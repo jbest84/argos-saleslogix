@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.AttachmentManager
+ *
+ * @requires Sage.Platform.Mobile.Convert
+ * @requires Mobile.SalesLogix.Utility
+ * @requires Mobile.SalesLogix.FileManager
+ */
 define('Mobile/SalesLogix/AttachmentManager', [
     'Mobile/SalesLogix/FileManager',
     'dojo/_base/lang',
@@ -48,7 +56,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
             service.setContractName(this.contractName);
             this._baseUrl = service.getUri().toString();
             this._uploadUrl = this._baseUrl + '/attachments/file';
-            service.setContractName(oldContractName);            
+            service.setContractName(oldContractName);
         },
         createAttachments: function(files) {
 
@@ -104,7 +112,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
         },
         _getAttachmentContextMixin: function(fileName) {
             var contextMixin;
-            contextMixin = this._getAttachmentContext();            
+            contextMixin = this._getAttachmentContext();
             return contextMixin;
         },
         _getAttachmentContext: function() {
@@ -120,7 +128,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
             });
             contextView = (found && found.options && found.options.source) || found;
             if (contextView) {
-                view = App.getView(contextView.id),
+                view = App.getView(contextView.id);
                 entry = contextView.entry || (view && view.entry) || contextView;
 
                 if (!entry || !entry['$key']) {
@@ -225,7 +233,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
         onSuccessUpload: function(request) {
             //the id of the new attachment is buried in the Location response header...
             var url, re, matches, id;
-           
+
             url = request.getResponseHeader('Location');
             re = /\'\w+\'/g;
             matches = url.match(re);
@@ -282,7 +290,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
                 pct = curFileProgress;
             }
             this._totalProgress = pct;
-           
+
             if (pct < 99) {
                 if (this.onUpdateProgress) {
                     this.onUpdateProgress(pct);

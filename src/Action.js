@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Action
+ *
+ *
+ * @requires Sage.Platform.Mobile.Utility
+ *
+ */
 define('Mobile/SalesLogix/Action', [
     'dojo/_base/lang',
     'dojo/string',
@@ -84,7 +92,7 @@ define('Mobile/SalesLogix/Action', [
                 descriptor: selection.data['$descriptor'],
                 key: selection.data['$key']
             });
-            App.navigateToActivityInsertView({insert: true});
+            App.navigateToActivityInsertView();
         },
         navigateToEntity: function(action, selection, o) {
             var options = {

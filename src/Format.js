@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Format
+ *
+ * @extends Sage.Platform.Mobile.Format
+ * @requires Mobile.SalesLogix.Template
+ *
+ */
 define('Mobile/SalesLogix/Format', [
     'dojo/_base/lang',
     'dojo/_base/array',
@@ -160,8 +168,6 @@ define('Mobile/SalesLogix/Format', [
                             return o.Country || '';
                         case "C":
                             return (o.Country && o.Country.toUpperCase()) || '';
-                        default:
-                            return '';
                     }
                 }
             );
@@ -192,22 +198,18 @@ define('Mobile/SalesLogix/Format', [
             'thousand': 'K'
         },
         bigNumber: function(val) {
-            try {
-                var numParse = isNaN(val) ? parseFloat(val) : val,
-                    text = Mobile.SalesLogix.Format.bigNumberAbbrText;
+            var numParse = isNaN(val) ? parseFloat(val) : val,
+                text = Mobile.SalesLogix.Format.bigNumberAbbrText;
 
-                if (numParse && numParse >= 1000000000) {
-                    numParse = numParse / 1000000000;
-                    return dojoNumber.format(numParse, { places: 1 }) + text['billion'];
-                } else if (numParse && numParse >= 1000000) {
-                    numParse = numParse / 1000000;
-                    return dojoNumber.format(numParse, { places: 1 }) + text['million'];
-                } else if (numParse && numParse >= 1000) {
-                    numParse = numParse / 1000;
-                    return dojoNumber.format(numParse, { places: 1 }) + text['thousand'];
-                }
-            } catch(ex) {
-                console.error(ex);
+            if (numParse && numParse >= 1000000000) {
+                numParse = numParse / 1000000000;
+                return dojoNumber.format(numParse, { places: 1 }) + text['billion'];
+            } else if (numParse && numParse >= 1000000) {
+                numParse = numParse / 1000000;
+                return dojoNumber.format(numParse, { places: 1 }) + text['million'];
+            } else if (numParse && numParse >= 1000) {
+                numParse = numParse / 1000;
+                return dojoNumber.format(numParse, { places: 1 }) + text['thousand'];
             }
 
             return val;
@@ -235,9 +237,6 @@ define('Mobile/SalesLogix/Format', [
             }
 
             var name = template.nameLF.apply(val);
-            if (name == ', ') {
-                name = '';
-            }
 
             return name;
         },
@@ -257,7 +256,7 @@ define('Mobile/SalesLogix/Format', [
             return Mobile.SalesLogix.Format.userActivityFormats[val];
         },
         /**
-         * Takes a string input and converts name to First amd Last initials 
+         * Takes a string input and converts name to First amd Last initials
          * `Lee Hogan` -> `LH`
          * @param val
          * @returns {String}
@@ -273,7 +272,7 @@ define('Mobile/SalesLogix/Format', [
             return initials.join('').toUpperCase();
         },
         /**
-        * Takes a string input and the user name to First amd Last name 
+        * Takes a string input and the user name to First amd Last name
         * `Hogan, Lee` -> `Lee Hogan`
         * @param val
         * @returns {String}
@@ -283,7 +282,7 @@ define('Mobile/SalesLogix/Format', [
             return name.join(' ');
         },
         /**
-       * Takes a string input and the user name to First amd Last name 
+       * Takes a string input and the user name to First amd Last name
        * `Hogan, Lee` -> `Lee Hogan`
        * @param val
        * @returns {String}

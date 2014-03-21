@@ -1,6 +1,17 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views._MetricDetailMixin
+ *
+ * Mixin for adding KPI widgets to detail views. 
+ *
+ * @since 3.0
+ *
+ * @requires Mobile.SalesLogix.Views.MetricWidget 
+ *
+ */
 define('Mobile/SalesLogix/Views/_MetricDetailMixin', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -14,7 +25,7 @@ define('Mobile/SalesLogix/Views/_MetricDetailMixin', [
     aspect,
     MetricWidget
 ) {
-    return declare('Mobile.SalesLogix.Views._MetricListMixin', null, {
+    return declare('Mobile.SalesLogix.Views._MetricDetailMixin', null, {
         // Metrics
         metricNode: null,
         metricWidgets: null,

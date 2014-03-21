@@ -69,6 +69,44 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
         formatResourcePredicate: function(name) {
             return string.substitute('name eq "${0}"', [name]);
         },
+        _handleSaleslogixMultiSelectPicklist: function(value) {
+            var values, key, data;
+            if (typeof value === 'string') {
+                return value;
+            }
+
+            values = [];
+            for (key in value) {
+                data = value[key].data;
+                if (data && data.text) {
+                    values.push(data.text);
+                } else if (typeof data === 'string') {
+                    values.push(data);
+                }
+            }
+
+            return values.join(', ');
+        },
+        textRenderer: function(value) {
+            var results;
+            if (this.singleSelect) {
+                results = this.inherited(arguments);
+            } else {
+                results = this._handleSaleslogixMultiSelectPicklist(value);
+            }
+
+            return results;
+        },
+        formatValue: function(value) {
+            var results;
+            if (this.singleSelect) {
+                results = this.inherited(arguments);
+            } else {
+                results = this._handleSaleslogixMultiSelectPicklist(value);
+            }
+
+            return results || value;
+        },
         createSelections: function() {
             var value = this.getText(),
                 selections = (value)
@@ -89,6 +127,8 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
                 );
                 options.singleSelect = this.singleSelect;
                 options.previousSelections = !this.singleSelect ? this.createSelections() : null;
+                options.keyProperty = this.keyProperty;
+                options.textProperty = this.textProperty;
             }
 
             if (!this.singleSelect) {

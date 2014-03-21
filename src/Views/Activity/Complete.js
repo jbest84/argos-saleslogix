@@ -1,6 +1,23 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Activity.Complete
+ *
+ * @extends Sage.Platform.Mobile.Edit
+ * @mixins Sage.Platform.Mobile.Edit
+ *
+ * @requires Sage.Platform.Mobile.Edit
+ * @requires Sage.Platform.Mobile.Utility
+ *
+ * @requires Mobile.SalesLogix.Environment
+ * @requires Mobile.SalesLogix.Validator
+ * @requires Mobile.SalesLogix.Template
+ *
+ * @requires moment
+ *
+ */
 define('Mobile/SalesLogix/Views/Activity/Complete', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -10,7 +27,8 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
     'Mobile/SalesLogix/Validator',
     'Mobile/SalesLogix/Template',
     'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit'
+    'Sage/Platform/Mobile/Edit',
+    'moment'
 ], function(
     declare,
     array,
@@ -20,7 +38,8 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
     validator,
     template,
     utility,
-    Edit
+    Edit,
+    moment
 ) {
 
     return declare('Mobile.SalesLogix.Views.Activity.Complete', [Edit], {
@@ -233,9 +252,14 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
             return true;
         },
         onAsScheduledChange: function(scheduled, field) {
+            var duration, startDate, completedDate;
             if (scheduled) {
+                duration = this.fields['Duration'].getValue();
+                startDate = moment(this.fields['StartDate'].getValue());
+                completedDate = startDate.add({minutes: duration}).toDate();
+
                 this.toggleSelectField(this.fields['CompletedDate'], true);
-                this.fields['CompletedDate'].setValue(this.fields['StartDate'].getValue());
+                this.fields['CompletedDate'].setValue(completedDate);
             } else {
                 this.toggleSelectField(this.fields['CompletedDate'], false);
                 this.fields['CompletedDate'].setValue(new Date());
@@ -326,12 +350,13 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                 });
         },
         completeActivity: function(entry, callback) {
+            var leader = this.fields['Leader'].getValue();
             var completeActivityEntry = {
                 "$name": "ActivityComplete",
                 "request": {
                     "entity": {'$key': entry['$key']},
                     "ActivityId": entry['$key'],
-                    "userId": entry['Leader']['$key'],
+                    "userId": leader['$key'],
                     "result": this.fields['Result'].getValue(),
                     "resultCode": this.fields['ResultCode'].getValue(),
                     "completeDate": this.fields['CompletedDate'].getValue()

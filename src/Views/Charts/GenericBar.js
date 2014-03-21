@@ -1,6 +1,16 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Charts.GenericBar
+ *
+ * @extends Sage.Platform.Mobile.View
+ * @mixins Mobile.SalesLogix.Views.Charts._ChartMixin
+ *
+ * @requires Sage.Platform.Mobile.View
+ *
+ */
 define('Mobile/SalesLogix/Views/Charts/GenericBar', [
     'dojo/_base/declare',
     'dojo/_base/lang',
@@ -33,6 +43,8 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
         expose: false,
         chart: null,
         legend: null,
+        MAX_ITEMS: 5,
+        MIN_ITEMS: 1,
 
         formatter: function(val) {
             return val;
@@ -100,10 +112,10 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
             this.chart.resize(box.w, box.h);
         },
         _labels: function(feedData) {
-            var data = [], MAX_ITEMS = 5, MIN_ITEMS= 1, otherY = 0, otherText;
+            var data = [], otherY = 0, otherText;
 
             array.forEach(feedData, function(item, index) {
-                if (index < MAX_ITEMS) {
+                if (index < this.MAX_ITEMS) {
                     data.push({
                         y: item.value,
                         text: item.$descriptor + ' (' + this.formatter(item.value) + ')',
@@ -111,14 +123,14 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
                     });
                 } else {
                     otherY = otherY + item.value;
-                    this._insertOther(data, MAX_ITEMS, otherY);
+                    this._insertOther(data, this.MAX_ITEMS, otherY);
 
                 }
             }, this);
 
             // Dojo won't draw a single bar, insert a Other group with a 0 value
-            if (feedData.length === MIN_ITEMS) {
-                this._insertOther(data, MIN_ITEMS, 0);
+            if (feedData.length === this.MIN_ITEMS) {
+                this._insertOther(data, this.MIN_ITEMS, 0);
             }
 
             // Reverse sort to show larger number up top

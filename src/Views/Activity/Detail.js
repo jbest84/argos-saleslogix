@@ -1,6 +1,24 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Activity.Detail
+ *
+ *
+ * @extends Sage.Platform.Mobile.Detail
+ * @mixins Sage.Platform.Mobile.Detail
+ *
+ * @requires Sage.Platform.Mobile.Detail
+ * @requires Sage.Platform.Mobile.Utility
+ * @requires Sage.Platform.Mobile.Convert
+ * @requires Mobile.SalesLogix.Format
+ * @requires Mobile.SalesLogix.Template
+ * @requires Mobile.SalesLogix.Environment
+ * @requires Mobile.SalesLogix.Recurrence
+ * @requires Mobile.SalesLogix.Utility
+ *
+ */
 define('Mobile/SalesLogix/Views/Activity/Detail', [
     'dojo/_base/declare',
     'dojo/string',
@@ -210,7 +228,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             return convert.toBoolean(entry && entry['Alarm']);
         },
         requestLeader: function(userId) {
-            var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
+            var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getConnection())
                 .setResourceKind('users')
                 .setResourceSelector(string.substitute("'${0}'", [userId]))
                 .setQueryArg('select', [
@@ -218,7 +236,6 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                     'UserInfo/LastName'
                 ].join(','));
 
-            request.allowCacheUse = true;
             request.read({
                 success: this.processLeader,
                 failure: this.requestLeaderFailure,
@@ -231,14 +248,17 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             if (leader) {
                 this.entry['Leader'] = leader;
 
+                // There could be a timing issue here. The call to request the leader is done before the layout is processed,
+                // so we could potentially end up in here before any dom was created for the view.
+                // TODO: Fix
                 var rowNode = query('[data-property="Leader"]'),
                     contentNode = rowNode && query('[data-property="Leader"] > span', this.domNode);
 
-                if (rowNode) {
+                if (rowNode && rowNode.length > 0) {
                     domClass.remove(rowNode[0], 'content-loading');
                 }
 
-                if (contentNode) {
+                if (contentNode && contentNode.length > 0) {
                     contentNode[0].innerHTML = this.leaderTemplate.apply(leader['UserInfo']);
                 }
             }
@@ -267,11 +287,11 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                 rowNode = query('[data-property="RecurrenceUI"]');
                 contentNode = rowNode && query('[data-property="RecurrenceUI"] > span', this.domNode);
 
-                if (rowNode) {
+                if (rowNode && rowNode.length > 0) {
                     domClass.remove(rowNode[0], 'content-loading');
                 }
 
-                if (contentNode) {
+                if (contentNode && contentNode.length > 0) {
                     contentNode[0].innerHTML = recur.toString(this.recurrence);
                 }
             }
@@ -281,15 +301,15 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
         checkCanComplete: function(entry) {
             return !entry || (entry['Leader']['$key'] !== App.context['user']['$key']);
         },
-        processEntry: function(entry) {
-            this.inherited(arguments);
-
+        preProcessEntry: function(entry) {
             if (entry && entry['Leader']['$key']) {
                 this.requestLeader(entry['Leader']['$key']);
             }
             if (this.isActivityRecurring(entry)) {
                 this.requestRecurrence(entry['$key'].split(this.recurringActivityIdSeparator).shift());
             }
+
+            return entry;
         },
         formatRelatedQuery: function(entry, fmt, property) {
             if (property === 'activityId') {

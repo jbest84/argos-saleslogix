@@ -1,6 +1,14 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.MainToolbar
+ *
+ *
+ * @extends Sage.Platform.Mobile.MainToolbar
+ *
+ */
 define('Mobile/SalesLogix/Views/MainToolbar', [
     'dojo/_base/declare',
     'dojo/dom-style',
@@ -18,27 +26,17 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
     return declare('Mobile.SalesLogix.Views.MainToolbar', [MainToolbar], {
         titleText: 'Saleslogix',
         showTools: function(tools) {
-            var hasLeftDrawer, history, currentView, enableBackButton;
+            var hasLeftDrawer, history, currentView, enableBackButton, i;
 
-            history = ReUI && ReUI.context && ReUI.context.history;
             currentView = App.getPrimaryActiveView();
-
-            if (history.length > 0) {
-                if (history[0].page === 'login') {
-                    // The login page was the first entry in history, the landing page would be the second
-                    enableBackButton = history.length > 2;
-                } else {
-                    // The login page was skipped (due to saving credentials), the landing page is the first page
-                    enableBackButton = history.length > 1;
-                }
-            }
+            enableBackButton = !App.isOnFirstView();
 
             if (currentView && currentView.id === 'settings') {
                 enableBackButton = true;
             }
 
             if (tools) {
-                for (var i = 0; i < tools.length; i++) {
+                for (i = 0; i < tools.length; i++) {
                     if (tools[i].id == 'toggleLeftDrawer') {
                         hasLeftDrawer = true;
                     }

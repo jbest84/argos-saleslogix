@@ -1,6 +1,22 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
+
+/**
+ * @class Mobile.SalesLogix.Views.Activity.Recurring
+ *
+ * @extends Sage.Platform.Mobile.Edit
+ *
+ * @requires Sage.Platform.Mobile.Edit
+ * @requires Sage.Platform.Mobile.Utility
+ *
+ * @requires Mobile.SalesLogix.Format
+ * @requires Mobile.SalesLogix.Validator
+ * @requires Mobile.SalesLogix.Recurrence
+ *
+ * @requires moment
+ *
+ */
 define('Mobile/SalesLogix/Views/Activity/Recurring', [
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -259,7 +275,7 @@ define('Mobile/SalesLogix/Views/Activity/Recurring', [
                     break;
                 case 'OrdMonth':
                     startDate.setMonth(value);
-                    weekday = startDate.getDay(),
+                    weekday = startDate.getDay();
                     ordWeek = parseInt((startDate.getDate() - 1) / 7, 10) + 1;
                     break;
                 default:
