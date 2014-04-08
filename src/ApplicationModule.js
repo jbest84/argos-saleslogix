@@ -82,6 +82,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/Lead/Detail',
     'Mobile/SalesLogix/Views/Lead/Edit',
     'Mobile/SalesLogix/Views/LeadSource/List',
+    'Mobile/SalesLogix/Views/Map/View',
     'Mobile/SalesLogix/Views/Opportunity/List',
     'Mobile/SalesLogix/Views/Opportunity/Detail',
     'Mobile/SalesLogix/Views/Opportunity/Edit',
@@ -189,6 +190,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     LeadDetail,
     LeadEdit,
     LeadSourceList,
+    MapView,
     OpportunityList,
     OpportunityDetail,
     OpportunityEdit,
@@ -458,6 +460,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
             }));
 
             this.registerView(new LeadSourceList({
+                expose: false
+            }));
+
+            this.registerView(new MapView({
                 expose: false
             }));
 

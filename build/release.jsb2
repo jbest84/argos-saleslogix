@@ -449,6 +449,10 @@
           "path": "../src/Views/LeadSource"
         },
         {
+          "text": "View.js",
+          "path": "../src/Views/Map"
+        },
+        {
           "text": "List.js",
           "path": "../src/Views/Opportunity"
         },
