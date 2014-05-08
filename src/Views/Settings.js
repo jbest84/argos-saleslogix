@@ -44,7 +44,8 @@ define('Mobile/SalesLogix/Views/Settings', [
         actionOrder: [
             'clearAuthentication',
             'clearLocalStorage',
-            'viewErrorLogs'
+            'viewErrorLogs',
+            'viewPerfLogs',
         ],
         createActions : function() {
             this.actions = {
@@ -59,8 +60,27 @@ define('Mobile/SalesLogix/Views/Settings', [
                 'viewErrorLogs':{
                     title: this.errorLogTitleText,
                     icon: 'content/images/icons/Ticket_24x24.png'
+                },
+                'viewPerfLogs': {
+                    title: 'View Performance Logs',
+                    icon: 'content/images/icons/Ticket_24x24.png'
                 }
             };
+        },
+        viewPerfLogs: function() {
+            var view, data;
+            view = App.getView('perflog_detail');
+
+            if (view) {
+                if (window.localStorage) {
+                   data = window.localStorage.getItem('perflogs') || 'No Data';
+                   view.domNode.innerHTML = new Simplate([
+                       '<textarea rows="20" style="width: 100%">',
+                       '{%= $.data %}'
+                   ]).apply({data: data});
+                   view.show();
+                }
+            }
         },
         viewErrorLogs: function() {
             var view = App.getView('errorlog_list');

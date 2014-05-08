@@ -218,6 +218,11 @@ define('Mobile/SalesLogix/ApplicationModule', [
 
             this.registerView(new ErrorLogList());
             this.registerView(new ErrorLogDetail());
+            this.registerView(new ErrorLogDetail({
+                id: 'perflog_detail',
+                titleText: 'Performance Logs',
+                expose: false
+            }));
 
 
             this.registerView(new EventEdit());
