@@ -695,7 +695,7 @@ define('Mobile/SalesLogix/Application', [
                 'myactivity_list',
                 'calendar_daylist',
                 'history_list',
-                'account_list',
+                'account_slx_group_list',
                 'contact_list',
                 'lead_list',
                 'opportunity_list',

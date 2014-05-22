@@ -153,6 +153,24 @@ define('Mobile/SalesLogix/GroupUtility', [
             }
 
             return lang.hitch(this, results[0].formatter);
+        },
+        getLayout: function(group) {
+            var layout;
+            var i = 0;
+            layout = array.filter(group.layout, function(item) {
+                item.index = i++;
+                return array.every(this.groupFilters, function(filter) {
+                    return filter(item);
+                }, this);
+            }, this);
+            return layout;
+        },
+        getColumNames: function(layout) {
+            var columns;
+            columns = array.map(layout, function(layout) {
+                return layout.alias;
+            });
+            return columns;
         }
     });
 });

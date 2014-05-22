@@ -49,6 +49,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/SelectList',
     'Mobile/SalesLogix/Views/SpeedSearchList',
     'Mobile/SalesLogix/Views/TextEdit',
+    'Mobile/SalesLogix/Views/Account/SlxGroupList',
     'Mobile/SalesLogix/Views/Account/List',
     'Mobile/SalesLogix/Views/Account/Detail',
     'Mobile/SalesLogix/Views/Account/Edit',
@@ -159,6 +160,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     SelectList,
     SpeedSearchList,
     TextEdit,
+    AccountSlxGroupList,
     AccountList,
     AccountDetail,
     AccountEdit,
@@ -264,7 +266,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
                 }
             }));
             this.registerView(new AddressEdit());
-
+            this.registerView(new AccountSlxGroupList()); 
             this.registerView(new AccountList());
             this.registerView(new AccountDetail());
             this.registerView(new AccountEdit());
