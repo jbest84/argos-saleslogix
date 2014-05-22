@@ -22,7 +22,7 @@ define('Mobile/SalesLogix/Views/Groups/Selector', [
 ) {
 
     return declare('Mobile.SalesLogix.Views.Groups.Selector', [List], {
-        id: 'groups_configure',
+        id: 'groups_selector',
         expose: false,
         enableSearch: true,
         icon: '',

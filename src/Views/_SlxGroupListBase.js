@@ -151,8 +151,8 @@ define('Mobile/SalesLogix/Views/_SlxGroupListBase', [
             this.idProperty = group.family.toUpperCase() + 'ID';
             this.labelProperty = group.family.toUpperCase();
             this.store = null;
-           // this.clear(true);
-           // this.refreshRequired = true;
+            this.clear(true);
+            this.refreshRequired = true;
 
 
         },

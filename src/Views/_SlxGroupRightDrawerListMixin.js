@@ -48,14 +48,14 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
         _hasChangedKPIPrefs: false,// Dirty flag so we know when to reload the widgets
         groupList: null,
         DRAWER_PAGESIZE: 100,
-        groupLookupId: 'slx_groups_selector',
+        groupLookupId: 'groups_selector',
         currentGroupId: null,
-
+        GROUP_PRREFRENCE_KEY:'groups-',
         setupRightDrawer: function() {
             var drawer = App.getView('right_drawer');
             if (drawer) {
                 drawer.pageSize = this.DRAWER_PAGESIZE;
-                this.groupList = App.preferences[this.entityName];
+                this.groupList = App.preferences[this.GROUP_PRREFRENCE_KEY + this.entityName];
                 this._finishSetup(drawer);
             }
         },
@@ -94,7 +94,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                 kpiClicked: lang.hitch(this, function(params) {
                     var results, enabled, metrics;
 
-                    metrics = App.getMetricsByResourceKind(this.resourceKind);
+                    metrics = App.getMetricsByResourceKind(this.GROUP_PRREFRENCE_KEY + this.resourceKind);
 
                     if (metrics.length > 0) {
                         results = array.filter(metrics, function(metric) {
@@ -133,6 +133,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                             list = this.owner,
                             groupId,
                             entry,
+                            currentGroup,
                             items = [];
 
                         // We will get an object back where the property names are the keys (groupId's)
@@ -146,16 +147,25 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                             }
                         }
 
-                        App.preferences[list.entityName] = items;
-                        App.persistPreferences();
+                        if (items[0]) {
+                            currentGroup = items[0];
+                        }
 
+                        list._addToGroupPrefrences(items);
+                        if (currentGroup) {
+                            list.setCurrentGroup(currentGroup);
+                            list.refresh();
+                        }
                         handle.remove();
                         field.destroy();
+
                     }));
 
                     field.navigateToListView();
+
                     this.toggleRightDrawer();
                 }),
+                
                 groupClicked: lang.hitch(this, function(params) {
                       var  group,
                         groupId;
@@ -168,12 +178,41 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                     if (!group) {
                         throw new Error("Expected a group.");
                     }
-                    this.loadGroup(group);
+
+                    this.setCurrentGroup(group);
+                    this.refresh();
                     this.toggleRightDrawer();
                 })
             };
 
             return actions;
+        },
+        _addToGroupPrefrences: function(items) {
+            var found, groupList;
+            groupList = this.groupList;
+           
+            if (groupList && groupList.length > 0) {
+                if (items && items.length > 0) {
+                    array.forEach(items, function(item) {
+                        found = false;
+                        array.forEach(groupList, function(group) {
+                            if (group.$key === item.$key) {
+                                found = true;
+                            }
+                        });
+                        if (!found) {
+                            groupList.push(item);
+                        }
+                    });
+                }
+            }
+            else{
+                groupList = items;
+            }   
+ 
+            App.preferences[this.GROUP_PRREFRENCE_KEY + this.entityName] = groupList;
+            App.persistPreferences();
+
         },
         getGroupForRightDrawerEntry: function(entry) {
             var mixin = lang.getObject(mixinName);
@@ -226,7 +265,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                 layout.push(groupsSection);
             }
 
-            metrics = App.getMetricsByResourceKind(this.resourceKind);
+            metrics = App.getMetricsByResourceKind(this.GROUP_PRREFRENCE_KEY + this.resourceKind);
 
             kpiSection = {
                 id: 'kpi',
