@@ -70,6 +70,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Views/Charts/GenericPie',
 
     'Mobile/SalesLogix/Views/Competitor/List',
+    'Mobile/SalesLogix/Views/Contact/SlxGroupList',
     'Mobile/SalesLogix/Views/Contact/List',
     'Mobile/SalesLogix/Views/Contact/Detail',
     'Mobile/SalesLogix/Views/Contact/Edit',
@@ -179,6 +180,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
     GenericBar,
     GenericPie,
     CompetitorList,
+    ContactSlxGroupList,
     ContactList,
     ContactDetail,
     ContactEdit,
@@ -294,6 +296,7 @@ define('Mobile/SalesLogix/ApplicationModule', [
                 }
             }));
 
+            this.registerView(new ContactSlxGroupList());
             this.registerView(new ContactList());
             this.registerView(new ContactDetail());
             this.registerView(new ContactEdit());

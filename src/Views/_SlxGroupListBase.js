@@ -48,7 +48,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupListBase', [
     _SlxGroupRightDrawerListMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views._SlxGroupListBase', [List, _SlxGroupRightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin], {
+    return declare('Mobile.SalesLogix.Views._SlxGroupListBase', [List, _SlxGroupRightDrawerListMixin, _CardLayoutListMixin], {
         //Templates
         
         rowErrorTemplate: new Simplate([
@@ -97,22 +97,29 @@ define('Mobile/SalesLogix/Views/_SlxGroupListBase', [
             return this._currentGroup;
         },
         setCurrentGroup: function(group) {
-            this._currentGroup = group;
-            this._currentGroupId = group.$key;
+            if (group) {
+                this._currentGroup = group;
+                this._currentGroupId = group.$key;
+                App.preferences['default-group-' + this.entityName] = this._currentGroupId;
+                App.persistPreferences();
+            }
         },
         getDefaultGroup: function(){
-            var groupList = App.preferences[this.entityName];
+
+            var groupList = App.preferences['groups-' + this.entityName];
+            var defaultGroupId = App.preferences['default-group-' + this.entityName];
             var defaultGroup = null;
+
             if (groupList && groupList.length > 0) {
                 array.forEach(groupList, function(group) {
 
-                    if (group.enabled) {
-                        defaultGroup = group;
-                    }
-                    if (!defaultGroup) {
+                    if (group.$key === defaultGroupId) {
                         defaultGroup = group;
                     }
                 });
+                if (!defaultGroup) {
+                    defaultGroup = groupList[0];
+                }
                 return defaultGroup;
             }
         },
@@ -122,7 +129,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupListBase', [
             group = this.getCurrentGroup();
 
             if (!group) {
-                
+                //return;
                 throw new Error("Expected a group.");
             }
             
@@ -151,14 +158,18 @@ define('Mobile/SalesLogix/Views/_SlxGroupListBase', [
             this.idProperty = group.family.toUpperCase() + 'ID';
             this.labelProperty = group.family.toUpperCase();
             this.store = null;
-            this.clear(true);
-            this.refreshRequired = true;
+            //this.clear(false);
+            //this.refreshRequired = true;
 
 
         },
         requestData: function() {
-            this.initGroup();
-            this.inherited(arguments);
+            try{
+                this.initGroup();
+                this.inherited(arguments);
+            } catch (e) {
+
+            }
         },
         getItemLayoutTemplate: function(item) {
             var template;
