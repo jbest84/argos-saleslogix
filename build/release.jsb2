@@ -317,6 +317,14 @@
           "path": "../src/Views/Charts"
         },
         {
+          "text": "_SlxGroupRightDrawerListMixin.js",
+          "path": "../src/Views"
+        },
+        {
+          "text": "_SlxGroupListBase.js",
+          "path": "../src/Views"
+        },
+        {
           "text": "AddAttachment.js",
           "path": "../src/Views/Attachment"
         },
@@ -335,6 +343,10 @@
         {
           "text": "RelatedView.js",
           "path": "../src/Views/History"
+        },
+       {
+          "text": "SLxGroupList.js",
+          "path": "../src/Views/Account"
         },
         {
           "text": "List.js",
@@ -399,6 +411,10 @@
         {
           "text": "List.js",
           "path": "../src/Views/Competitor"
+        },
+        {
+          "text": "SLxGroupList.js",
+          "path": "../src/Views/Contact"
         },
         {
           "text": "List.js",

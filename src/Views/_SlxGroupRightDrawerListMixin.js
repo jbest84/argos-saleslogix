@@ -151,7 +151,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                             currentGroup = items[0];
                         }
 
-                        list._addToGroupPrefrences(items);
+                        list._addToGroupPrefrences(items, currentGroup.$key);
                         if (currentGroup) {
                             list.setCurrentGroup(currentGroup);
                             list.refresh();
@@ -167,7 +167,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                 }),
                 
                 groupClicked: lang.hitch(this, function(params) {
-                      var  group,
+                      var  group, groupList,
                         groupId;
                     groupId = params.$key;
 
@@ -179,6 +179,21 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                         throw new Error("Expected a group.");
                     }
 
+                    groupList = this.groupList;
+                    if (groupList.length > 0) {
+                        array.forEach(groupList, function(grp) {
+                            if (grp.$key === groupId) {
+                                grp.$selected = true;
+                            } else {
+                                grp.$selected = false;
+                            }
+                        });
+                        App.preferences[this.GROUP_PRREFRENCE_KEY + this.entityName] = groupList;
+                        App.persistPreferences();
+                    }
+
+                     domAttr.set(params.$source, 'data-enabled', (true).toString());
+
                     this.setCurrentGroup(group);
                     this.refresh();
                     this.toggleRightDrawer();
@@ -187,7 +202,8 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
 
             return actions;
         },
-        _addToGroupPrefrences: function(items) {
+        
+        _addToGroupPrefrences: function(items, curentGroupId) {
             var found, groupList;
             groupList = this.groupList;
            
@@ -196,9 +212,18 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                     array.forEach(items, function(item) {
                         found = false;
                         array.forEach(groupList, function(group) {
+
+                            if (group.$key === curentGroupId) {
+                                group.$selected = true;
+                            } else {
+                                group.$selected = false;
+                            }
+
                             if (group.$key === item.$key) {
                                 found = true;
+                                
                             }
+
                         });
                         if (!found) {
                             groupList.push(item);
@@ -231,7 +256,7 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
             };
         },
         createRightDrawerLayout: function() {
-            var groupsSection, hashTagsSection, hashTag, kpiSection, layout, metrics, i, len, store, def;
+            var groupsSection, hashTagsSection, hashTag, kpiSection, layout, metrics, i, len, store, def, currenGroupId;
 
             layout = [];
 
@@ -255,7 +280,8 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                         'title': group.displayName,
                         'dataProps': {
                             $key: group.$key,
-                            'title': group.displayName
+                            'title': group.displayName,
+                            'enabled': group.$selected
                         }
                     });
                 });

@@ -58,7 +58,7 @@ define('Mobile/SalesLogix/Views/Groups/Selector', [
             if (!this.family) {
                 throw new Error('The groups selector must have a family set.');
             }
-
+            App.setPrimaryTitle(this.getTitle(this.family));
             return this.createGroupStore(this.family);
         },
 
@@ -82,6 +82,9 @@ define('Mobile/SalesLogix/Views/Groups/Selector', [
         },
         formatSearchQuery: function(searchQuery) {
             return string.substitute('name like "${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
+        },
+        getTitle: function(family) {
+            return string.substitute('${0} - [ ${1} ]', [this.titleText, family]);
         }
     });
 });
