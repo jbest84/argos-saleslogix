@@ -84,6 +84,9 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                 App.snapper.off('close');
             }
         },
+        toggleRightDrawer: function (openGroupSelector) {
+            this._toggleDrawer('right');
+        },
         _onSearchExpression: function() {
            this.inherited(arguments);
         },
@@ -112,60 +115,9 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
                     }
                 }),
                 groupConfigureClicked: lang.hitch(this, function() {
-                    var field, handle, view;
-                    view = App.getView(this.groupLookupId);
-                    view.family = this.entityName;
-                    view.set('store', null);
-                    view.clear();
-                    view.refreshRequired = true;
-
-                    field = new LookupField({
-                        owner: this,
-                        view: view,
-                        singleSelect: false,
-                        previousSelections: array.map(this.groupList, function(group) {
-                            return group.$key;
-                        })
-                    });
-
-                    handle = aspect.after(field, 'complete', lang.hitch(field, function() {
-                        var field = this,
-                            list = this.owner,
-                            groupId,
-                            entry,
-                            currentGroup,
-                            items = [];
-
-                        // We will get an object back where the property names are the keys (groupId's)
-                        // Extract them out, and save the entry, which is the data property on the extracted object
-                        for (groupId in field.currentValue) {
-                            if (field.currentValue.hasOwnProperty(groupId)) {
-                                entry = field.currentValue[groupId].data;
-                                if (entry) {
-                                    items.push(entry);
-                                }
-                            }
-                        }
-
-                        if (items[0]) {
-                            currentGroup = items[0];
-                        }
-
-                        list._addToGroupPrefrences(items, currentGroup.$key);
-                        if (currentGroup) {
-                            list.setCurrentGroup(currentGroup);
-                            list.refresh();
-                        }
-                        handle.remove();
-                        field.destroy();
-
-                    }));
-
-                    field.navigateToListView();
-
+                    this._selectGroup();
                     this.toggleRightDrawer();
-                }),
-                
+                }),                
                 groupClicked: lang.hitch(this, function(params) {
                       var  group, groupList,
                         groupId;
@@ -202,11 +154,66 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
 
             return actions;
         },
+        _addGroup: function(){
         
+        },
+        _selectGroup: function() {
+            var field, handle, view;
+            view = App.getView(this.groupLookupId);
+            view.family = this.entityName;
+            view.set('store', null);
+            view.clear();
+            view.refreshRequired = true;
+
+            field = new LookupField({
+                owner: this,
+                view: view,
+                singleSelect: false,
+                previousSelections: array.map(this.groupList, function(group) {
+                    return group.$key;
+                })
+            });
+
+            handle = aspect.after(field, 'complete', lang.hitch(field, function() {
+                var field = this,
+                    list = this.owner,
+                    groupId,
+                    entry,
+                    currentGroup,
+                    items = [];
+
+                // We will get an object back where the property names are the keys (groupId's)
+                // Extract them out, and save the entry, which is the data property on the extracted object
+                for (groupId in field.currentValue) {
+                    if (field.currentValue.hasOwnProperty(groupId)) {
+                        entry = field.currentValue[groupId].data;
+                        if (entry) {
+                            items.push(entry);
+                        }
+                    }
+                }
+
+                if (items[0]) {
+                    currentGroup = items[0];
+                }
+
+                list._addToGroupPrefrences(items, currentGroup.$key);
+                if (currentGroup) {
+                    list.setCurrentGroup(currentGroup);
+                    list.refresh();
+                }
+                handle.remove();
+                field.destroy();
+
+            }));
+
+            field.navigateToListView();
+
+        },
         _addToGroupPrefrences: function(items, curentGroupId) {
             var found, groupList;
             groupList = this.groupList;
-           
+           /*
             if (groupList && groupList.length > 0) {
                 if (items && items.length > 0) {
                     array.forEach(items, function(item) {
@@ -233,8 +240,9 @@ define('Mobile/SalesLogix/Views/_SlxGroupRightDrawerListMixin', [
             }
             else{
                 groupList = items;
-            }   
- 
+            }
+            */
+            groupList = items;
             App.preferences[this.GROUP_PRREFRENCE_KEY + this.entityName] = groupList;
             App.persistPreferences();
 

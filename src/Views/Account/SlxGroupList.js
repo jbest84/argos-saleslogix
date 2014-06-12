@@ -41,7 +41,7 @@ define('Mobile/SalesLogix/Views/Account/SlxGroupList', [
         ]),
 
         //Localization
-        titleText: 'Accounts',
+        titleText: 'Account - groups',
         
         //View Properties
         entityName: 'Account',

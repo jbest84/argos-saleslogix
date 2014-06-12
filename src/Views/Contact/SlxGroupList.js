@@ -38,7 +38,7 @@ define('Mobile/SalesLogix/Views/Contact/SlxGroupList', [
         //Templates
         
         //Localization
-        titleText: 'Contacts',
+        titleText: 'Contact - groups',
         
         //View Properties
         entityName: 'Contact',
