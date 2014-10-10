@@ -37,8 +37,6 @@ define('Mobile/SalesLogix/Views/Map/View', [
 
         startup: function() {
             this.inherited(arguments);
-            this.map = new google.maps.Map(this.contentNode);
-            this.geocoder = new google.maps.Geocoder();
             this.markers = [];
         },
 
@@ -58,16 +56,26 @@ define('Mobile/SalesLogix/Views/Map/View', [
 
             this.markers = [];
         },
-        showViaRoute: function () {
-            this.inherited(arguments);
+        onTransitionTo: function() {
+            var address = this.options && this.options.address;
 
-            var address, mapOptions, latLng, marker;
-            address = this.options && this.options.address;
+            this.map = new google.maps.Map(this.contentNode);
+            this.geocoder = new google.maps.Geocoder();
+
+            this.showMap(address);
+        },
+        onTransitionAway: function() {
+            this.options.address = null;
+            this.map = null;
+            this.geocoder = null;
+        },
+        showMap: function(address) {
+            var mapOptions, latLng, marker;
 
             this.clearMarkers();
 
             if (address) {
-                this.geocoder.geocode({'address': address.FullAddress}, lang.hitch(this, function(results, status) {
+                this.geocoder.geocode({'address': address.FullAddress}, function(results, status) {
                     if (status === google.maps.GeocoderStatus.OK) {
                         latLng = results[0].geometry.location;
 
@@ -85,11 +93,11 @@ define('Mobile/SalesLogix/Views/Map/View', [
 
                         this.markers.push(marker);
                     }
-                }));
+                }.bind(this));
 
             } else {
                 if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(lang.hitch(this, function(position) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
                         latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                         mapOptions = {
                             center: latLng,
@@ -102,7 +110,7 @@ define('Mobile/SalesLogix/Views/Map/View', [
                             title: 'Current Location ...'
                         });
                         this.markers.push(marker);
-                    }));
+                    }.bind(this));
                 }
             }
         }

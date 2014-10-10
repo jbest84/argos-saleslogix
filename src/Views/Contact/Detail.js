@@ -167,10 +167,18 @@ define('Mobile/SalesLogix/Views/Contact/Detail', [
         },
         viewAddress: function() {
             //App.showMapForAddress(format.address(this.entry['Address'], true, ' '));
-            App.goRoute('generic_map', { address: this.entry['Address'] });
+            var view = App.getView('generic_map');
+
+            if (view) {
+                view.show({ address: this.entry['Address'] });
+            }
         },
         viewAddress2: function() {
-            App.goRoute('generic_map');
+            var view = App.getView('generic_map');
+
+            if (view) {
+                view.show();
+            }
         },
         checkAddress: function(entry, value) {
             return !format.address(value, true, '');
@@ -242,7 +250,7 @@ define('Mobile/SalesLogix/Views/Contact/Detail', [
                             name: 'ViewAddressAction2',
                             property: 'Address',
                             label: 'My Location',
-                            icon: 'content/images/icons/Map_24.png',
+                            iconClass: 'fa fa-map-marker fa-lg',
                             action: 'viewAddress2',
                             renderer: function() {
                                 return '';
