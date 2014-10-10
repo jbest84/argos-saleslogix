@@ -45,7 +45,6 @@ define('Mobile/SalesLogix/Views/_RightDrawerBaseMixin', [
             this.setupRightDrawer();
             var drawer = App.getView('right_drawer');
             if (drawer) {
-                drawer.store = null;
                 drawer.refresh();
                 this.drawerLoaded = true;
             }
@@ -68,11 +67,13 @@ define('Mobile/SalesLogix/Views/_RightDrawerBaseMixin', [
                 this._addTools(tools);
                 this.toolsAdded = true;
             }
+            this.inherited(arguments);
         },
         _addTools: function(tools) {
             if (tools) {
                 tools.tbar.unshift({
                     id: 'toggleRightDrawer',
+                    cls: 'fa fa-ellipsis-v fa-fw fa-lg',
                     side: 'right',
                     fn: this.toggleRightDrawer,
                     scope: this

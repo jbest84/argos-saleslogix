@@ -21,10 +21,10 @@
     "-o": "../docs-output",
     "--images": "images",
     "--": [
+        "../configuration",
         "../src",
         "../../../argos-sdk/src",
         "../../../argos-sdk/libraries/Simplate.js",
-        "../../../argos-sdk/libraries/moment/moment.js",
         "../../../argos-sdk/libraries/snap/snap.js",
         "../../../argos-sdk/libraries/sdata/sdata-client.js",
         "../../../argos-sdk/libraries/jasmine/jasmine.js"

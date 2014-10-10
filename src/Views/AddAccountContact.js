@@ -56,6 +56,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
         titleText: 'Add Account / Contact',
         typeText: 'type',
         webText: 'web',
+        phoneText: 'phone',
         workText: 'work phone',
         industryTitleText: 'Industry',
 
@@ -107,11 +108,9 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             return string.substitute(fmt, [dependentValue]);
         },
         onInsertCompleted: function(entry) {
-            var view = App.getView('account_detail'),
-                route;
+            var view = App.getView('account_detail');
             if (view) {
-                route = (entry && entry.$key) ? view.id + '/' + entry.$key : view.id;
-                App.goRoute(route, {
+                view.show({
                         descriptor: entry.$descriptor,
                         key: entry.$key
                     }, {
@@ -122,7 +121,14 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             }
         },
         onContactAddressChange: function(value, field) {
-            if (this.fields['Address'].getValue() && !this.fields['Address'].getValue().Address1) {
+            // Copy contact address down into the account address if the account address is not set
+            var address, address1;
+            if (this.fields['Address']) {
+                address = this.fields['Address'].getValue();
+                address1 = address && address.Address1;
+            }
+
+            if (!address || !address1) {
                 this.fields['Address'].setValue(value);
             }
         },
@@ -171,7 +177,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
                     validator: validator.exceedsMaxTextLength
                 },
                 {
-                    label: this.workText,
+                    label: this.phoneText,
                     name: 'MainPhone',
                     property: 'MainPhone',
                     type: 'phone',
@@ -202,6 +208,14 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
                             name: 'Contacts.$resources[0].Mobile',
                             property: 'Contacts.$resources[0].Mobile',
                             label: this.mobileText,
+                            type: 'phone',
+                            maxTextLength: 32,
+                            validator: validator.exceedsMaxTextLength
+                        },
+                        {
+                            name: 'Contacts.$resources[0].WorkPhone',
+                            property: 'Contacts.$resources[0].WorkPhone',
+                            label: this.workText,
                             type: 'phone',
                             maxTextLength: 32,
                             validator: validator.exceedsMaxTextLength

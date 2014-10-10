@@ -61,6 +61,7 @@ define('Mobile/SalesLogix/Views/Account/Edit', [
             'AccountManager/UserInfo/FirstName',
             'AccountManager/UserInfo/LastName',
             'AccountName',
+            'Address/*',
             'BusinessDescription',
             'Description',
             'Fax',
@@ -95,7 +96,8 @@ define('Mobile/SalesLogix/Views/Account/Edit', [
                     name: 'AccountName',
                     property: 'AccountName',
                     type: 'text',
-                    validator: validator.notEmpty
+                    validator: validator.notEmpty,
+                    autoFocus: true
                 }, {
                     label: this.webText,
                     name: 'WebAddress',

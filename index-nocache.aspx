@@ -17,8 +17,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
+    <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="content/images/72x72.png" />
     <link rel="apple-touch-icon" sizes="76x76" href="content/images/touch-icon-ipad.png" />
@@ -74,7 +75,7 @@
              and (-webkit-device-pixel-ratio: 1)"
           rel="apple-touch-startup-image">
 
-    <link type="text/css" rel="stylesheet" href="content/css/themes/swiftpage/sdk.min.swiftpage.css" />
+    <link type="text/css" rel="stylesheet" href="content/css/themes/crm/sdk.min.crm.css" />
     <link type="text/css" rel="stylesheet" href="content/css/app.min.css" />
 
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnr9oFthTqlm0vWHM6-Zq2K5hIAZ0d1l0&sensor=false"></script>
@@ -106,9 +107,10 @@
     <script type="text/javascript">
     (function() {
         var application = 'Mobile/SalesLogix/Application',
-            configuration = [
-                'configuration/production'
-            ];
+            configuration = <%= Serialize(
+                Enumerate("configuration", (file) => file.Name == "production.js")
+                    .Select(item => item.Path.Substring(0, item.Path.Length - 3))
+            ) %>;
         require(['moment', application].concat(configuration), function(moment, application, configuration) {
             var localization, bootstrap, fallBackLocalization, completed = false;
             bootstrap = function(requires) {
@@ -117,7 +119,11 @@
                         return;
                     }
 
-                    moment.lang('<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.ToString().ToLower() %>');
+                    var culture = '<%= System.Globalization.CultureInfo.CurrentCulture.Parent.Name.ToLower() %>';
+                    moment.lang(culture);
+                    configuration.currentCulture = culture;
+                    window.moment = moment;
+
                     var instance = new application(configuration);
 
                     instance.activate();
@@ -155,6 +161,15 @@
 </html>
 
 <script type="text/C#" runat="server">
+
+    protected override void OnPreInit(EventArgs e)
+    {
+        base.OnPreInit(e);
+        Session.Abandon();
+        Response.Cookies.Add(new HttpCookie("ASP.NET_SessionId") {Expires = DateTime.Now.AddDays(-1d)});
+        Response.Cookies.Add(new HttpCookie("SlxStickySessionId") {Expires = DateTime.Now.AddDays(-1d)});
+    }
+
     protected class FileItem
     {
         public string Path { get; set; }

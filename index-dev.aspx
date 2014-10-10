@@ -17,8 +17,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
+    <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="content/images/72x72.png" />
     <link rel="apple-touch-icon" sizes="76x76" href="content/images/touch-icon-ipad.png" />
@@ -75,7 +76,7 @@
           rel="apple-touch-startup-image">
 
     <!-- less files -->
-    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/swiftpage.less" />
+    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/crm.less" />
     <link rel="stylesheet/less" type="text/css" href="content/css/app.less" />
 
     <!-- less -->
@@ -113,7 +114,11 @@
     <!-- canvas2image for when HTMLCanvasElement.prototype.toDataURL isn't available -->
     <script type="text/javascript" src="../../argos-sdk/libraries/canvas2image.js"></script>
 
+    <!-- Google Maps -->
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnr9oFthTqlm0vWHM6-Zq2K5hIAZ0d1l0&sensor=false"></script>
+
+    <!-- Deep Diff -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/deep-diff/deep-diff-0.2.0.min.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="../../argos-sdk/libraries/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true, blankGif:'content/images/blank.gif'"></script>
@@ -152,7 +157,11 @@
                         return;
                     }
 
-                    moment.lang('<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.ToString().ToLower() %>');
+                    var culture = '<%= System.Globalization.CultureInfo.CurrentCulture.Parent.Name.ToLower() %>';
+                    moment.lang(culture);
+                    configuration.currentCulture = culture;
+                    window.moment = moment;
+
                     var instance = new application(configuration);
 
                     instance.activate();
@@ -192,6 +201,15 @@
 </html>
 
 <script type="text/C#" runat="server">
+
+    protected override void OnPreInit(EventArgs e)
+    {
+        base.OnPreInit(e);
+        Session.Abandon();
+        Response.Cookies.Add(new HttpCookie("ASP.NET_SessionId") {Expires = DateTime.Now.AddDays(-1d)});
+        Response.Cookies.Add(new HttpCookie("SlxStickySessionId") {Expires = DateTime.Now.AddDays(-1d)});
+    }
+
     protected class FileItem
     {
         public string Path { get; set; }
@@ -255,7 +273,7 @@
 
     protected IEnumerable<FileItem> EnumerateLocalizations(string root, string path, string culture)
     {
-        var currentCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var currentCulture = System.Globalization.CultureInfo.CurrentCulture;
         var rootDirectory = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Request.PhysicalPath), root));
         var includeDirectory = new DirectoryInfo(Path.Combine(rootDirectory.FullName, path));
         

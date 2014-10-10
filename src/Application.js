@@ -50,6 +50,8 @@ define('Mobile/SalesLogix/Application', [
         rememberNavigationState: true,
         enableUpdateNotification: false,
         multiCurrency: false,
+        enableGroups: true,
+        enableHashTags: true,
         speedSearch: {
             includeStemming: true,
             includePhonic: true,
@@ -60,6 +62,11 @@ define('Mobile/SalesLogix/Application', [
         enableCaching: true,
         userDetailsQuerySelect: ['UserName', 'UserInfo/UserName', 'UserInfo/FirstName', 'UserInfo/LastName', 'DefaultOwner/OwnerDescription'],
         userOptionsToRequest: [
+            'DefaultGroup;ACCOUNT',
+            'DefaultGroup;CONTACT',
+            'DefaultGroup;OPPORTUNITY',
+            'DefaultGroup;LEAD',
+            'DefaultGroup;TICKET',
             'General;InsertSecCodeID',
             'General;Currency',
             'Calendar;DayStartTime',
@@ -83,6 +90,7 @@ define('Mobile/SalesLogix/Application', [
             'ChangeOpportunityRate',
             'LockOpportunityRate'
         ],
+        appName: 'argos-saleslogix',
         serverVersion: {
             'major': 8,
             'minor': 0,
@@ -90,13 +98,17 @@ define('Mobile/SalesLogix/Application', [
         },
         mobileVersion: {
             'major': 3,
-            'minor': 1,
+            'minor': 2,
             'revision': 0
         },
-        versionInfoText: 'Mobile v${0}.${1}.${2} / Saleslogix v${3} platform',
-        homeViewRoute: 'myactivity_list',
-        loginViewRoute: 'login',
+        versionInfoText: 'Mobile v${0}.${1}.${2}',
+        homeViewId: 'myactivity_list',
+        loginViewId: 'login',
+        logOffViewId: 'logoff',
+
         init: function() {
+            var original,
+                app = this;
             if (has('ie') && has('ie') < 9) {
                 window.location.href = 'unsupported.html';
             }
@@ -104,6 +116,14 @@ define('Mobile/SalesLogix/Application', [
             this.inherited(arguments);
             this._loadNavigationState();
             this._loadPreferences();
+
+            original = Sage.SData.Client.SDataService.prototype.executeRequest;
+
+            Sage.SData.Client.SDataService.prototype.executeRequest = function(request, options, ajax) {
+                request.setRequestHeader('X-Application-Name', app.appName);
+                request.setRequestHeader('X-Application-Version', string.substitute('${major}.${minor}.${revision}', app.mobileVersion));
+                original.apply(this, arguments);
+            };
         },
         initConnects: function() {
             this.inherited(arguments);
@@ -114,14 +134,14 @@ define('Mobile/SalesLogix/Application', [
         },
         isOnFirstView: function() {
             var history, isOnFirstView = false, length, current, previous;
-            history = this.history;
+            history = ReUI.context.history;
             length = history.length;
             current = history[length - 1];
             previous = history[length - 2];
 
-            if (current && current.page === 'login') {
+            if ((current && current.page === this.loginViewId) || (current && current.page === this.logOffViewId)) {
                 isOnFirstView = true;
-            } else if (previous && previous.page === 'login') {
+            } else if (previous && previous.page === this.loginViewId) {
                 isOnFirstView = true;
             } else if (length === 1) {
                 isOnFirstView = true;
@@ -137,6 +157,9 @@ define('Mobile/SalesLogix/Application', [
         _viewTransitionTo: function(view) {
             this.inherited(arguments);
             this._checkSaveNavigationState();
+            if (App.snapper) {
+                App.snapper.close();
+            }
         },
         _checkSaveNavigationState: function() {
             if (this.rememberNavigationState !== false) {
@@ -159,7 +182,7 @@ define('Mobile/SalesLogix/Application', [
         _saveNavigationState: function() {
             try {
                 if (window.localStorage) {
-                    window.localStorage.setItem('navigationState', json.stringify(this.history));
+                    window.localStorage.setItem('navigationState', json.stringify(ReUI.context.history));
                 }
             } catch(e) {
             }
@@ -173,7 +196,7 @@ define('Mobile/SalesLogix/Application', [
             }
 
             /*if (this.context &&
-                this.context['systemOptions'] && 
+                this.context['systemOptions'] &&
                 this.context['systemOptions']['MultiCurrency'] === 'True') {
                 return true;
             }*/
@@ -359,14 +382,19 @@ define('Mobile/SalesLogix/Application', [
             this.removeCredentials();
             this._clearNavigationState();
 
-            var service = this.getService();
+            var service = this.getService(),
+                view;
             if (service) {
                 service
                     .setUserName(false)
                     .setPassword(false);
             }
 
-            this.reload();
+            view = this.getView(this.logOffViewId);
+
+            if (view) {
+                view.show();
+            }
         },
         getCredentials: function() {
             var stored, encoded, credentials;
@@ -437,6 +465,7 @@ define('Mobile/SalesLogix/Application', [
                     this.preferences = json.parse(window.localStorage.getItem('preferences'));
                 }
             } catch(e) {
+                console.error(e);
             }
 
             //Probably, the first time, its being accessed, or user cleared
@@ -556,6 +585,7 @@ define('Mobile/SalesLogix/Application', [
 
             currentLang = moment.lang();
             moment.lang(currentLang, custom);
+            this.moment = moment().lang(currentLang, custom);
         },
         /*
          * Builds an object that will get passed into moment.lang()
@@ -672,6 +702,7 @@ define('Mobile/SalesLogix/Application', [
                     window.localStorage.setItem('preferences', json.stringify(App.preferences));
                 }
             } catch(e) {
+                console.error(e);
             }
         },
         getDefaultViews: function() {
@@ -735,7 +766,7 @@ define('Mobile/SalesLogix/Application', [
 
                 if (cleanedHistory) {
                     ReUI.context.transitioning = true;
-                    this.history = this.history.concat(cleanedHistory.slice(0, cleanedHistory.length - 1));
+                    ReUI.context.history = ReUI.context.history.concat(cleanedHistory.slice(0, cleanedHistory.length - 1));
 
                     for (var i = 0; i < cleanedHistory.length - 1; i++) {
                         window.location.hash = cleanedHistory[i].hash;
@@ -747,7 +778,7 @@ define('Mobile/SalesLogix/Application', [
                         view = App.getView(last.page),
                         options = last.data && last.data.options;
 
-                    this.goRoute(view.id, options);
+                    view.show(options);
                 } else {
                     this.navigateToHomeView();
                 }
@@ -757,14 +788,22 @@ define('Mobile/SalesLogix/Application', [
             }
         },
         navigateToLoginView: function() {
-            var route = this.loginViewRoute;
+            var viewId = this.loginViewId, view, split;
             if (this._hasValidRedirect(this.redirectHash)) {
-                route = this.redirectHash;
+                // Split by "/redirectTo/"
+                split = this.redirectHash.split(/\/redirectTo\//gi);
+                if (split.length === 2) {
+                    this.redirectHash = split[1];
+                }
             } else {
                 this.redirectHash = '';
             }
 
-            this.goRoute(route);
+            view = this.getView(viewId);
+            if (view) {
+                view.show();
+            }
+
         },
         _hasValidRedirect: function(redirect) {
             return this.redirectHash !== '' && this.redirectHash.indexOf('/redirectTo/') > 0;
@@ -782,21 +821,42 @@ define('Mobile/SalesLogix/Application', [
             }
         },
         navigateToHomeView: function() {
-            var visible;
+            var visible, view, split, key, viewId;
             this.loadSnapper();
-            if (this.redirectHash) {
-                this.goRoute(this.redirectHash);
-            } else {
-                visible = this.preferences && this.preferences.home && this.preferences.home.visible;
-                if (visible && visible.length > 0) {
-                    this.homeViewRoute = visible[0];
-                }
 
-                this.goRoute(this.homeViewRoute);
+            visible = this.preferences && this.preferences.home && this.preferences.home.visible;
+            if (visible && visible.length > 0) {
+                this.homeViewId = visible[0];
+            }
+
+            // Default view will be the home view, overwritten below if a redirect hash is supplied
+            view = this.getView(this.homeViewId);
+
+            if (this.redirectHash) {
+                split = this.redirectHash.split(';');
+                if (split.length > 0) {
+                    viewId = split[0];
+                    key = split[1];
+                    view = this.getView(viewId);
+                    if (view) {
+                        if (key) {
+                            view.show({
+                                key: key
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (view) {
+                view.show();
             }
         },
         navigateToActivityInsertView: function() {
-            this.goRoute('activity_types_list');
+            var view = this.getView('activity_types_list');
+            if (view) {
+                view.show();
+            }
         },
         initiateCall: function() {
             // shortcut for environment call

@@ -30,14 +30,23 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
         cls: ' contextualContent',
         rowTemplate: new Simplate([
             '<li data-action="{%= $.action %}" {% if ($.view) { %}data-view="{%= $.view %}"{% } %}>',
-            '<div class="list-item-static-selector">',
-                '{% if ($.icon) { %}',
-                '<img src="{%: $.icon %}" alt="icon" class="icon" />',
-                '{% } %}',
-            '</div>',
+            '{% if ($$._hasIcon($)) { %}',
+                '<div class="list-item-static-selector">',
+                    '{% if ($.iconTemplate) { %}',
+                        '{%! $.iconTemplate %}',
+                    '{% } else if ($.cls) { %}',
+                        '<div class="{%: $.cls %}"></div>',
+                    '{% } else if ($.icon) { %}',
+                        '<img src="{%: $.icon %}" alt="icon" class="icon" />',
+                    '{% } %}',
+                '</div>',
+            '{% } %}',
             '<div class="list-item-content">{%! $$.itemTemplate %}</div>',
             '</li>'
         ]),
+        _hasIcon: function(entry) {
+            return entry.iconTemplate || entry.cls || entry.icon;
+        },
         itemTemplate: new Simplate([
             '<h3>{%: $.title %}</h3>'
         ]),
@@ -80,12 +89,15 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
         navigateToView: function(view) {
             App.snapper.close();
             if (view) {
-                App.goRoute(view.id);
+                view.show();
             }
         },
         addAccountContact: function(params) {
             App.snapper.close();
-            App.goRoute('add_account_contact', {insert: true});
+            var view = App.getView('add_account_contact');
+            if (view) {
+                view.show({insert: true});
+            }
         },
         navigateToConfigurationView: function() {
             var view = App.getView(this.configurationView);
@@ -154,7 +166,7 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                     {
                         'name': 'AddAccountContactAction',
                         'action': 'addAccountContact',
-                        'icon': 'content/images/icons/New_Contact_24x24.png',
+                        //'cls': 'fa fa-plus-square-o',
                         'title': this.addAccountContactText
                     }
                 ]
@@ -174,13 +186,15 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                     goTo.children.push({
                         'action': 'loadAndNavigateToView',
                         'view': view.id,
-                        'icon': view.icon,
+                        //'icon': view.icon,
+                        //'cls': view.iconClass,
+                        //'iconTemplate': view.iconTemplate,
                         'title': view.titleText,
                         'security': view.getSecurity()
                     });
                 }
             }
-            
+
             layout.push(goTo);
 
             footer = {
@@ -189,22 +203,22 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                     {
                         'name': 'ConfigureMenu',
                         'action': 'navigateToConfigurationView',
-                        'icon': 'content/images/icons/Tools_24x24.png',
-                        'title': this.configureText 
+                        //'cls': 'fa fa-wrench fa-lg',
+                        'title': this.configureText
                     }, {
                         'name': 'SettingsAction',
                         'action': 'navigateToSettingsView',
-                        'icon': 'content/images/icons/settings_24.png',
-                        'title': this.settingsText 
+                        //'cls': 'fa fa-cog fa-lg',
+                        'title': this.settingsText
                     }, {
                         'name': 'HelpAction',
                         'action': 'navigateToHelpView',
-                        'icon': 'content/images/icons/help_24.png',
+                        //'cls': 'fa fa-question fa-lg',
                         'title': this.helpText
                     }, {
                         'name': 'Logout',
                         'action': 'logOut',
-                        'icon': 'content/images/icons/login_24.png',
+                        //'cls': 'fa fa-sign-out fa-lg',
                         'title': this.logOutText
                     }
                 ]
@@ -252,18 +266,17 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             this.clear();
             this.requestData();
         },
-        showViaRoute: function() {
+        clear: function() {
+            this.inherited(arguments);
+            this.layout = null;
+            this.store = null;
+        },
+        show: function() {
             if (this.onShow(this) === false){
                 return;
             }
 
             this.refresh();
-        },
-        /**
-         * Override the List show to not use RUI (this view will always be on the screen, just hidden behind the main content)
-         */
-        show: function() {
-            this.showViaRoute();
         },
         refreshRequiredFor: function(options) {
             var visible = lang.getObject('preferences.home.visible', false, App) || [],
@@ -292,13 +305,13 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             if (view) {
                 // If the speedsearch list is not our current view, show it first
                 if (view.id !== current.id) {
-                    App.goRoute(view.id, {
+                    view.show({
                         query: expression
                     });
                 }
 
                 // Set the search term on the list and call search.
-                // This will keep the search terms on each widget in sync. 
+                // This will keep the search terms on each widget in sync.
                 setTimeout(function() {
                     view.setSearchTerm(expression);
                     if (current && current.id === view.id) {

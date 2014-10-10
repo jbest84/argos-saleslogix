@@ -41,6 +41,16 @@ define('Mobile/SalesLogix/Views/PickList', [
         },
         show: function(options) {
             this.set('title', options && options.title || this.title);
+            if (!options.singleSelect) {
+                if (options.keyProperty) {
+                    this.idProperty = options.keyProperty;
+                }
+
+                if (options.textProperty) {
+                    this.labelProperty = options.textProperty;
+                }
+            }
+
             this.inherited(arguments);
         },
         formatSearchQuery: function(searchQuery) {

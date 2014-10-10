@@ -66,6 +66,15 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
         countMoreText: 'View More',
         activityHeaderText: 'Activities',
         toggleCollapseText: 'toggle collapse',
+        weekDaysShortText: [
+            'Sun',
+            'Mon',
+            'Tue',
+            'Wed',
+            'Thu',
+            'Fri',
+            'Sat'
+        ],
 
         //Templates
         widgetTemplate: new Simplate([
@@ -96,16 +105,16 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
         navigationTemplate: new Simplate([
             '<div class="split-buttons">',
             '<button data-tool="today" data-action="getTodayMonthActivities" class="button">{%: $.todayText %}</button>',
-            '<button data-tool="selectdate" data-action="selectDate" class="button"><span></span></button>',
+            '<button data-tool="selectdate" data-action="selectDate" class="button fa fa-calendar"><span></span></button>',
             '<button data-tool="day" data-action="navigateToDayView" class="button">{%: $.dayText %}</button>',
             '<button data-tool="week" data-action="navigateToWeekView" class="button">{%: $.weekText %}</button>',
-            '<button data-tool="month" class="button">{%: $.monthText %}</button>',
+            '<button data-tool="month" class="button current">{%: $.monthText %}</button>',
             '</div>'
         ]),
         navBarTemplate: new Simplate([
             '<div class="nav-bar">',
-            '<button data-tool="next" data-action="goToNextMonth" class="button button-next"><span></span></button>',
-            '<button data-tool="prev" data-action="goToPreviousMonth" class="button button-prev"><span></span></button>',
+            '<button data-tool="next" data-action="goToNextMonth" class="button button-next fa fa-arrow-right fa-lg"><span></span></button>',
+            '<button data-tool="prev" data-action="goToPreviousMonth" class="button button-prev fa fa-arrow-left fa-lg"><span></span></button>',
             '<h3 class="date-text" data-dojo-attach-point="dateNode"></h3>',
             '</div>'
         ]),
@@ -113,7 +122,8 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
             '<li data-action="activateEntry" data-key="{%= $.$key %}" data-descriptor="{%: $.$descriptor %}" data-activity-type="{%: $.Type %}">',
             '<table class="calendar-entry-table"><tr>',
             '<td class="entry-table-icon">',
-            '<button data-action="selectEntry" class="list-item-selector button"><img src="{%= $$.activityIconByType[$.Type] || $$.selectIcon %}" class="icon" /></button>',
+            '<button data-action="selectEntry" class="list-item-selector button {%= $$.activityIconByType[$.Type] %}">',
+            '</button>',
             '</td>',
             '<td class="entry-table-time">{%! $$.activityTimeTemplate %}</td>',
             '<td class="entry-table-description">{%! $$.activityItemTemplate %}</td>',
@@ -124,7 +134,8 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
             '<li data-action="activateEntry" data-key="{%= $.$key %}" data-descriptor="{%: $.$descriptor %}" data-activity-type="Event">',
             '<table class="calendar-entry-table"><tr>',
             '<td class="entry-table-icon">',
-            '<button data-action="selectEntry" class="list-item-selector button"><img src="{%= $$.eventIcon %}" class="icon" /></button>',
+            '<button data-action="selectEntry" class="list-item-selector button {%= $$.eventIcon %}">',
+            '</button>',
             '</td>',
             '<td class="entry-table-description">{%! $$.eventItemTemplate %}</td>',
             '</tr></table>',
@@ -271,16 +282,16 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
             'Recurring'
         ],
         activityIconByType: {
-            'atToDo': 'content/images/icons/To_Do_24x24.png',
-            'atPhoneCall': 'content/images/icons/Call_24x24.png',
-            'atAppointment': 'content/images/icons/Meeting_24x24.png',
-            'atLiterature': 'content/images/icons/Schedule_Literature_Request_24x24.gif',
-            'atPersonal': 'content/images/icons/Personal_24x24.png',
-            'atQuestion': 'content/images/icons/help_24.png',
-            'atNote': 'content/images/icons/note_24.png',
-            'atEMail': 'content/images/icons/letters_24.png'
+            'atToDo': 'fa fa-list-ul',
+            'atPhoneCall': 'fa fa-phone',
+            'atAppointment': 'fa fa-calendar-o',
+            'atLiterature': 'fa fa-calendar-o',
+            'atPersonal': 'fa fa-check-square-o',
+            'atQuestion': 'fa fa-question',
+            'atNote': 'fa fa-calendar-o',
+            'atEMail': 'fa fa-envelope'
         },
-        eventIcon: 'content/images/icons/Holiday_schemes_24.png',
+        eventIcon: 'fa fa-calendar-o',
 
         resourceKind: 'activities',
 
@@ -314,7 +325,7 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
             var view = App.getView("event_related"),
                 where = this.getSelectedDateEventQuery();
             if (view) {
-                App.goRoute(view.id, {"where": where});
+                view.show({"where": where});
             }
         },
         toggleGroup: function(params) {
@@ -417,7 +428,6 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
         },
         onRequestEventDataAborted: function(response, o) {
             this.options = false; // force a refresh
-            ErrorManager.addError(response, o, this.options, 'aborted');
         },
         onRequestEventDataSuccess: function(feed) {
             this.processEventFeed(feed);
@@ -636,8 +646,8 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
                 [App.context['user'] && App.context['user']['$key'],
                 convert.toIsoStringFromDate(this.currentDate.toDate()),
                 convert.toIsoStringFromDate(this.currentDate.clone().endOf('day').toDate()),
-                this.currentDate.format('YYYY-MM-DDT00:00:00Z'),
-                this.currentDate.format('YYYY-MM-DDT23:59:59Z')
+                this.currentDate.format('YYYY-MM-DDT00:00:00[Z]'),
+                this.currentDate.format('YYYY-MM-DDT23:59:59[Z]')
                 ]
             );
         },
@@ -740,7 +750,7 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
 
             calHTML.push(this.calendarWeekHeaderStartTemplate);
             for (i = 0; i <= 6; i++ ) {
-                calHTML.push(string.substitute(this.calendarWeekHeaderTemplate, [moment.langData().weekdaysShort(moment().day(i))]));
+                calHTML.push(string.substitute(this.calendarWeekHeaderTemplate, [this.weekDaysShortText[i]]));
             }
             calHTML.push(this.calendarWeekHeaderEndTemplate);
 
@@ -828,10 +838,12 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
                 tools: {
                     tbar: [{
                             id: 'complete',
+                            cls: 'fa fa-check fa-fw fa-lg',
                             fn: this.selectDateSuccess,
                             scope: this
                         }, {
                             id: 'cancel',
+                            cls: 'fa fa-ban fa-fw fa-lg',
                             side: 'left',
                             fn: ReUI.back,
                             scope: ReUI
@@ -840,7 +852,7 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
             },
                 view = App.getView(this.datePickerView);
             if (view) {
-                App.goRoute(view.id, options);
+                view.show(options);
             }
         },
         selectDateSuccess: function() {
@@ -852,19 +864,19 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
         navigateToWeekView: function() {
             var view = App.getView(this.weekView),
                 options = {currentDate: this.currentDate.valueOf() || moment().startOf('day')};
-            App.goRoute(view.id, options);
+            view.show(options);
         },
         navigateToDayView: function() {
             var view = App.getView(this.dayView),
                 options = {currentDate: this.currentDate.valueOf() || moment().startOf('day')};
-            App.goRoute(view.id, options);
+            view.show(options);
         },
         navigateToInsertView: function(el) {
             var view = App.getView(this.insertView || this.editView);
 
             this.options.currentDate = this.currentDate.toString('yyyy-MM-dd') || Date.today();
             if (view) {
-                App.goRoute(view.id, {
+                view.show({
                     negateHistory: true,
                     returnTo: this.id,
                     insert: true
@@ -874,12 +886,10 @@ define('Mobile/SalesLogix/Views/Calendar/MonthView', [
         navigateToDetailView: function(key, descriptor) {
             var entry = this.entries[key],
                 detailView = (entry.isEvent) ? this.eventDetailView : this.activityDetailView,
-                view = App.getView(detailView),
-                route;
+                view = App.getView(detailView);
             descriptor = (entry.isEvent) ? descriptor : entry.Description;
             if (view) {
-                route = key ? view.id + '/' + key : view.id;
-                App.goRoute(route, {
+                view.show({
                     title: descriptor,
                     key: key
                 });

@@ -40,7 +40,6 @@ define('Mobile/SalesLogix/Views/OpportunityContact/List', [
         detailView: 'opportunitycontact_detail',
         selectView: 'contact_related',
         insertView: 'opportunitycontact_edit',
-        icon: 'content/images/icons/Contacts_24x24.png',
         security: 'Entities/Contact/View',
         queryOrderBy: 'Contact.NameLF',
         expose: false,
@@ -117,21 +116,21 @@ define('Mobile/SalesLogix/Views/OpportunityContact/List', [
                     insert: true
                 };
             if (view && options) {
-                App.goRoute(view.id, options, {returnTo: -1});
+                view.show(options, {returnTo: -1});
             }
         },
         navigateToSelectView: function() {
             var view = App.getView(this.selectView),
                 options = this.createNavigationOptions();
             if (view && options) {
-                App.goRoute(view.id, options);
+                view.show(options);
             }
         },
         createToolLayout: function() {
             return this.tools || (this.tools = {
                 'tbar': [{
                     id: 'associate',
-                    icon: 'content/images/icons/add_24.png',
+                    cls: 'fa fa-plus fa-fw fa-lg',
                     action: 'navigateToSelectView',
                     security: App.getViewSecurity(this.insertView, 'insert')
                 }]
