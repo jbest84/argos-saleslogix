@@ -166,7 +166,6 @@ define('Mobile/SalesLogix/Views/Contact/Detail', [
             return !value;
         },
         viewAddress: function() {
-            //App.showMapForAddress(format.address(this.entry['Address'], true, ' '));
             var view = App.getView('generic_map');
 
             if (view) {
@@ -177,7 +176,7 @@ define('Mobile/SalesLogix/Views/Contact/Detail', [
             var view = App.getView('generic_map');
 
             if (view) {
-                view.show();
+                view.show({ address: this.entry['Address'], directions: true});
             }
         },
         checkAddress: function(entry, value) {
@@ -249,11 +248,11 @@ define('Mobile/SalesLogix/Views/Contact/Detail', [
                         }, {
                             name: 'ViewAddressAction2',
                             property: 'Address',
-                            label: 'My Location',
+                            label: 'Directions',
                             iconClass: 'fa fa-map-marker fa-lg',
                             action: 'viewAddress2',
-                            renderer: function() {
-                                return '';
+                            renderer: function(val) {
+                                return 'Directions to ' + format.address.call(this, val, true, ' ');
                             }
                         }]
                 }, {

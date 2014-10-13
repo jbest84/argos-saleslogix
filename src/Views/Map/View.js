@@ -33,11 +33,16 @@ define('Mobile/SalesLogix/Views/Map/View', [
         expose: false,
         map: null,
         geocoder: null,
+        directionsService: null,
+        directionsDisplay: null,
+        infoWindow: null,
         markers: null,
+        listeners: null,
 
         startup: function() {
             this.inherited(arguments);
             this.markers = [];
+            this.listeners = [];
         },
 
         attributeMap: {
@@ -54,28 +59,38 @@ define('Mobile/SalesLogix/Views/Map/View', [
                 marker.setMap(null);
             });
 
+            array.forEach(this.listeners, function(handle) {
+                google.maps.event.removeListener(handle);
+            });
+
             this.markers = [];
         },
         onTransitionTo: function() {
-            var address = this.options && this.options.address;
+            var address, directions;
+
+            address = this.options && this.options.address;
+            directions = this.options && this.options.directions;
 
             this.map = new google.maps.Map(this.contentNode);
             this.geocoder = new google.maps.Geocoder();
+            this.directionsService = new google.maps.DirectionsService();
+            this.directionsDisplay = new google.maps.DirectionsRenderer();
+            this.infoWindow = new google.maps.InfoWindow();
 
-            this.showMap(address);
+            this.showMap(address, directions);
         },
         onTransitionAway: function() {
             this.options.address = null;
             this.map = null;
             this.geocoder = null;
         },
-        showMap: function(address) {
+        showMap: function(address, directions) {
             var mapOptions, latLng, marker;
 
             this.clearMarkers();
 
             if (address) {
-                this.geocoder.geocode({'address': address.FullAddress}, function(results, status) {
+                this.geocoder.geocode({'address': address.FullAddress}, function (results, status) {
                     if (status === google.maps.GeocoderStatus.OK) {
                         latLng = results[0].geometry.location;
 
@@ -93,26 +108,63 @@ define('Mobile/SalesLogix/Views/Map/View', [
 
                         this.markers.push(marker);
                     }
-                }.bind(this));
 
-            } else {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                        mapOptions = {
-                            center: latLng,
-                            zoom: 14
-                        };
-                        this.map.setOptions(mapOptions);
-                        marker = new google.maps.Marker({
-                            position: latLng,
-                            map: this.map,
-                            title: 'Current Location ...'
-                        });
-                        this.markers.push(marker);
-                    }.bind(this));
-                }
+                    if ("geolocation" in navigator && directions) {
+                        // Use HTML5 geolocation to get the user's current coordinates
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var start, end, request;
+
+                            start = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                            end = address.FullAddress;
+
+                            mapOptions = {
+                                center: start,
+                                zoom: 14
+                            };
+
+                            this.map.setOptions(mapOptions);
+
+                            // Setup directions service request
+                            request = {
+                                origin: start,
+                                destination: end,
+                                travelMode: google.maps.TravelMode.DRIVING
+                            };
+
+                            this.directionsDisplay.setMap(this.map);
+                            this.directionsService.route(request, function(result, status) {
+                                if (status === google.maps.DirectionsStatus.OK) {
+                                    this.directionsDisplay.setDirections(result);
+                                    this._showSteps(result);
+                                }
+                            }.bind(this));
+
+                        }.bind(this));
+                    }
+                }.bind(this));
             }
+        },
+        _showSteps: function(result) {
+            var route, marker, i;
+            route = result.routes[0].legs[0];
+
+            for (i = 0; i < route.steps.length; i++) {
+                marker = new google.maps.Marker({
+                    position: route.steps[i].start_point,
+                    map: this.map
+                });
+
+                this._showInstructions(marker, route.steps[i].instructions);
+                this.markers.push(marker);// Add to marker array so it can be cleared later on
+            }
+        },
+        _showInstructions: function(marker, text) {
+            var handle = google.maps.event.addListener(marker, 'click', function() {
+               this.infoWindow.setContent(text);
+               this.infoWindow.open(this.map, marker);
+            }.bind(this));
+
+            this.listeners.push(handle); // Add handle to the listeners array so it can be removed later on
         }
     });
 });
