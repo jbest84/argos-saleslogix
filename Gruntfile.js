@@ -16,6 +16,36 @@ module.exports = function(grunt) {
                 }
             }
         },
+        webpack: {
+            build: {
+                "optimize-minimize": true,
+                entry: ['./src/Mobile/SalesLogix/Application.js', './src/Mobile/SalesLogix/ApplicationModule.js'],
+                output: {
+                    path: 'deploy/',
+                    filename: 'bundle.js',
+                    libraryTarget: 'amd'
+                },
+                externals: [
+                    "moment",
+                    /^Sage/,
+                    /^dojo/,
+                    /^dijit/
+                ],
+                resolve: {
+                    alias: {
+                    },
+                    modulesDirectories: [
+                        'src'
+                    ]
+                },
+                target: 'web',
+                stats: {
+                    colors: true,
+                    modules: true,
+                    reasons: true
+                }
+            }
+        },
         weinre: {
             dev: {
                 options: {
@@ -102,6 +132,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-webpack');
 
     grunt.registerTask('test', ['connect', 'jasmine:coverage']);
     grunt.registerTask('server', ['connect:server:keepalive']);
