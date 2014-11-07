@@ -95,7 +95,7 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
             'WorkPhone'
         ],
         resourceKind: 'leads',
-
+        entityName:'Lead',
         navigateToHistoryInsert: function(type, entry, complete) {
             var view = App.getView(this.historyEditView);
             if (view) {

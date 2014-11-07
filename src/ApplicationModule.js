@@ -128,7 +128,10 @@ define('Mobile/SalesLogix/ApplicationModule', [
     'Mobile/SalesLogix/Template',
     'Mobile/SalesLogix/Validator',
     'Mobile/SalesLogix/Environment',
-    'Mobile/SalesLogix/Utility'
+    'Mobile/SalesLogix/Utility',
+
+    'Mobile/SalesLogix/Models/main',
+
     
 ], function(
     declare,

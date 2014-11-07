@@ -71,6 +71,7 @@ define('Mobile/SalesLogix/Views/Account/Detail', [
         calledText: 'Called ${0}',
 
         //View Properties
+        entityName: 'Account', //Needed for offline Model mapping
         id: 'account_detail',
         editView: 'account_edit',
         historyEditView: 'history_edit',

@@ -33,6 +33,7 @@ define('Mobile/SalesLogix/Views/Login', [
 
         //Localization
         id: 'login',
+
         busy: false,
         copyrightText: 'Copyright &copy; 2014 Infor. All rights reserved. www.infor.com',
         logOnText: 'Sign in',
@@ -46,6 +47,7 @@ define('Mobile/SalesLogix/Views/Login', [
         requestAbortedText: 'The request was aborted.',
         logoText: 'Infor CRM',
 
+        checkOfflineState: false,
         ENTER_KEY: 13,
 
         _onKeyPress: function(evt) {
