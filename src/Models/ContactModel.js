@@ -73,17 +73,6 @@ define('Mobile/SalesLogix/Models/ContactModel', [
                 showInEdit: true,
                 showInSummary: true
             }, {
-                name: 'AccountName',
-                displayName: this.accountText,
-                propertyName: 'AccountName',
-                type: 'String',
-                size: 64,
-                validator: validator.notEmpty,
-                showInList: true,
-                showInDetail: true,
-                showInEdit: true,
-                showInSummary: true
-            }, {
                 name: 'FirstName',
                 displayName: 'First Name',
                 propertyName: 'FirstName',
@@ -117,9 +106,9 @@ define('Mobile/SalesLogix/Models/ContactModel', [
                 showInEdit: true,
                 showInSummary: true
             }, {
-                name: 'AddressId',
-                displayName: 'AddressId',
-                propertyName: 'AddressId',
+                name: 'Address',
+                displayName: 'Address',
+                propertyName: 'Address',
                 type: 'Id',
                 adapterMap: { 'SData': { dataPath: 'Address/*' } },
                 relationship:'MailingAddress',
@@ -128,10 +117,10 @@ define('Mobile/SalesLogix/Models/ContactModel', [
                 showInEdit: true,
                 showInSummary: true,
             }, {
-                name: 'AccountManagerId',
-                displayName: 'AddressId',
-                propertyName: 'AddressId',
-                type: 'Id',
+                name: 'AccountManager',
+                displayName: 'Acc. Manager',
+                propertyName: 'AccountManager',
+                type: 'User',
                 adapterMap: { 'SData': { dataPath: 'AccountManager' } },
                 relationship: 'AccountManager',
                 showInList: true,
@@ -155,12 +144,12 @@ define('Mobile/SalesLogix/Models/ContactModel', [
                 childProperty:'AddressId'
             },{
                 name: 'AccountManager',
-                displayName: 'Acc Manager',
+                displayName: 'Acc. Manager',
                 propertyName: 'AccountManager',
                 type: 'ManyToOne',
                 parentEntity: 'Account',
                 parentProperty: 'AccountMamnagerId',
-                childEntity: 'UserInfo',
+                childEntity: 'User',
                 childProperty:'UserId'
             }, {
                 name: 'Addresses',

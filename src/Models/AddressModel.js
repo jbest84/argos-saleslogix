@@ -24,15 +24,17 @@ define('Mobile/SalesLogix/Models/AddressModel', [
     'dojo/_base/lang',
     'Sage/Platform/Mobile/Models/Validator',
     'Sage/Platform/Mobile/Models/_ModelBase',
+    'Sage/Platform/Mobile/Models/ModelManager'
 
 ], function(
     declare,
     lang,
     validator,
-    _ModelBase
+    _ModelBase,
+    ModelManager
 ) {
 
-    return declare('Mobile.SalesLogix.Models.AddressModel', _ModelBase, {
+    var model = declare('Mobile.SalesLogix.Models.AddressModel', _ModelBase, {
         
        
         /**
@@ -163,5 +165,5 @@ define('Mobile/SalesLogix/Models/AddressModel', [
 
 
     });
-
+    return ModelManager.register('Address', model);
 });

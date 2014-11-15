@@ -96,7 +96,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
             'Weighted'
         ],
         resourceKind: 'opportunities',
-
+        entityName:'Opportunity',
         scheduleActivity: function() {
             App.navigateToActivityInsertView();
         },

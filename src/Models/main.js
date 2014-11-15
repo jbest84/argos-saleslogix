@@ -20,6 +20,8 @@ define('Mobile/SalesLogix/Models/main', [
     'Mobile/SalesLogix/Models/ContactModel',
     'Mobile/SalesLogix/Models/HistoryModel',
     'Mobile/SalesLogix/Models/LeadModel',
+    'Mobile/SalesLogix/Models/OpportunityModel',
+    'Mobile/SalesLogix/Models/OppProductModel'
 
 ], function(
     lang

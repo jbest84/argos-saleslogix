@@ -19,7 +19,7 @@
  * @alternateClassName _ModelBase
  * @requires Sage/Platform/Mobile/Models/Local/_LocalModel
  */
-define('Mobile/SalesLogix/Models/LeadModel', [
+define('Mobile/SalesLogix/Models/OpportunityModel', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'Sage/Platform/Mobile/Models/Validator',
@@ -33,30 +33,30 @@ define('Mobile/SalesLogix/Models/LeadModel', [
     ModelManager
 ) {
 
-    var model= declare('Mobile.SalesLogix.Models.LeadModel', _ModelBase, {
+    var model= declare('Mobile.SalesLogix.Models.OpportunityModel', _ModelBase, {
         
         /**
          * @property {String}
          * The unique (within the current form) name of the model
          */
-        name: 'LeadModel',
-        displayName: 'Lead',
-        displayNamePlural: 'Leads',
-        entityName: 'Lead',
-        primaryKey: 'LeadId',
-        adapterMap: {'SData': { resourceKind: 'leads' } },
+        name: 'OpportuntiyModel',
+        displayName: 'Opportunity',
+        displayNamePlural: 'Opprtunities',
+        entityName: 'Opportunity',
+        primaryKey: 'OpportunityId',
+        adapterMap: {'SData': { resourceKind: 'opportunities' } },
         createProperties: function() {
             var prop;
             prop = this.properties || (this.properties = [{
-                name: 'LeadId',
-                displayName: 'LeadId',
-                propertyName: 'LeadId',
+                name: 'OpportunityId',
+                displayName: 'OpportunityId',
+                propertyName: 'OpportunityId',
                 type: 'Id',
                 isPrimaryKey: true
             },{
-                name: 'Company',
-                displayName: 'Company',
-                propertyName: 'Company',
+                name: 'Description',
+                displayName: 'Description',
+                propertyName: 'Destription',
                 type: 'String',
                 size: 128,
                 validator: validator.notEmpty,
@@ -64,26 +64,35 @@ define('Mobile/SalesLogix/Models/LeadModel', [
                 showInDetail: true,
                 showInEdit: true,
                 showInSummary: true,
-                autoFocus: true
             }, {
-                name: 'WorkPhone',
-                displayName: 'Work Phone',
-                propertyName: 'WorkPhone',
-                type: 'Phone',
-                size: 64,
-                validator: validator.notEmpty,
+                name: 'AccountId',
+                displayName: 'AccountId',
+                propertyName: 'AccountId',
+                type: 'Id',
+                
+            },{
+                name: 'Status',
+                displayName: 'Status',
+                propertyName: 'Status',
+                type: 'Piscklist',
                 showInList: true,
                 showInDetail: true,
                 showInEdit: true,
                 showInSummary: true,
-                autoFocus: true
             }, {
-                name: 'Address',
-                displayName: 'Address',
-                propertyName: 'Address',
-                type: 'Object',
-                adapterMap: { 'SData': { dataPath: 'Address/*' } },
-                relationship:'MailingAddress',
+                name: 'Stage',
+                displayName: 'Stage',
+                propertyName: 'Stage',
+                type: 'String',
+                showInList: true,
+                showInDetail: true,
+                showInEdit: true,
+                showInSummary: true,
+            }, {
+                name: 'Potentail',
+                displayName: 'Potentail',
+                propertyName: 'Potentail',
+                type: 'Currency',
                 showInList: true,
                 showInDetail: true,
                 showInEdit: true,
@@ -95,48 +104,38 @@ define('Mobile/SalesLogix/Models/LeadModel', [
         createRelationships: function() {
             var rel;
             rel = this.relationships || (this.relationships = [{
-                name: 'MailingAddress',
-                displayName: 'Mailing Address',
-                propertyName: 'MailingAddress',
+                name: 'Account',
+                displayName: 'Account',
+                propertyName: 'Account',
                 type: 'ManyToOne',
-                parentEntity: 'Lead',
-                parentProperty: 'AddressId',
-                childEntity: 'Address',
-                childProperty:'AddressId'
-            },{
-                name: 'AccountManager',
-                displayName: 'Acc Manager',
-                propertyName: 'AccountManager',
-                type: 'ManyToOne',
-                parentEntity: 'Account',
-                parentProperty: 'AccountMamnagerId',
-                childEntity: 'UserInfo',
-                childProperty:'UserId'
-            }, {
-                name: 'Addresses',
-                displayName: 'Addresses',
-                propertyName: 'Addresses',
-                type: 'OnToMany',
-                parentEntity: 'Lead',
-                parentProperty: 'LeadId',
-                childEntity: 'Address',
-                childProperty: 'EntityId'
-
+                parentProperty: 'AccountId',
+                childEntity: 'Account',
+                childProperty:'AccountId'
             },{
                 name: 'History',
                 displayName: 'History',
                 propertyName: 'History',
                 type: 'OnToMany',
-                parentEntity: 'Lead',
-                parentProperty: 'LeadId',
+                parentProperty: 'OpportunityId',
                 childEntity: 'History',
-                childProperty: 'LeadId',
+                childProperty: 'OpportunityId',
                 includeInParent: true,
-                adapterMap: { 'SData': { dataPath: 'LeadId' } },
+                //adapterMap: { 'SData': { dataPath: 'OpportunityId' } },
+
+            }, {
+                name: 'Products',
+                displayName: 'Products',
+                propertyName: 'Products',
+                type: 'OnToMany',
+                parentProperty: 'OpportunityId',
+                childEntity: 'OpportunityProduct',
+                childProperty: 'OpportunityId',
+                includeInParent: true,
+                adapterMap: { 'SData': { dataPath: 'Opportunity.id' } },
 
             }]);
             return rel;
         }
     });
-    return ModelManager.register('Lead', model);
+    return ModelManager.register('Opportunity', model);
 });

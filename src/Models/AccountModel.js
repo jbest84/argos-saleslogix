@@ -24,13 +24,15 @@ define('Mobile/SalesLogix/Models/AccountModel', [
     'dojo/_base/lang',
     'Sage/Platform/Mobile/Models/Validator',
     'Sage/Platform/Mobile/Models/_ModelBase',
-    'Sage/Platform/Mobile/Models/ModelManager'
+    'Sage/Platform/Mobile/Models/ModelManager',
+    'Mobile/SalesLogix/Action',
 ], function(
     declare,
     lang,
     validator,
     _ModelBase,
-    ModelManager
+    ModelManager,
+    action
 ) {
 
     var model= declare('Mobile.SalesLogix.Models.AccountModel', _ModelBase, {
@@ -67,7 +69,8 @@ define('Mobile/SalesLogix/Models/AccountModel', [
                 showInDetail: true,
                 showInEdit: true,
                 showInSummary: true,
-                autoFocus: true
+                autoFocus: true,
+                isDescriptor: true
             }, {
                 name: 'MainPhone',
                 displayName: 'Main Phone',
@@ -79,12 +82,12 @@ define('Mobile/SalesLogix/Models/AccountModel', [
                 showInDetail: true,
                 showInEdit: true,
                 showInSummary: true,
-                autoFocus: true
+                isDescriptor: true
             }, {
-                name: 'AddressId',
-                displayName: 'AddressId',
-                propertyName: 'AddressId',
-                type: 'Id',
+                name: 'Address',
+                displayName: 'Address',
+                propertyName: 'Address',
+                type: 'Object',
                 adapterMap: { 'SData': { dataPath: 'Address/*' } },
                 relationship:'MailingAddress',
                 showInList: true,
@@ -92,13 +95,13 @@ define('Mobile/SalesLogix/Models/AccountModel', [
                 showInEdit: true,
                 showInSummary: true,
             }, {
-                name: 'AccountManagerId',
-                displayName: 'AddressId',
-                propertyName: 'AddressId',
-                type: 'Id',
+                name: 'AccountManager',
+                displayName: 'Acct. Manager',
+                propertyName: 'AccountManager',
+                type: 'User',
                 adapterMap: { 'SData': { dataPath: 'AccountManager' } },
                 relationship: 'AccountManager',
-                showInList: true,
+                showInList: false,
                 showInDetail: true,
                 showInEdit: true,
                 showInSummary: true,
@@ -182,6 +185,58 @@ define('Mobile/SalesLogix/Models/AccountModel', [
 
             }]);
             return rel;
+        },
+        createActions: function () {
+            var actions = this.actions || (this.actions = [{
+                id: 'edit',
+                cls: 'fa fa-pencil fa-2x',
+                label: 'Edit',
+                action: 'navigateToEditView'
+            }, {
+                id: 'callMain',
+                cls: 'fa fa-phone-square fa-2x',
+                label: 'Call',
+                enabled: action.hasProperty.bindDelegate(this, 'MainPhone'),
+                fn: action.callPhone.bindDelegate(this, 'MainPhone')
+            }, {
+                id: 'viewContacts',
+                label: 'View Contacts',
+               // fn: this.navigateToRelatedView.bindDelegate(this, 'contact_related', 'Account.id eq "${0}"')
+            }, {
+                id: 'addNote',
+                cls: 'fa fa-edit fa-2x',
+                label: 'Add Note',
+                //fn: action.addNote.bindDelegate(this),
+                fn:this.addNote,
+                showInList: true
+            }, {
+                id: 'addActivity',
+                cls: 'fa fa-calendar fa-2x',
+                label: 'Schedule Activity',
+                fn: action.addActivity.bindDelegate(this)
+            }, {
+                id: 'addAttachment',
+                cls: 'fa fa-paperclip fa-2x',
+                label: 'Add Attachmnet',
+                fn: action.addAttachment.bindDelegate(this)
+            }]
+
+            );
+            return actions;
+        },
+        addNote: function (action, selection) {
+            
+            var context = {
+                entity: selection.data,
+                descriptor: selection.data.$descriptor,
+                key: selection.data.$key
+            }
+           
+            var view = App.OfflineManager.getEditView({entityName:'History'}); 
+
+            if (view) {
+                view.show({entityName:'History',context: context, insert: true });
+            }
         }
     });
     return ModelManager.register('Account', model);

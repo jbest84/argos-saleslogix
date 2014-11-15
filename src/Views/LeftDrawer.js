@@ -82,6 +82,13 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 App.logOut();
             }
         },
+        goOffline: function() {
+            var sure = window.confirm('Are you sure want to go offline');
+            if (sure) {
+
+                App.OfflineManager.toggleOffline();
+            }
+        },
         loadAndNavigateToView: function (params) {
             var view = App.getView(params && params.view);
             this.navigateToView(view);
@@ -220,6 +227,12 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                         'action': 'logOut',
                         //'cls': 'fa fa-sign-out fa-lg',
                         'title': this.logOutText
+                    },
+                    {
+                        'name': 'GoOffline',
+                        'action': 'goOffline',
+                        //'cls': 'fa fa-sign-out fa-lg',
+                        'title': 'Go Offiline'
                     }
                 ]
             };
