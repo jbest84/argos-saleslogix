@@ -1076,17 +1076,21 @@ td.entry-table-description {
         color: @form-label-color;
         font-weight: @form-label-font-weight;
     }
+
     .group-entry {
         color: @form-value-color;
         font-weight: @form-value-font-weight;
     }
+
     .group-entry-header {
         font-weight: normal;
         font-size: 16px;
     }
+
     .group-currency {
         color: @color-emerald;
     }
+
     .group-column {
         overflow: hidden;
         display: inline-block;
@@ -1094,6 +1098,7 @@ td.entry-table-description {
         min-width: 225px;
         vertical-align: top;
     }
+
     .list-content {
         margin: 0;
         padding: 0;
@@ -1120,10 +1125,10 @@ td.entry-table-description {
             * > img.icon {
                 border: none 0 black;
                 margin: 0 .5em 0 0;
-                width: 32px;
-                height: 32px;
-                left: 8px;
-                top: 6px;
+                width: 24px;
+                height: 24px;
+                left: 7px;
+                top: 5px;
                 float: left;
             }
 
@@ -1150,31 +1155,32 @@ td.entry-table-description {
         .list-item-static-selector + .list-item-content,
         .list-item-content,
         .actions-enabled + .list-item-content {
-            padding-left: 58px;
+            padding-left: 48px;
         }
 
     .list-item-content {
         > h4 {
-          font-weight:normal;
+            font-weight: normal;
         }
-        > h4 > span {
-          font-weight:normal;
-        }
+
+            > h4 > span {
+                font-weight: normal;
+            }
     }
 
     .list-item-selector {
         visibility: hidden;
-        width: 48px;
-        height: 48px;
+        width: 38px;
+        height: 38px;
         position: absolute;
         top: 6px;
         z-index: 10;
         background: none;
         border: 0 none #000;
-        padding: 5px 1px 1px 1px;
+        padding: 5px 0px 0px 0px;
         border-radius: 48px;
         background-color: @gray1-light;
-        font-size: 14px;
+        font-size: 11px;
     }
 
     .list-show-actions {
@@ -1246,13 +1252,15 @@ td.entry-table-description {
             width: 10%;
             min-width: 68px;
             border-radius: 5px;
-            color:  #fff;
-            >  span {
-               font-size: 25px;
-            } 
-            >  label {
-               font-size: 10px;
-            } 
+            color: #fff;
+
+            > span {
+                font-size: 25px;
+            }
+
+            > label {
+                font-size: 10px;
+            }
         }
     }
 
@@ -1263,12 +1271,10 @@ td.entry-table-description {
 
         > .list-item-selector {
             border-color: #AAAAAA;
-            //background-color: #AAAAAA !important;
             background-image: none !important;
             border-bottom: 0px none #AAAAAA !important;
             bottom: -1px;
-            //height: 62px !important;
-            height: 48px !important;
+            height: 38px !important;
             .box-shadow(none) !important;
             -moz-box-sizing: border-box;
             -webkit-box-sizing: border-box;

@@ -948,10 +948,10 @@ td.entry-table-description {
 .card-layout .list-content > li * > img.icon {
   border: none 0 black;
   margin: 0 .5em 0 0;
-  width: 32px;
-  height: 32px;
-  left: 8px;
-  top: 6px;
+  width: 24px;
+  height: 24px;
+  left: 7px;
+  top: 5px;
   float: left;
 }
 .card-layout .list-content > li > input.list-selector {
@@ -971,7 +971,7 @@ td.entry-table-description {
 .card-layout .list-item-static-selector + .list-item-content,
 .card-layout .list-item-content,
 .card-layout .actions-enabled + .list-item-content {
-  padding-left: 58px;
+  padding-left: 48px;
 }
 .card-layout .list-item-content > h4 {
   font-weight: normal;
@@ -981,17 +981,17 @@ td.entry-table-description {
 }
 .card-layout .list-item-selector {
   visibility: hidden;
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   position: absolute;
   top: 6px;
   z-index: 10;
   background: none;
   border: 0 none #000;
-  padding: 5px 1px 1px 1px;
+  padding: 5px 0px 0px 0px;
   border-radius: 48px;
   background-color: #bbbec0;
-  font-size: 14px;
+  font-size: 11px;
 }
 .card-layout .list-show-actions .list-item-selector {
   visibility: visible !important;
@@ -1066,7 +1066,7 @@ td.entry-table-description {
   background-image: none !important;
   border-bottom: 0px none #AAAAAA !important;
   bottom: -1px;
-  height: 48px !important;
+  height: 38px !important;
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
