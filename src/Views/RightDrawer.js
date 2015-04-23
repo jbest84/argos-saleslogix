@@ -1,39 +1,52 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/RightDrawer', [
+
+/**
+ * @class crm.Views.RightDrawer
+ *
+ *
+ * @extends argos.GroupedList
+ *
+ */
+define('crm/Views/RightDrawer', [
     'dojo/_base/declare',
     'dojo/_base/array',
     'dojo/_base/lang',
-    'Mobile/SalesLogix/SpeedSearchWidget',
-    'Sage/Platform/Mobile/GroupedList'
+    'dojo/store/Memory',
+    'argos/GroupedList'
 ], function(
     declare,
     array,
     lang,
-    SpeedSearchWidget,
+    Memory,
     GroupedList
 ) {
 
-    return declare('Mobile.SalesLogix.Views.RightDrawer', [GroupedList],  {
+    var __class = declare('crm.Views.RightDrawer', [GroupedList],  {
         //Templates
         cls: ' contextualContent',
         rowTemplate: new Simplate([
-            '<li data-action="{%= $.action %}"',
+            '<li class="{%: $.cls %}" data-action="{%= $.action %}"',
             '{% if($.dataProps) { %}',
                 '{% for(var prop in $.dataProps) { %}',
                     ' data-{%= prop %}="{%= $.dataProps[prop] %}"',
                 '{% } %}',
             '{% } %}',
             '>',
-            '<div class="list-item-static-selector">',
-                '{% if ($.icon) { %}',
-                '<img src="{%: $.icon %}" alt="icon" class="icon" />',
-                '{% } %}',
-            '</div>',
+            '{% if ($$._hasIcon($)) { %}',
+                '<div class="list-item-static-selector {%: $.iconCls %} ">',
+                    '{% if ($.icon) { %}',
+                        '<img src="{%: $.icon %}" alt="icon" class="icon" />',
+                    '{% } %}',
+                '</div>',
+            '{% } %}',
             '<div class="list-item-content">{%! $$.itemTemplate %}</div>',
             '</li>'
         ]),
+        _hasIcon: function(entry) {
+            return entry.iconTemplate || entry.cls || entry.icon || entry.iconCls;
+        },
         itemTemplate: new Simplate([
             '<h3>{%: $.title %}</h3>'
         ]),
@@ -48,7 +61,7 @@ define('Mobile/SalesLogix/Views/RightDrawer', [
         hasMoreData: function() {
             return false;
         },
-        getGroupForEntry: function(entry) {
+        getGroupForEntry: function() {
         },
         init: function() {
             this.inherited(arguments);
@@ -60,15 +73,20 @@ define('Mobile/SalesLogix/Views/RightDrawer', [
         createLayout: function() {
             return this.layout || [];
         },
-        requestData: function() {
+        createStore: function() {
             var layout = this._createCustomizedLayout(this.createLayout()),
-                list = [];
+                list = [],
+                store,
+                section,
+                row,
+                i,
+                j;
 
-            for (var i = 0; i < layout.length; i++) {
-                var section = layout[i].children;
+            for (i = 0; i < layout.length; i++) {
+                section = layout[i].children;
 
-                for (var j = 0; j < section.length; j++) {
-                    var row = section[j];
+                for (j = 0; j < section.length; j++) {
+                    row = section[j];
 
                     if (row['security'] && !App.hasAccessTo(row['security'])) {
                         continue;
@@ -79,7 +97,12 @@ define('Mobile/SalesLogix/Views/RightDrawer', [
                 }
             }
 
-            this.processFeed({'$resources': list});
+            store = new Memory({data: list});
+            return store;
+        },
+        clear: function() {
+            this.inherited(arguments);
+            this.store = null;
         },
         /**
          * Override the List refresh to also clear the view (something the beforeTransitionTo handles, but we are not using)
@@ -88,11 +111,8 @@ define('Mobile/SalesLogix/Views/RightDrawer', [
             this.clear();
             this.requestData();
         },
-        /**
-         * Override the List show to not use RUI (this view will always be on the screen, just hidden behind the main content)
-         */
         show: function() {
-            if (this.onShow(this) === false){
+            if (this.onShow(this) === false) {
                 return;
             }
 
@@ -102,5 +122,8 @@ define('Mobile/SalesLogix/Views/RightDrawer', [
             this.refreshRequired = true;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.RightDrawer', __class);
+    return __class;
 });
 

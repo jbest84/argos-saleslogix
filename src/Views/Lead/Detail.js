@@ -1,19 +1,29 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Lead/Detail', [
+
+/**
+ * @class crm.Views.Lead.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/Lead/Detail', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/Detail'
+    '../../Format',
+    'argos/Detail'
 ], function(
     declare,
+    lang,
     string,
     format,
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Lead.Detail', [Detail], {
+    var __class = declare('crm.Views.Lead.Detail', [Detail], {
         //Localization
         activityTypeText: {
             'atPhoneCall': 'Phone Call',
@@ -179,37 +189,37 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                             name: 'CallWorkPhoneAction',
                             property: 'WorkPhone',
                             label: this.callWorkNumberText,
-                            icon: 'content/images/icons/Dial_24x24.png',
                             action: 'callWorkPhone',
+                            iconClass: 'fa fa-phone-square fa-lg',
                             disabled: this.checkWorkPhone,
                             renderer: format.phone.bindDelegate(this, false)
                         }, {
                             name: 'CheckEmailAction',
                             property: 'Email',
                             label: this.sendEmailText,
-                            icon: 'content/images/icons/Send_Write_email_24x24.png',
                             action: 'sendEmail',
+                            iconClass: 'fa fa-envelope fa-lg',
                             disabled: this.checkEmail
                         }, {
                             name: 'ScheduleActivityAction',
                             label: this.scheduleActivityText,
-                            icon: 'content/images/icons/Schedule_ToDo_24x24.png',
                             action: 'scheduleActivity',
+                            iconClass: 'fa fa-calendar fa-lg',
                             tpl: new Simplate([
                                 '{%: $.Company %} / {%: $.LeadNameLastFirst %}'
                             ])
                         }, {
                             name: 'AddNoteAction',
                             property: 'LeadNameLastFirst',
+                            iconClass: 'fa fa-edit fa-lg',
                             label: this.addNoteText,
-                            icon: 'content/images/icons/New_Note_24x24.png',
                             action: 'addNote'
                         }, {
                             name: 'ViewAddressAction',
                             property: 'Address',
                             label: this.viewAddressText,
-                            icon: 'content/images/icons/Map_24.png',
                             action: 'viewAddress',
+                            iconClass: 'fa fa-map-marker fa-lg',
                             disabled: this.checkAddress,
                             renderer: format.address.bindDelegate(this, [true, ' '])
                         }]
@@ -225,15 +235,15 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                             name: 'Company',
                             property: 'Company'
                         }, {
-                            label: this.webText,
-                            name: 'WebAddress',
-                            property: 'WebAddress',
-                            renderer: format.link
-                        }, {
                             label: this.leadTitleText,
                             name: 'Title',
                             property: 'Title'
-                        }, {
+                        }]
+                }, {
+                    title: this.moreDetailsText,
+                    name: 'MoreDetailsSection',
+                    collapsed: true,
+                    children: [{
                             label: this.workText,
                             name: 'WorkPhone',
                             property: 'WorkPhone',
@@ -252,12 +262,12 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                             label: this.leadSourceText,
                             name: 'LeadSource.Description',
                             property: 'LeadSource.Description'
-                        }]
-                }, {
-                    title: this.moreDetailsText,
-                    name: 'MoreDetailsSection',
-                    collapsed: true,
-                    children: [{
+                        }, {
+                            label: this.webText,
+                            name: 'WebAddress',
+                            property: 'WebAddress',
+                            renderer: format.link
+                        }, {
                             label: this.interestsText,
                             name: 'Interests',
                             property: 'Interests'
@@ -288,20 +298,17 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                     name: 'RelatedItemsSection',
                     children: [{
                             name: 'ActivityRelated',
-                            icon: 'content/images/icons/To_Do_24x24.png',
                             label: this.relatedActivitiesText,
                             view: 'activity_related',
                             where: this.formatRelatedQuery.bindDelegate(this, 'LeadId eq "${0}"')
                         },
                         {
                             name: 'HistoryRelated',
-                            icon: 'content/images/icons/journal_24.png',
                             label: this.relatedHistoriesText,
                             where: this.formatRelatedQuery.bindDelegate(this, 'LeadId eq "${0}" and Type ne "atDatabaseChange"'),
                             view: 'history_related'
                         }, {
                             name: 'AttachmentRelated',
-                            icon: 'content/images/icons/Attachment_24.png',
                             label: this.relatedAttachmentText,
                             where: this.formatRelatedQuery.bindDelegate(this, 'leadId eq "${0}"'),// must be lower case because of feed
                             view: 'lead_attachment_related',
@@ -310,5 +317,8 @@ define('Mobile/SalesLogix/Views/Lead/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Lead.Detail', __class);
+    return __class;
 });
 

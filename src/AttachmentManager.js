@@ -1,14 +1,22 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/AttachmentManager', [
-    'Mobile/SalesLogix/FileManager',
+
+/**
+ * @class crm.AttachmentManager
+ *
+ * @requires argos.Convert
+ * @requires crm.Utility
+ * @requires crm.FileManager
+ */
+define('crm/AttachmentManager', [
+    './FileManager',
     'dojo/_base/lang',
     'dojo/_base/declare',
     'dojo/string',
     'dojo/number',
-    'Sage/Platform/Mobile/Convert',
-    'Mobile/SalesLogix/Utility'
+    'argos/Convert',
+    './Utility'
 
 ], function(
     FileManager,
@@ -19,7 +27,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
     convert,
     utility
 ) {
-    return declare('Mobile.SalesLogix.AttachmentManager', null, {
+    var __class = declare('crm.AttachmentManager', null, {
         _fileManager: null,
         _entityContext: null,
         _uploadUrl: '',
@@ -48,10 +56,12 @@ define('Mobile/SalesLogix/AttachmentManager', [
             service.setContractName(this.contractName);
             this._baseUrl = service.getUri().toString();
             this._uploadUrl = this._baseUrl + '/attachments/file';
-            service.setContractName(oldContractName);            
+            service.setContractName(oldContractName);
         },
-        createAttachments: function(files) {
-
+        /**
+         * @param {Array} files
+         */
+        createAttachments: function() {
         },
         createAttachment: function(file, mixin) {
             if (!mixin.hasOwnProperty('description')) {
@@ -59,7 +69,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
             }
             this._files.push(file);
             this._fileDescriptions.push({
-                fileName:file.name, 
+                fileName:file.name,
                 description: mixin['description']
             });
             this.uploadFiles();
@@ -67,7 +77,10 @@ define('Mobile/SalesLogix/AttachmentManager', [
         _getDefaultDescription: function(filename) {
             return filename.replace(/\.[\w]*/, '');
         },
-        getAttachmentTemplate: function(callback) {
+        /**
+         * @param {Function} callback
+         */
+        getAttachmentTemplate: function() {
             this.requestTemplate(
                 function(template) {
                     this._attachmentTemplate = template;
@@ -91,20 +104,23 @@ define('Mobile/SalesLogix/AttachmentManager', [
             return href;
         },
         _getFileDescription: function(fileName) {
-            var description = this._getDefaultDescription(fileName);
-            for (var i = 0; i < this._fileDescriptions.length; i++) {
+            var description,
+                i;
+
+            description = this._getDefaultDescription(fileName);
+            for (i = 0; i < this._fileDescriptions.length; i++) {
                 if (fileName === this._fileDescriptions[i].fileName) {
                     description = this._fileDescriptions[i].description;
                 }
             }
-            if ((description === null)|| (description === '')) {
+            if ((description === null) || (description === '')) {
                 description = this._getDefaultDescription(fileName);
             }
             return description;
         },
-        _getAttachmentContextMixin: function(fileName) {
+        _getAttachmentContextMixin: function() {
             var contextMixin;
-            contextMixin = this._getAttachmentContext();            
+            contextMixin = this._getAttachmentContext();
             return contextMixin;
         },
         _getAttachmentContext: function() {
@@ -172,15 +188,15 @@ define('Mobile/SalesLogix/AttachmentManager', [
         },
         requestTemplate: function(onSucess, onFailure) {
             var request = this.createTemplateRequest();
-            if (request)
+            if (request) {
                 request.read({
                     success: onSucess,
                     failure: onFailure,
                     scope: this
                 });
+            }
         },
-        onRequestTemplateFailure: function(response, o) {
-
+        onRequestTemplateFailure: function() {
         },
         onRequestTemplateSuccess: function(entry) {
             this.processTemplateEntry(entry);
@@ -198,15 +214,19 @@ define('Mobile/SalesLogix/AttachmentManager', [
         },
         requestData: function(attachmnetId, onSucess, onFailure) {
             var request = this.createDataRequest(attachmnetId);
-            if (request)
+            if (request) {
                 request.read({
                     success: onSucess,
                     failure: onFailure,
                     scope: this
                 });
+            }
         },
-        onRequestDataFailure: function(response, o) {
-
+        /**
+         * @param response
+         * @param o
+         */
+        onRequestDataFailure: function() {
         },
         uploadFiles: function() {
             var file;
@@ -225,7 +245,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
         onSuccessUpload: function(request) {
             //the id of the new attachment is buried in the Location response header...
             var url, re, matches, id;
-           
+
             url = request.getResponseHeader('Location');
             re = /\'\w+\'/g;
             matches = url.match(re);
@@ -242,7 +262,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
                         attachment.description = this._getFileDescription(attachment.fileName);
                         attachment = lang.mixin(attachment, mixin);
                         request = this.createDataRequest(id);
-                        if (request){
+                        if (request) {
                             request.update(attachment, {
                                 success: this.onSuccessUpdate,
                                 failure: this.onFailedUpdate,
@@ -262,13 +282,18 @@ define('Mobile/SalesLogix/AttachmentManager', [
         _onFailedAdd: function(resp) {
             console.warn('Attachment failed to save %o', resp);
         },
-        onSuccessUpdate: function(attachment) {
+        /**
+         * @param attachment
+         */
+        onSuccessUpdate: function() {
         },
         onFailedUpdate: function(resp) {
             console.warn('Attachment failed to update %o', resp);
         },
-        onUpdateProgress: function(pecent) {
-
+        /**
+         * @param percent
+         */
+        onUpdateProgress: function() {
         },
         _updateProgress: function(curFileProgress) {
             var pct, filePercent;
@@ -282,7 +307,7 @@ define('Mobile/SalesLogix/AttachmentManager', [
                 pct = curFileProgress;
             }
             this._totalProgress = pct;
-           
+
             if (pct < 99) {
                 if (this.onUpdateProgress) {
                     this.onUpdateProgress(pct);
@@ -302,9 +327,12 @@ define('Mobile/SalesLogix/AttachmentManager', [
             this._totalProgress = 0;
         },
         getAttachmentFile: function(attachmentId, responseType, onSuccsess) {
-             var url, fm;
-             url = this.getAttachmentUrl(attachmentId);
-             fm = this._fileManager.getFile(url, responseType, onSuccsess);
+            var url, fm;
+            url = this.getAttachmentUrl(attachmentId);
+            fm = this._fileManager.getFile(url, responseType, onSuccsess);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.AttachmentManager', __class);
+    return __class;
 });

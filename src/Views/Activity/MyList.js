@@ -1,24 +1,46 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Activity/MyList', [
+
+/**
+ * @class crm.Views.Activity.MyList
+ *
+ * @extends crm.Views.Activity.List
+ * @mixins crm.Views.Activity.List
+ *
+ * @requires argos.List
+ * @requires argos.Format
+ * @requires argos.Utility
+ * @requires argos.Convert
+ * @requires argos.ErrorManager
+ *
+ * @requires crm.Format
+ * @requires crm.Environment
+ * @requires crm.Views.Activity.List
+ * @requires crm.Action
+ *
+ * @requires moment
+ *
+ */
+define('crm/Views/Activity/MyList', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/query',
     'dojo/_base/connect',
-    'Sage/Platform/Mobile/List',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Environment',
-    'Sage/Platform/Mobile/Format',
-    'Mobile/SalesLogix/Views/Activity/List',
-    'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Convert',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Sage/Platform/Mobile/Groups/DateTimeSection',
+    'argos/List',
+    '../../Format',
+    '../../Environment',
+    'argos/Format',
+    './List',
+    'argos/Utility',
+    'argos/Convert',
+    'argos/ErrorManager',
     'moment',
-    'Mobile/SalesLogix/Action'
+    '../../Action'
 ], function(
     declare,
+    lang,
     string,
     query,
     connect,
@@ -30,43 +52,37 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
     Utility,
     convert,
     ErrorManager,
-    DateTimeSection,
     moment,
     action
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Activity.MyList', [ActivityList], {
+    var __class = declare('crm.Views.Activity.MyList', [ActivityList], {
 
         //Templates
-        //Card View 
+        //Card View
        itemRowContainerTemplate: new Simplate([
-           '<li data-action="activateEntry" data-my-activity-key="{%= $.$key %}" data-key="{%= $$.getItemActionKey($) %}" data-descriptor="{%: $$.getItemDescriptor($) %}" data-activity-type="{%: $.Activity.Type %}"  data-color-class="{%: $$.getItemColorClass($) %}" >',
+           '<li data-action="activateEntry" data-my-activity-key="{%= $.$key %}" data-key="{%= $$.getItemActionKey($) %}" data-descriptor="{%: $$.getItemDescriptor($) %}" data-activity-type="{%: $.Activity.Type %}">',
             '{%! $$.itemRowContentTemplate %}',
           '</li>'
         ]),
-        //Used if Card View is not mixed in
-        rowTemplate: new Simplate([
-            '<li data-action="activateEntry" data-my-activity-key="{%= $.$key %}" data-key="{%= $.Activity.$key %}" data-descriptor="{%: $.Activity.$descriptor %}" data-activity-type="{%: $.Activity.Type %}">',
-            '<div data-action="selectEntry" class="list-item-static-selector">',
-            '<img src="{%= $$.activityIconByType[$.Activity.Type] || $$.icon || $$.selectIcon %}" class="icon" />',
-            '</div>',
-            '<div class="list-item-content">{%! $$.itemTemplate %}</div>',
-            '</li>'
-        ]),
         activityTimeTemplate: new Simplate([
-            '{%: Mobile.SalesLogix.Format.relativeDate($.Activity.StartDate, Sage.Platform.Mobile.Convert.toBoolean($.Activity.Timeless)) %}'
+            '{% if ($$.isTimelessToday($)) { %}',
+                '{%: $$.allDayText %}',
+            '{% } else { %}',
+                '{%: crm.Format.relativeDate($.Activity.StartDate, argos.Convert.toBoolean($.Activity.Timeless)) %}',
+            '{% } %}'
         ]),
         itemTemplate: new Simplate([
             '<h3>',
-                '<span class="p-description">{%: $.Activity.Description %}{% if ($.Status === "asUnconfirmed") { %} ({%: Mobile.SalesLogix.Format.userActivityStatus($.Status) %}) {% } %}</span>',
+                '<span class="p-description">{%: $.Activity.Description %}{% if ($.Status === "asUnconfirmed") { %} ({%: crm.Format.userActivityStatus($.Status) %}) {% } %}</span>',
             '</h3>',
             '<h4>',
-                '<strong>{%! $$.activityTimeTemplate %}</strong>',
+                '{%! $$.activityTimeTemplate %}',
             '</h4>',
             '<h4>{%! $$.nameTemplate %}</h4>',
             '<h4>',
                 '{% if ($.Activity.PhoneNumber) { %}',
-                    '{%: Sage.Platform.Mobile.Format.phone($.Activity.PhoneNumber) %}',
+                    '<span class="href" data-action="_callPhone" data-key="{%: $.$key %}">{%: argos.Format.phone($.Activity.PhoneNumber) %}</span>',
                 '{% } %}',
             '</h4>'
         ]),
@@ -91,7 +107,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
         viewContactActionText: 'Contact',
         viewAccountActionText: 'Account',
         viewOpportunityActionText: 'Opportunity',
-        
+
         //View Properties
         id: 'myactivity_list',
 
@@ -113,8 +129,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             'Activity/AccountId',
             'Activity/ContactId',
             'Activity/ContactName',
-            'Activity/Leader/$key',
-            'Activity/Leader/$descriptor',
+            'Activity/Leader',
             'Activity/LeadName',
             'Activity/LeadId',
             'Activity/OpportunityId',
@@ -205,13 +220,46 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             'this-week': 'this-week',
             'yesterday': 'yesterday'
         },
+        createToolLayout: function() {
+            this.inherited(arguments);
+            if (this.tools && this.tools.tbar && !this._refreshAdded && !window.App.supportsTouch()) {
+                this.tools.tbar.push({
+                    id: 'refresh',
+                    cls: 'fa fa-refresh fa-fw fa-lg',
+                    action: '_refreshClicked'
+                });
+
+                this._refreshAdded = true;
+            }
+
+            return this.tools;
+        },
+        _refreshAdded: false,
+        _refreshClicked: function() {
+            this.clear();
+            this.refreshRequired = true;
+            this.refresh();
+
+            // Hook for customizers
+            this.onRefreshClicked();
+        },
+        onRefreshClicked: function() {
+        },
+        _callPhone: function(params) {
+            this.invokeActionItemBy(function(action) {
+                return action.id === 'call';
+            }, params.key);
+        },
         defaultSearchTerm: function() {
-            return '#' + this.hashTagQueriesText['this-week'];
+            if (App.enableHashTags) {
+                return '#' + this.hashTagQueriesText['this-week'];
+            }
+
+            return '';
         },
         createActionLayout: function() {
             return this.actions || (this.actions = [{
                 id: 'viewAccount',
-                icon: 'content/images/icons/Company_24.png',
                 label: this.viewAccountActionText,
                 enabled: function(action, selection) {
                     var entry = selection && selection.data;
@@ -222,7 +270,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                         return true;
                     }
                     return false;
-                }, 
+                },
                 fn: function(action, selection) {
                     var viewId, options, view;
 
@@ -239,7 +287,6 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }
             }, {
                 id: 'viewOpportunity',
-                icon: 'content/images/icons/opportunity_24.png',
                 label: this.viewOpportunityActionText,
                 enabled: function(action, selection) {
                     var entry = selection && selection.data;
@@ -250,7 +297,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                         return true;
                     }
                     return false;
-                }, 
+                },
                 fn: function(action, selection) {
                     var viewId, options, view;
 
@@ -266,13 +313,12 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }
             }, {
                 id: 'viewContact',
-                icon: 'content/images/icons/Contacts_24x24.png',
                 label: this.viewContactActionText,
                 action: 'navigateToContactOrLead',
                 enabled: this.hasContactOrLead
             }, {
                 id: 'complete',
-                icon: 'content/images/icons/Clear_Activity_24x24.png',
+                cls: 'fa fa-check-square fa-2x',
                 label: this.completeActivityText,
                 enabled: function(action, selection) {
                     var recur, entry = selection && selection.data;
@@ -298,7 +344,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }).bindDelegate(this)
             }, {
                 id: 'accept',
-                icon: 'content/images/icons/OK_24.png',
+                cls: 'fa fa-check fa-2x',
                 label: this.acceptActivityText,
                 enabled: function(action, selection) {
                     var entry = selection && selection.data;
@@ -318,7 +364,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }).bindDelegate(this)
             }, {
                 id: 'decline',
-                icon: 'content/images/icons/cancl_24.png',
+                cls: 'fa fa-ban fa-2x',
                 label: this.declineActivityText,
                 enabled: function(action, selection) {
                     var entry = selection && selection.data;
@@ -337,7 +383,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }).bindDelegate(this)
             }, {
                 id: 'call',
-                icon: 'content/images/icons/Dial_24x24.png',
+                cls: 'fa fa-phone-square fa-2x',
                 label: this.callText,
                 enabled: function(action, selection) {
                     var entry;
@@ -356,7 +402,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 }.bindDelegate(this)
             }, {
                 id: 'addAttachment',
-                icon: 'content/images/icons/Attachment_24.png',
+                cls: 'fa fa-paperclip fa-2x',
                 label: this.addAttachmentActionText,
                 fn: action.addAttachment.bindDelegate(this)
             }]
@@ -420,7 +466,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             this._postUserNotifications(notification, 'Accept');
         },
         _postUserNotifications: function(notification, operation) {
-            if (!notification || typeof operation !== "string") {
+            if (!notification || typeof operation !== 'string') {
                 return;
             }
 
@@ -431,10 +477,10 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
              * http://localhost:6666/SlxClient/slxdata.ashx/slx/dynamic/-/userNotifications/$service/accept/$template?format=json
             */
             payload = {
-                "$name": operation,
-                "request": {
-                    "entity": notification,
-                    "UserNotificationId": notification['$key']
+                '$name': operation,
+                'request': {
+                    'entity': notification,
+                    'UserNotificationId': notification['$key']
                 }
             };
 
@@ -452,16 +498,16 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             });
         },
         completeActivity: function(entry) {
-            var completeActivity, request, completeActivityEntry;
+            var request, completeActivityEntry;
 
             completeActivityEntry = {
-                "$name": "ActivityComplete",
-                "request": {
-                    "entity": {'$key': entry['$key']},
-                    "ActivityId": entry['$key'],
-                    "userId": entry['Leader']['$key'],
-                    "result": entry['Result'],
-                    "completeDate": entry['CompletedDate']
+                '$name': 'ActivityComplete',
+                'request': {
+                    'entity': {'$key': entry['$key']},
+                    'ActivityId': entry['$key'],
+                    'userId': entry['Leader']['$key'],
+                    'result': entry['Result'],
+                    'completeDate': entry['CompletedDate']
                 }
             };
 
@@ -495,6 +541,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
         },
         hasBeenTouched: function(entry) {
             var modifiedDate, currentDate, weekAgo;
+
             if (entry['Activity']['ModifyDate']) {
                 modifiedDate = moment(convert.toDateFromString(entry['Activity']['ModifyDate']));
                 currentDate = moment().endOf('day');
@@ -503,18 +550,20 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 return modifiedDate.isAfter(weekAgo) &&
                     modifiedDate.isBefore(currentDate);
             }
+
             return false;
         },
         isImportant: function(entry) {
-            if (entry["Activity"]['Priority']) {
-                if (entry["Activity"]['Priority'] === 'High') {
+            if (entry['Activity']['Priority']) {
+                if (entry['Activity']['Priority'] === 'High') {
                     return true;
                 }
-            }           
+            }
+
             return false;
         },
         isOverdue: function(entry) {
-            var startDate, currentDate, seconds, mins, days;
+            var startDate, currentDate, seconds, mins;
             if (entry['Activity']['StartDate']) {
                 startDate = convert.toDateFromString(entry['Activity']['StartDate']);
                 currentDate = new Date();
@@ -526,14 +575,24 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             }
             return false;
         },
+        isTimelessToday: function(entry) {
+            if (!entry || !entry.Activity || !entry.Activity.Timeless) {
+                return false;
+            }
+
+            var start = moment(entry.Activity.StartDate);
+            return this._isTimelessToday(start);
+        },
         isRecurring: function(entry) {
             if (entry['Activity']['Recurring']) {
-                   return true;
+                return true;
             }
+
             return false;
         },
-        applyActivityIndicator: function(entry, indicator) {
-            this._applyActivityIndicator(entry['Activity']['Type'], indicator);
+        getItemIconClass: function(entry) {
+            var type = entry && entry.Activity && entry.Activity.Type;
+            return this._getItemIconClass(type);
         },
         getItemActionKey: function(entry) {
             return entry.Activity.$key;
@@ -541,28 +600,14 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
         getItemDescriptor: function(entry) {
             return entry.Activity.$descriptor;
         },
-        getItemTabValue: function(entry) {
-            var value = '';
-            if ((entry['$groupTag'] === 'Today') || (entry['$groupTag'] === 'Tomorrow') || (entry['$groupTag'] === 'Yesterday')) {
-                value = format.date(entry.Activity.StartDate, this.startTimeFormatText, entry.Activity.Timeless) + " " + format.date(entry.Activity.StartDate, "A", entry.Activity.Timeless);
-            } else {
-                value = format.date(entry.Activity.StartDate, this.startDateFormatText, entry.Activity.Timeless);
-            }
-            return value;
-        },
-        getItemColorClass: function(entry) {
-            return this.activityColorClassByType[entry.Activity.Type] || this.itemColorClass;
-        },
-        getItemIconSource: function(entry) {
-            return this.itemIcon || this.activityIconByType[entry.Activity.Type] || this.icon || this.selectIcon;
-        },
         hasContactOrLead: function(action, selection) {
             return (selection.data['Activity']['ContactId']) || (selection.data['Activity']['LeadId']);
         },
         navigateToContactOrLead: function(action, selection) {
-            var entry = selection.data["Activity"];
-            var entity = this.resolveContactOrLeadEntity(entry),
+            var entry = selection.data['Activity'],
+                entity = this.resolveContactOrLeadEntity(entry),
                 viewId,
+                view,
                 options;
 
             switch (entity) {
@@ -582,7 +627,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                     break;
             }
 
-            var view = App.getView(viewId);
+            view = App.getView(viewId);
 
             if (view && options) {
                 view.show(options);
@@ -608,7 +653,7 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
                 'ContactId': entry['Activity']['ContactId'],
                 'AccountName': entry['Activity']['AccountName'],
                 'AccountId': entry['Activity']['AccountId'],
-                'Description': string.substitute("${0} ${1}", [this.calledText, (entry['Activity']['ContactName'] || '')]),
+                'Description': string.substitute('${0} ${1}', [this.calledText, (entry['Activity']['ContactName'] || '')]),
                 'UserId': App.context && App.context.user['$key'],
                 'UserName': App.context && App.context.user['UserName'],
                 'Duration': 15,
@@ -633,5 +678,8 @@ define('Mobile/SalesLogix/Views/Activity/MyList', [
             }
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Activity.MyList', __class);
+    return __class;
 });
 

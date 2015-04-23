@@ -1,14 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Opportunity/Edit', [
+
+/**
+ * @class crm.Views.Opportunity.Edit
+ *
+ * @extends argos.Edit
+ *
+ * @requires argos.Utility
+ *
+ * @requires crm.Validator
+ * @requires crm.Template
+ */
+define('crm/Views/Opportunity/Edit', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/string',
-    'Mobile/SalesLogix/Validator',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit'
+    '../../Validator',
+    '../../Template',
+    'argos/Utility',
+    'argos/Edit'
 ], function(
     declare,
     lang,
@@ -19,7 +30,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
     Edit
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Opportunity.Edit', [Edit], {
+    var __class = declare('crm.Views.Opportunity.Edit', [Edit], {
         //Localization
         accountText: 'acct',
         acctMgrText: 'acct mgr',
@@ -82,11 +93,14 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
             }
         },
         applyContext: function(templateEntry) {
-            var found = App.queryNavigationContext(function(o) {
+            var found,
+                lookup;
+
+            found = App.queryNavigationContext(function(o) {
                 return (/^(accounts|contacts)$/).test(o.resourceKind) && o.key;
             });
 
-            var lookup = {
+            lookup = {
                 'accounts': this.applyAccountContext,
                 'contacts': this.applyContactContext
             };
@@ -119,7 +133,6 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
         },
         setValues: function(values) {
             this.inherited(arguments);
-            var nodes;
             if (App.hasMultiCurrency()) {
 
                 if (values && values.ExchangeRateCode) {
@@ -151,7 +164,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
 
             return values;
         },
-        applyDefaultContext: function(templateEntry) {
+        applyDefaultContext: function() {
             this.fields['AccountManager'].setValue(App.context.user);
             this.fields['Owner'].setValue(App.context['defaultOwner']);
         },
@@ -179,7 +192,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
                 this.fields['ExchangeRateDate'].setValue(new Date(Date.now()));
             }
         },
-        onExchangeRateLockedChange: function(value, field) {
+        onExchangeRateLockedChange: function(value) {
             if (value === true) {
                 this.fields['ExchangeRate'].disable();
                 this.fields['ExchangeRateCode'].disable();
@@ -221,7 +234,8 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
                         validator: [
                             validator.notEmpty,
                             validator.exceedsMaxTextLength
-                        ]
+                        ],
+                        autoFocus: true
                     },
                     {
                         label: this.accountText,
@@ -230,7 +244,10 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
                         textProperty: 'AccountName',
                         type: 'lookup',
                         validator: validator.exists,
-                        view: 'account_related'
+                        view: 'account_related',
+                        viewMixin: {
+                            disableRightDrawer: true
+                        }
                     },
                     {
                         label: this.acctMgrText,
@@ -250,6 +267,7 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
                         view: 'account_related',
                         where: string.substitute('upper(SubType) eq "${0}"', [this.subTypePickListResellerText]),
                         viewMixin: {
+                            disableRightDrawer: true,
                             onTransitionTo: function(self) {
                                 // Clear the initial where clause, allowing the user to search for others if they want
                                 self.options.where = '';
@@ -382,5 +400,8 @@ define('Mobile/SalesLogix/Views/Opportunity/Edit', [
             return layout;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Opportunity.Edit', __class);
+    return __class;
 });
 

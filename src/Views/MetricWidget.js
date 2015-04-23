@@ -1,7 +1,16 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/MetricWidget', [
+
+/**
+ * @class crm.Views.MetricWidget
+ *
+ *
+ * @requires argos._Templated
+ * @requires argos.Store.SData
+ *
+ */
+define('crm/Views/MetricWidget', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/_base/array',
@@ -9,10 +18,9 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
     'dojo/when',
     'dojo/promise/all',
     'dojo/dom-construct',
-    'dojo/aspect',
     'dijit/_Widget',
-    'Sage/Platform/Mobile/_Templated',
-    'Sage/Platform/Mobile/Store/SData'
+    'argos/_Templated',
+    'argos/Store/SData'
 ], function(
     declare,
     lang,
@@ -21,12 +29,11 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
     when,
     all,
     domConstruct,
-    aspect,
     _Widget,
     _Templated,
     SDataStore
 ) {
-    return declare('Mobile.SalesLogix.Views.MetricWidget', [_Widget, _Templated], {
+    var __class = declare('crm.Views.MetricWidget', [_Widget, _Templated], {
         /**
          * @property {Simplate}
          * Simple that defines the HTML Markup
@@ -43,36 +50,44 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
 
         /**
          * @property {Simplate}
-         * HTML markup for the metric detail (name/value) 
+         * HTML markup for the metric detail (name/value)
         */
         itemTemplate: new Simplate([
-            '<div class="metric-title">{%: $$.title %}</div>',
-            '<div class="metric-value">{%: $$.formatter($.value) %}</div>'
+            '<h1 class="metric-value">{%: $$.formatter($.value) %}</h1>',
+            '<span class="metric-title">{%: $$.title %}</span>'
         ]),
 
         /**
          * @property {Simplate}
-         * HTML markup for the loading text and icon 
+         */
+        errorTemplate: new Simplate([
+            '<div class="metric-title">{%: $$.errorText %}</div>'
+        ]),
+
+        /**
+         * @property {Simplate}
+         * HTML markup for the loading text and icon
         */
         loadingTemplate: new Simplate([
             '<div class="metric-title list-loading">',
-                '<span class="list-loading-indicator"><div>{%= $.loadingText %}</div></span>',
+                '<span class="list-loading-indicator"><span class="fa fa-spinner fa-spin"></span><div>{%= $.loadingText %}</div></span>',
             '</div>'
         ]),
 
         // Localization
         title: '',
         loadingText: 'loading...',
+        errorText: 'Error loading widget.',
 
         // Store Options
-        querySelect: null, 
+        querySelect: null,
         queryName: null,
         queryArgs: null,
         queryOrderBy: null,
         resourceKind: null,
         resourcePredicate: null,
         contractName: null,
-        keyProperty: null, 
+        keyProperty: null,
         applicationName: null,
         position: 0,
         pageSize: 100,
@@ -80,6 +95,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         store: null,
 
         _data: null,
+        value: null,
         requestDataDeferred: null,
         metricDetailNode: null,
         currentSearchExpression: '',
@@ -88,15 +104,16 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         chartType: null,
         chartTypeMapping: {
             'pie': 'chart_generic_pie',
-            'bar': 'chart_generic_bar'
+            'bar': 'chart_generic_bar',
+            'line': 'chart_generic_line'
         },
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
-        formatModule: 'Mobile/SalesLogix/Format',// AMD Module
-        formatter: 'bigNumber',// Function of formatModule module 
+        formatModule: 'crm/Format',// AMD Module
+        formatter: 'bigNumber',// Function of formatModule module
 
         /**
-         * Loads a module/function via AMD and wraps it in a deferred 
+         * Loads a module/function via AMD and wraps it in a deferred
          * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getFormatterFnDeferred: function() {
@@ -125,11 +142,11 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         },
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
-        aggregateModule: 'Mobile/SalesLogix/Aggregate',
+        aggregateModule: 'crm/Aggregate',
         aggregate: null,//'valueFn',
 
         /**
-         * Loads a module/function via AMD and wraps it in a deferred 
+         * Loads a module/function via AMD and wraps it in a deferred
          * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getValueFnDeferred: function() {
@@ -143,7 +160,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
             return d.promise;
         },
         _loadModuleFunction: function(module, fn) {
-            // Attempt to load the function fn from the AMD module 
+            // Attempt to load the function fn from the AMD module
             var def = new Deferred();
             try {
                 require([module], lang.hitch(this, function(mod) {
@@ -156,15 +173,15 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
                         def.resolve(mod[fn]);
                     }
                 }));
-            } catch (err) {
+            } catch(err) {
                 def.reject(err);
             }
 
             // the promise property prevents consumer from calling resolve/reject on the Deferred while still allowing access to the value
-            return def.promise; 
+            return def.promise;
         },
         /**
-         * Requests the widget's data, value fn, format fn, and renders it's itemTemplate 
+         * Requests the widget's data, value fn, format fn, and renders it's itemTemplate
         */
         requestData: function() {
             var loadFormatter, loadValueFn;
@@ -200,25 +217,22 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
                     this.formatter = formatterFn;
                 }
 
-                value = this.valueFn.call(this, data);
+                value = this.value = this.valueFn.call(this, data);
                 domConstruct.place(this.itemTemplate.apply({value: value}, this), this.metricDetailNode, 'replace');
+            }), lang.hitch(this, function(err) {
+                // Error
+                console.error(err);
+                domConstruct.place(this.errorTemplate.apply({}, this), this.metricDetailNode, 'replace');
             }));
         },
         navToReportView: function() {
-            var view, signal;
+            var view;
             view = App.getView(this.chartTypeMapping[this.chartType]);
 
             if (view) {
-                view.titleText = this.title;
+                view.parent = this;
                 view.formatter = this.formatter;
-                signal = aspect.after(view, 'show', lang.hitch(this, function() {
-                    setTimeout(lang.hitch(this, function() {
-                        view.createChart(this._data);
-                        signal.remove();
-                    }), 1);
-                }));
-
-                view.show({ returnTo: this.returnToId, currentSearchExpression: this.currentSearchExpression });
+                view.show({ returnTo: this.returnToId, currentSearchExpression: this.currentSearchExpression, title: this.title});
             }
         },
         _getData: function() {
@@ -233,18 +247,21 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
 
             when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
         },
-        _onQuerySuccess: function(queryResults, items) {
-            var total = queryResults.total;
+        _onQuerySuccess: function(queryResults) {
+            var total,
+                left;
+
+            total = queryResults.total;
 
             queryResults.forEach(lang.hitch(this, this._processItem));
 
-            var left = -1;
+            left = -1;
             if (total > -1) {
                 left = total - (this.position + this.pageSize);
             }
 
             if (left > 0) {
-                this.position = this.position + this.pageSize; 
+                this.position = this.position + this.pageSize;
                 this._getData();
             } else {
                 // Signal complete
@@ -254,10 +271,12 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
         _processItem: function(item) {
             this._data.push(item);
         },
-        _onQueryError: function(queryOptions, error) {
+        _onQueryError: function(error) {
+            this.requestDataDeferred.reject(error);
         },
         createStore: function() {
             var store = new SDataStore({
+                request: this.request,
                 service: App.services.crm,
                 resourceKind: this.resourceKind,
                 resourcePredicate: this.resourcePredicate,
@@ -277,4 +296,7 @@ define('Mobile/SalesLogix/Views/MetricWidget', [
             return this.store || (this.store = this.createStore());
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.MetricWidget', __class);
+    return __class;
 });

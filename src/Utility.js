@@ -3,38 +3,48 @@
  */
 
 /**
- * Utility provides functions that are more javascript enhancers than application related code.
- * @alternateClassName utility
+ * @class crm.Utility
+ *
+ * Utility provides functions that are more javascript enhancers than application related code. Mixes in argos.Utility.
+ *
+ * @requires argos.Utility
  * @singleton
+ *
  */
-define('Mobile/SalesLogix/Utility', [
+define('crm/Utility', [
     'dojo/_base/lang',
     'dojo/string',
-    'dojo/has',
-    'dojo/_base/sniff',
-    'dojox/mobile/sniff'
+    'argos/Utility'
 ], function(
     lang,
     string,
-    has,
-    baseSniff,
-    mobileSniff
+    Utility
 ) {
-    return lang.setObject('Mobile.SalesLogix.Utility', {
-        base64ArrayBuffer: function (arrayBuffer) {
-            var base64    = '';
-            var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    var __class = lang.setObject('crm.Utility', lang.mixin({}, Utility, {
+        base64ArrayBuffer: function(arrayBuffer) {
+            var base64,
+                encodings,
+                bytes,
+                byteLength,
+                mainLength,
+                byteRemainder,
+                a,
+                b,
+                c,
+                d,
+                chunk,
+                i;
 
-            var bytes         = new Uint8Array(arrayBuffer);
-            var byteLength    = bytes.byteLength;
-            var byteRemainder = byteLength % 3;
-            var mainLength    = byteLength - byteRemainder;
+            base64    = '';
+            encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
-            var a, b, c, d;
-            var chunk;
+            bytes = new Uint8Array(arrayBuffer);
+            byteLength = bytes.byteLength;
+            byteRemainder = byteLength % 3;
+            mainLength = byteLength - byteRemainder;
 
             // Main loop deals with bytes in chunks of 3
-            for (var i = 0; i < mainLength; i = i + 3) {
+            for (i = 0; i < mainLength; i = i + 3) {
                 // Combine the three bytes into a single integer
                 chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
 
@@ -49,7 +59,7 @@ define('Mobile/SalesLogix/Utility', [
             }
 
             // Deal with the remaining bytes and padding
-            if (byteRemainder == 1) {
+            if (byteRemainder === 1) {
                 chunk = bytes[mainLength];
 
                 a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
@@ -58,7 +68,7 @@ define('Mobile/SalesLogix/Utility', [
                 b = (chunk & 3)   << 4; // 3   = 2^2 - 1
 
                 base64 += encodings[a] + encodings[b] + '==';
-            } else if (byteRemainder == 2) {
+            } else if (byteRemainder === 2) {
                 chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
                 a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
@@ -72,12 +82,24 @@ define('Mobile/SalesLogix/Utility', [
 
             return base64;
         },
+
+        /** Gets the extension for a file.
+         * @param {String} fileName
+         * The file name including the extension
+         * @returns {String}
+         * Returns the file extension, if fileName is null or undefined, returns the string '.'
+         */
         getFileExtension: function(fileName) {
-            if (!fileName){
+            if (!fileName) {
                 return '.';
             }
             return fileName.substr(fileName.lastIndexOf('.'));
         },
+        /** Parses the activity ID
+         * @param {String} activityId
+         * A string with the activity id seperated by a semi-colon
+         * @returns {String}
+         */
         getRealActivityId: function(activityId) {
             var Id = activityId;
             if (activityId) {
@@ -89,6 +111,9 @@ define('Mobile/SalesLogix/Utility', [
             }
             return Id;
         }
-    });
+    }));
+
+    lang.setObject('Mobile.SalesLogix.Utility', __class);
+    return __class;
 });
 

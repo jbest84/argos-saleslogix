@@ -1,19 +1,30 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Lead/Edit', [
+
+/**
+ * @class crm.Views.Lead.Edit
+ *
+ * @extends argos.Edit
+ *
+ * @requires crm.Format
+ * @requires crm.Validator
+ */
+define('crm/Views/Lead/Edit', [
     'dojo/_base/declare',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Validator',
-    'Sage/Platform/Mobile/Edit'
+    'dojo/_base/lang',
+    '../../Format',
+    '../../Validator',
+    'argos/Edit'
 ], function(
     declare,
+    lang,
     format,
     validator,
     Edit
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Lead.Edit', [Edit], {
+    var __class = declare('crm.Views.Lead.Edit', [Edit], {
         //Localization
         accountText: 'account',
         addressText: 'address',
@@ -163,7 +174,7 @@ define('Mobile/SalesLogix/Views/Lead/Edit', [
                     name: 'Interests',
                     property: 'Interests',
                     type: 'text',
-                    maxTextLength: 64,
+                    maxTextLength: 128,
                     validator: validator.exceedsMaxTextLength
                 },
                 {
@@ -213,5 +224,8 @@ define('Mobile/SalesLogix/Views/Lead/Edit', [
             ]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Lead.Edit', __class);
+    return __class;
 });
 

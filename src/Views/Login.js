@@ -2,25 +2,37 @@
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  * @jsx React.DOM
  */
-define('Mobile/SalesLogix/Views/Login', [
+
+/**
+ * @class crm.Views.Login
+ *
+ *
+ * @extends argos.Edit
+ *
+ */
+define('crm/Views/Login', [
     'dojo/_base/declare',
-    'Sage/Platform/Mobile/Edit',
-    'React',
-    'Components/LoginComponent'
+    'dojo/_base/lang',
+    'dojo/dom-class',
+    'argos/Edit',
+    'React'
+    //'Components/LoginComponent'
 ], function(
     declare,
+    lang,
+    domClass,
     Edit,
-    React,
-    LoginComponent
+    React
+    //LoginComponent
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Login', [Edit], {
+    var __class = declare('crm.Views.Login', [Edit], {
         //Templates
         widgetTemplate: new Simplate([
             '<div id="{%= $.id %}" title="{%: $.titleText %}" class="panel {%= $.cls %}" hideBackButton="true">',
-            '<p class="logo"><img src="content/images/logo.png"></img></p>',
-            '<div class="panel-content" data-dojo-attach-point="contentNode"></div>',
-            '<button class="button actionButton" data-action="authenticate"><span>{%: $.logOnText %}</span></button>',
+            '<p class="logo"><img src="content/images/logo-64.png" /><span>{%: $.logoText %}<span></p>',
+            '<div class="panel-content" data-dojo-attach-event="onkeypress: _onKeyPress, onkeyup: _onKeyUp" data-dojo-attach-point="contentNode"></div>',
+            '<button class="button actionButton" data-action="authenticate"><span class="indicator fa fa-spinner fa-spin"></span><span>{%: $.logOnText %}</span></button>',
             '<span class="copyright">{%= $.copyrightText %}</span>',
             '<span class="copyright">{%= App.getVersionInfo() %}</span>',
             '<div data-dojo-attach-point="componentNode" class="panel-content"></div>',
@@ -30,32 +42,63 @@ define('Mobile/SalesLogix/Views/Login', [
         //Localization
         id: 'login',
         busy: false,
-        copyrightText: '&copy; 2013 SalesLogix, NA, LLC. All rights reserved.',
-        logOnText: 'Log on to Saleslogix',
-        passText: 'password',
-        rememberText: 'remember',
-        titleText: 'Log On',
-        userText: 'user name',
+        copyrightText: 'Copyright &copy; 2015 Infor. All rights reserved. www.infor.com',
+        logOnText: 'Sign in',
+        passText: 'Password',
+        rememberText: 'Remember me',
+        titleText: 'Sign in',
+        userText: 'User ID',
         invalidUserText: 'The user name or password is invalid.',
         missingUserText: 'The user record was not found.',
-        serverProblemText: 'A problem occured on the server.',
         requestAbortedText: 'The request was aborted.',
+        logoText: 'Infor CRM',
 
+        ENTER_KEY: 13,
+
+        _onKeyPress: function(evt) {
+            if (evt.charOrCode === this.ENTER_KEY) {
+                this.authenticate();
+            }
+        },
+        _onKeyUp: function() {
+            var username = this.fields.username.getValue();
+            if (username && username.length > 0) {
+                domClass.add(this.domNode, 'login-active');
+            } else {
+                domClass.remove(this.domNode, 'login-active');
+            }
+        },
+        onShow: function() {
+            var credentials;
+            credentials = App.getCredentials();
+            if (credentials) {
+                App.authenticateUser(credentials, {
+                    success: function() {
+                        App.initAppState().then(function() {
+                            App.navigateToInitialView();
+                        });
+                    },
+                    scope: this
+                });
+            }
+        },
         show: function() {
+            var layout, components, container;
+
             this.inherited(arguments);
-            var layout = this.createLayout();
-            var components = [];
+            layout = this.createLayout();
+            components = [];
             layout.forEach(function(item) {
                 if (item.component) {
                     components.push(item.component);
                 }
             });
 
-            var container = React.createClass({
+            container = React.createClass({
                 displayName: 'container',
                 render: function() {
                     return React.DOM.fieldset(null,
-                                              components.map(function(c, i) { 
+                                              components.map(function(c, i) {
                                                   return (
                                                       React.DOM.div({'className': 'row row-edit', 'key': i},
                                                                     c())
@@ -64,9 +107,8 @@ define('Mobile/SalesLogix/Views/Login', [
                 }
             });
 
-            //React.renderComponent(container(), this.componentNode);
+            React.renderComponent(container(), this.componentNode);
         },
-
         createToolLayout: function() {
             return this.tools || (this.tools = {
                 bbar: false,
@@ -77,8 +119,10 @@ define('Mobile/SalesLogix/Views/Login', [
             return {id: this.id};
         },
         createLayout: function() {
-            var userText = this.userText;
-            var passText = this.passText;
+            var userText, passText;
+
+            userText = this.userText;
+            passText = this.passText;
             return this.layout || (this.layout = [
                 {
                     name: 'username',
@@ -88,9 +132,9 @@ define('Mobile/SalesLogix/Views/Login', [
                         displayName: 'text',
                         render: function() {
                             return (
-                                React.DOM.div(null, 
+                                React.DOM.div(null,
                                               React.DOM.label(null, userText),
-                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input'}),
+                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input', 'placeholder': this.userText}),
                                               React.DOM.button({'className': 'clear-button'})
                                              )
                             );
@@ -99,14 +143,14 @@ define('Mobile/SalesLogix/Views/Login', [
                 },
                 {
                     name: 'password',
-                    label: this.passText,
+                    placeHolderText: this.passText,
                     type: 'text',
                     inputType: 'password',
                     component: React.createClass({
                         displayName: 'password',
                         render: function() {
                             return (
-                                React.DOM.div(null, 
+                                React.DOM.div(null,
                                               React.DOM.label(null, passText),
                                               React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input'}),
                                               React.DOM.button({'className': 'clear-button'})
@@ -130,33 +174,63 @@ define('Mobile/SalesLogix/Views/Login', [
             var credentials = this.getValues(),
                 username = credentials && credentials.username;
 
-            if (username && /\w+/.test(username)) {
+            if (username) {
                 this.validateCredentials(credentials);
             }
+        },
+        createErrorHandlers: function() {
+            this.errorText.status[this.HTTP_STATUS.FORBIDDEN] = this.invalidUserText;
+
+            this.errorHandlers = [{
+                name: 'NoResponse',
+                test: function(error) {
+                    return !error.xhr;
+                },
+                handle: function(error, next) {
+                    alert(this.missingUserText);
+                    next();
+                }
+            }, {
+                name: 'GeneralError',
+                test: function(error) {
+                    return typeof error.xhr !== 'undefined' && error.xhr !== null;
+                },
+                handle: function(error, next) {
+                    alert(this.getErrorMessage(error));
+                    next();
+                }
+            }];
+
+            return this.errorHandlers;
         },
         validateCredentials: function(credentials) {
             this.disable();
 
             App.authenticateUser(credentials, {
-                success: function(result) {
-                    this.enable();
-                    App.requestUserDetails();
-                    App.navigateToInitialView();
-                },
-                failure: function(result) {
+                success: function success() {
                     this.enable();
 
-                    if (result.response) {
-                        if (result.response.status == 403) {
-                            alert(this.invalidUserText);
-                        } else {
-                            alert(this.serverProblemText);
-                        }
-                    } else {
-                        alert(this.missingUserText);
+                    var attr = this.domNode.attributes.getNamedItem('selected');
+                    if (attr) {
+                        attr.value = 'false';
                     }
+
+                    App.setPrimaryTitle(App.loadingText);
+                    App.initAppState().then(function() {
+                        App.navigateToInitialView();
+                    });
                 },
-                aborted: function(result) {
+                failure: function(result) {
+                    var error;
+
+                    this.enable();
+
+                    error = new Error();
+                    error.status = result && result.response && result.response.status;
+                    error.xhr = result && result.response;
+                    this.handleError(error);
+                },
+                aborted: function() {
                     this.enable();
 
                     alert(this.requestAbortedText);
@@ -165,5 +239,8 @@ define('Mobile/SalesLogix/Views/Login', [
             });
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Login', __class);
+    return __class;
 });
 

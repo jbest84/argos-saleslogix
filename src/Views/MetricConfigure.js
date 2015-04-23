@@ -1,18 +1,26 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/MetricConfigure', [
+
+/**
+ * @class crm.Views.MetricConfigure
+ *
+ *
+ * @extends argos.Edit
+ *
+ */
+define('crm/Views/MetricConfigure', [
        'dojo/_base/declare',
        'dojo/_base/lang',
        'dojo/_base/array',
-       'Sage/Platform/Mobile/Edit'
-],function(
+       'argos/Edit'
+], function(
     declare,
     lang,
     array,
     Edit
 ) {
-    return declare('Mobile.SalesLogix.Views.MetricConfigure', [Edit], {
+    var __class = declare('crm.Views.MetricConfigure', [Edit], {
         titleText: 'Configure Metric',
         id: 'metric_configure',
         expose: false,
@@ -31,7 +39,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
         metricsSupported: 10,
 
         // Default advanced options
-        defaultFormatType: 'Mobile/SalesLogix/Format',
+        defaultFormatType: 'crm/Format',
         defaultFormatFunc: 'bigNumber',
         defaultValueFunc: 'sum',
 
@@ -87,7 +95,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                             name: key + '-title',
                             label: this.metricTitleText,
                             type: 'text'
-                        },{
+                        }, {
                             label: this.metricText,
                             name: key + '-metric',
                             keyProperty: 'filterName',
@@ -96,12 +104,12 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                             resourcePredicate: lang.hitch(this, function() {
                                 return "'" + this.entityName + "'";
                             }),
-                            where: "filterType eq 'analyticsMetric'" 
-                        },{
+                            where: "filterType eq 'analyticsMetric'"
+                        }, {
                             name: key + '-filterName',
                             property: key + '-filterName',
                             type: 'hidden'
-                        },{
+                        }, {
                             label: this.metricFilterText,
                             name: key + '-filter',
                             keyProperty: 'filterName',
@@ -110,12 +118,12 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                             resourcePredicate: lang.hitch(this, function() {
                                 return "'" + this.entityName + "'";
                             }),
-                            where: "filterType ne 'analyticsMetric'" 
-                        },{
+                            where: "filterType ne 'analyticsMetric'"
+                        }, {
                             name: key + '-metricName',
                             property: key + '-metricName',
                             type: 'hidden'
-                        },{
+                        }, {
                             name: key + '-chartType',
                             label: this.chartTypeText,
                             type: 'select',
@@ -126,7 +134,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                                     {'$key': 'pie', '$descriptor': 'pie'}
                                 ]
                             }
-                        },{
+                        }, {
                             title: this.metricText + ' ' + (i + 1) + ' ' + this.advancedText,
                             collapsed: false,
                             children: [
@@ -134,12 +142,12 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                                     name: key + '-formatter',
                                     label: this.formatterText,
                                     type: 'text'
-                                },{
+                                }, {
                                     name: key + '-aggregate',
                                     label: this.aggregateText,
                                     type: 'text'
-                                },{
-                                    label: this.reportViewText, 
+                                }, {
+                                    label: this.reportViewText,
                                     type: 'text'
                                 }
                             ]
@@ -182,7 +190,6 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
             }, this);
         },
         saveMetricPref: function() {
-            var values = this.getValues();
             App.preferences.metrics = App.preferences.metrics || {};
 
             var i, key, items = [], filterItem, metricItem, filterHidden, metricHidden, titleText;
@@ -210,7 +217,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
                         formatter: this.fields[key + '-formatter'].getValue() || this.defaultFormatFunc,
                         aggregate: this.fields[key + '-aggregate'].getValue() || this.defaultValueFunc,
                         chartType: this.fields[key + '-chartType'].getValue(), //'pie', 'bar'
-                        metricDisplayName: metricItem && metricItem.$descriptor, 
+                        metricDisplayName: metricItem && metricItem.$descriptor,
                         filterDisplayName: filterItem && filterItem.$descriptor,
                         enabled: false
                     });
@@ -222,4 +229,7 @@ define('Mobile/SalesLogix/Views/MetricConfigure', [
             ReUI.back();
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.MetricConfigure', __class);
+    return __class;
 });

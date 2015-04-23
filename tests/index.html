@@ -4,33 +4,22 @@
 <head>
     <title>argos-saleslogix test runner</title>
     <!-- jasmine -->
-    <link rel="stylesheet" type="text/css" href="../../../argos-sdk/libraries/jasmine/jasmine.css">
-    <script type="text/javascript" src="../../../argos-sdk/libraries/jasmine/jasmine.js"></script>
-    <script type="text/javascript" src="../../../argos-sdk/libraries/jasmine/jasmine-html.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../argos-sdk/libraries/jasmine-2.0.0/jasmine.css">
+    <script type="text/javascript" src="../../../argos-sdk/libraries/jasmine-2.0.0/jasmine.js"></script>
+    <script type="text/javascript" src="../../../argos-sdk/libraries/jasmine-2.0.0/jasmine-html.js"></script>
 
     <!-- JSON -->
     <script type="text/javascript" src="../../../argos-sdk/libraries/json2.js"></script>
-
-    <!-- ReUI -->
-    <script type="text/javascript">
-    reConfig = {
-        autoInit: false,
-        legacyMode: false,
-        showInitialPage: false,
-        updateBackButtonText: false
-    };
-    </script>
-    <script type="text/javascript" src="../../../argos-sdk/libraries/reui/reui.js"></script>
 
     <!-- SData Client Library -->
     <script type="text/javascript" src="../../../argos-sdk/libraries/sdata/sdata-client-dependencies-debug.js"></script>
     <script type="text/javascript" src="../../../argos-sdk/libraries/sdata/sdata-client-debug.js"></script>
 
-    <!-- Moment.js -->
-    <script type="text/javascript" src="../../../argos-sdk/libraries/moment/min/moment.min.js"></script>
-
     <!-- Simplate -->
     <script type="text/javascript" src="../../../argos-sdk/libraries/Simplate.js"></script>
+
+    <!-- Deep Diff -->
+    <script type="text/javascript" src="../../../argos-sdk/libraries/deep-diff/deep-diff-0.2.0.min.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="../../../argos-sdk/libraries/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true"></script>
@@ -42,7 +31,7 @@
             { name: 'dijit', location: '../../../argos-sdk/libraries/dojo/dijit' },
             { name: 'dojox', location: '../../../argos-sdk/libraries/dojo/dojox' },
             { name: 'snap', location: '../../../argos-sdk/libraries/snap', main: 'snap' },
-            { name: 'moment', location: '../../../argos-sdk/libraries/moment', main: 'moment' },
+            { name: 'moment', location: '../../../argos-sdk/libraries/moment', main: 'moment-with-langs.min' },
             { name: 'Sage/Platform/Mobile', location: '../../../argos-sdk/src' },
             { name: 'Mobile/SalesLogix', location: '../src' },
             { name: 'spec', location: 'src' },
@@ -50,10 +39,14 @@
             { name: 'configuration', location: '../configuration' }
         ],
         paths: {
-            'Mobile/SalesLogix': '../src',
-            'Sage/Platform/Mobile': '../../../argos-sdk/src',
             'configuration': '../configuration',
             'localization': '../localization'
+        },
+        map: {
+            '*': {
+                'Sage/Platform/Mobile': 'argos',
+                'Mobile/SalesLogix': 'crm'
+            }
         }
     });
     </script>
@@ -61,32 +54,9 @@
 <body>
   <script type="text/javascript">
   require([
-          'spec/all'
+          'spec/all',
+          '../../../argos-sdk/libraries/jasmine-2.0.0/boot.js'
   ], function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
-
-      var htmlReporter = new jasmine.HtmlReporter();
-
-      jasmineEnv.addReporter(htmlReporter);
-
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
-
-      var currentWindowOnload = window.onload;
-
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
-
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
-
   });
   </script>
 </body>

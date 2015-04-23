@@ -1,23 +1,27 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Fields/PicklistField', [
+define('crm/Fields/PicklistField', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Sage/Platform/Mobile/Fields/LookupField',
-    'Mobile/SalesLogix/Views/PickList',
-    'Sage/Platform/Mobile/FieldManager'
+    'argos/Fields/LookupField',
+    '../Views/PickList',
+    'argos/FieldManager'
 ], function(
     declare,
+    lang,
     string,
     LookupField,
     PickList,
     FieldManager
 ) {
     var viewsByName = {},
+        getOrCreateViewFor,
+        control,
         viewsByNameCount = 0;
 
-    var getOrCreateViewFor = function(name) {
+    getOrCreateViewFor = function(name) {
         if (viewsByName[name]) {
             return viewsByName[name];
         }
@@ -33,13 +37,13 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
         return App.getView(view.id);
     };
 
-    var control = declare('Mobile.SalesLogix.Fields.PicklistField', [LookupField], {
+    control = declare('crm.Fields.PicklistField', [LookupField], {
         picklist: false,
-        orderBy: 'number asc',
         storageMode: 'text',
         requireSelection: false,
         valueKeyProperty: false,
         valueTextProperty: false,
+        iconClass: 'fa fa-ellipsis-h fa-lg',
 
         constructor: function(options) {
             switch (this.storageMode) {
@@ -69,6 +73,51 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
         formatResourcePredicate: function(name) {
             return string.substitute('name eq "${0}"', [name]);
         },
+        _handleSaleslogixMultiSelectPicklist: function(value) {
+            var values, key, data;
+            if (typeof value === 'string') {
+                return value;
+            }
+
+            values = [];
+            for (key in value) {
+                if (value.hasOwnProperty(key)) {
+                    data = value[key].data;
+                    if (data && data.text) {
+                        values.push(data.text);
+                    } else if (typeof data === 'string') {
+                        values.push(data);
+                    }
+                }
+            }
+
+            return values.join(', ');
+        },
+        textRenderer: function(value) {
+            var results;
+
+            if (this.singleSelect) {
+                if (typeof value === 'string' || typeof value === 'number') {
+                    results = value;
+                } else {
+                    results = value[this.textProperty];
+                }
+            } else {
+                results = this._handleSaleslogixMultiSelectPicklist(value);
+            }
+
+            return results;
+        },
+        formatValue: function(value) {
+            var results;
+            if (this.singleSelect) {
+                results = this.inherited(arguments);
+            } else {
+                results = this._handleSaleslogixMultiSelectPicklist(value);
+            }
+
+            return results || value;
+        },
         createSelections: function() {
             var value = this.getText(),
                 selections = (value)
@@ -89,16 +138,20 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
                 );
                 options.singleSelect = this.singleSelect;
                 options.previousSelections = !this.singleSelect ? this.createSelections() : null;
+                options.keyProperty = this.keyProperty;
+                options.textProperty = this.textProperty;
             }
 
             if (!this.singleSelect) {
                 options.tools = {
                     tbar: [{
                             id: 'complete',
+                            cls: 'fa fa-check fa-fw fa-lg',
                             fn: this.complete,
                             scope: this
                         }, {
                             id: 'cancel',
+                            cls: 'fa fa-ban fa-fw fa-lg',
                             side: 'left',
                             fn: ReUI.back,
                             scope: ReUI
@@ -109,6 +162,10 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
             return options;
         },
         navigateToListView: function() {
+            if (this.isDisabled()) {
+                return;
+            }
+
             var options = this.createNavigationOptions(),
                 view = App.getView(this.view) || getOrCreateViewFor(this.picklist);
 
@@ -118,5 +175,6 @@ define('Mobile/SalesLogix/Fields/PicklistField', [
         }
     });
 
+    lang.setObject('Mobile.SalesLogix.Fields.PickListField', control);
     return FieldManager.register('picklist', control);
 });

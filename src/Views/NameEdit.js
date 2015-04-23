@@ -1,11 +1,19 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/NameEdit', [
+
+/**
+ * @class crm.Views.NameEdit
+ *
+ *
+ * @extends argos.Edit
+ *
+ */
+define('crm/Views/NameEdit', [
     'dojo/_base/declare',
     'dojo/_base/lang',
-    'Mobile/SalesLogix/Validator',
-    'Sage/Platform/Mobile/Edit'
+    '../Validator',
+    'argos/Edit'
 ], function(
     declare,
     lang,
@@ -13,7 +21,7 @@ define('Mobile/SalesLogix/Views/NameEdit', [
     Edit
 ) {
 
-    return declare('Mobile.SalesLogix.Views.NameEdit', [Edit], {
+    var __class = declare('crm.Views.NameEdit', [Edit], {
         //Localization
         titleText: 'Edit Name',
         firstNameText: 'first',
@@ -76,5 +84,8 @@ define('Mobile/SalesLogix/Views/NameEdit', [
             ]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.NameEdit', __class);
+    return __class;
 });
 

@@ -1,25 +1,33 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Opportunity/Detail', [
+
+/**
+ * @class crm.Views.Opportunity.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/Opportunity/Detail', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/dom-construct',
     'dojo/query',
     'dojo/string',
-    'Sage/Platform/Mobile/Detail',
-    'Mobile/SalesLogix/Format',
-    '../_MetricDetailMixin'
+    'argos/Detail',
+    '../../Format'
 ], function(
     declare,
+    lang,
     domConstruct,
     query,
     string,
     Detail,
-    format,
-    _MetricDetailMixin
+    format
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Opportunity.Detail', [Detail /*, _MetricDetailMixin*/], {
+    var __class = declare('crm.Views.Opportunity.Detail', [Detail], {
         //Localization
         accountText: 'acct',
         acctMgrText: 'acct mgr',
@@ -124,40 +132,6 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
         formatAccountRelatedQuery: function(fmt) {
             return string.substitute(fmt, [this.entry['Account']['$key']]);
         },
-        createMetricWidgetsLayout: function (entry) {
-            /*return [{
-                    chartType: 'bar',
-                    filterDisplayName: 'Account Manager',
-                    formatter: 'bigNumber',
-                    metricDisplayName: 'Sum Sales Potential',
-                    title: 'Sales potential for ' + entry.Account.AccountName,
-                    queryArgs: {
-                        _activeFilter: 'Account.Id eq "' + entry.Account.$key + '"',
-                        _filterName: 'AccountManager',
-                        _metricName: 'SumSalesPotential'
-                    },
-                    queryName: 'executeMetric',
-                    resourceKind: 'opportunities',
-                    aggregate: 'sum',
-                    valueType: 'Mobile/SalesLogix/Aggregate'
-                }, {
-                    chartType: 'bar',
-                    filterDisplayName: 'Stage',
-                    formatter: 'bigNumber',
-                    metricDisplayName: 'Sum Sales Potential',
-                    title: 'Total opportunties for ' + entry.Account.AccountName,
-                    queryArgs: {
-                        _activeFilter: 'Account.Id eq "' + entry.Account.$key + '"',
-                        _filterName: 'Stage',
-                        _metricName: 'CountOpportunities'
-                    },
-                    queryName: 'executeMetric',
-                    resourceKind: 'opportunities',
-                    aggregate: 'sum',
-                    valueType: 'Mobile/SalesLogix/Aggregate'
-                }
-            ];*/
-        },
         createLayout: function() {
             var layout, quickActions, details, moreDetails, multiCurrency, relatedItems;
 
@@ -170,13 +144,13 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                         name: 'ScheduleActivityAction',
                         property: 'Description',
                         label: this.scheduleActivityText,
-                        icon: 'content/images/icons/Schedule_ToDo_24x24.png',
+                        iconClass: 'fa fa-calendar fa-lg',
                         action: 'scheduleActivity'
                     }, {
                         name: 'AddNoteAction',
                         property: 'Description',
                         label: this.addNoteText,
-                        icon: 'content/images/icons/New_Note_24x24.png',
+                        iconClass: 'fa fa-edit fa-lg',
                         action: 'addNote'
                     }]
             };
@@ -195,28 +169,14 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                         property: 'Account.AccountName',
                         view: 'account_detail'
                     }, {
-                        label: this.resellerText,
-                        key: 'Reseller.$key',
-                        name: 'Reseller.AccountName',
-                        property: 'Reseller.AccountName',
-                        view: 'account_detail'
+                        label: this.statusText,
+                        name: 'Status',
+                        property: 'Status'
                     }, {
                         label: this.estCloseText,
                         name: 'EstimatedClose',
                         property: 'EstimatedClose',
                         renderer: format.date.bindDelegate(this, null, true)
-                    }, {
-                        label: this.statusText,
-                        name: 'Status',
-                        property: 'Status'
-                    }, {
-                        label: this.typeText,
-                        name: 'Type',
-                        property: 'Type'
-                    }, {
-                        label: this.probabilityText,
-                        name: 'CloseProbability',
-                        property: 'CloseProbability'
                     }, {
                         label: App.hasMultiCurrency() ? this.potentialBaseText : this.potentialText,
                         name: 'SalesPotential',
@@ -261,6 +221,20 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                 name: 'MoreDetailsSection',
                 collapsed: true,
                 children: [{
+                        label: this.typeText,
+                        name: 'Type',
+                        property: 'Type'
+                    }, {
+                        label: this.resellerText,
+                        key: 'Reseller.$key',
+                        name: 'Reseller.AccountName',
+                        property: 'Reseller.AccountName',
+                        view: 'account_detail'
+                    }, {
+                        label: this.probabilityText,
+                        name: 'CloseProbability',
+                        property: 'CloseProbability'
+                    }, {
                         label: this.acctMgrText,
                         name: 'AccountManager.UserInfo',
                         property: 'AccountManager.UserInfo',
@@ -278,19 +252,16 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                 name: 'RelatedItemsSection',
                 children: [{
                         name: 'OpportunityRelated',
-                        icon: 'content/images/icons/product_24.png',
                         label: this.relatedProductsText,
                         view: 'opportunityproduct_related',
                         where: this.formatRelatedQuery.bindDelegate(this, 'Opportunity.Id eq "${0}"')
                     }, {
                         name: 'ActivityRelated',
-                        icon: 'content/images/icons/To_Do_24x24.png',
                         label: this.relatedActivitiesText,
                         view: 'activity_related',
                         where: this.formatRelatedQuery.bindDelegate(this, 'OpportunityId eq "${0}"')
                     }, {
                         name: 'ContactRelated',
-                        icon: 'content/images/icons/Contacts_24x24.png',
                         label: this.relatedContactsText,
                         options: {
                             prefilter: this.formatAccountRelatedQuery.bindDelegate(this, 'Account.Id eq "${0}"')
@@ -299,13 +270,11 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
                         where: this.formatRelatedQuery.bindDelegate(this, 'Opportunity.Id eq "${0}"')
                     }, {
                         name: 'HistoryRelated',
-                        icon: 'content/images/icons/journal_24.png',
                         label: this.relatedHistoriesText,
                         where: this.formatRelatedQuery.bindDelegate(this, 'OpportunityId eq "${0}" and Type ne "atDatabaseChange"'),
                         view: 'history_related'
                     }, {
                         name: 'AttachmentRelated',
-                        icon: 'content/images/icons/Attachment_24.png',
                         label: this.relatedAttachmentText,
                         where: this.formatRelatedQuery.bindDelegate(this, 'opportunityId eq "${0}"'),// must be lower case because of feed
                         view: 'opportunity_attachment_related',
@@ -358,5 +327,8 @@ define('Mobile/SalesLogix/Views/Opportunity/Detail', [
             return layout;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Opportunity.Detail', __class);
+    return __class;
 });
 

@@ -1,36 +1,54 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Ticket/List', [
+
+/**
+ * @class crm.Views.Ticket.List
+ *
+ * @extends argos.List
+ * @mixins crm.Views._RightDrawerListMixin
+ * @mixins crm.Views._MetricListMixin
+ * @mixins crm.Views._GroupListMixin
+ * @mixins crm.Views._CardLayoutListMixin
+ *
+ * @requires crm.Action
+ * @requires crm.Format
+ */
+define('crm/Views/Ticket/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/_base/array',
-    'Mobile/SalesLogix/Action',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Views/History/RelatedView',
-    'Sage/Platform/Mobile/List',
+    '../../Action',
+    '../../Format',
+    'argos/List',
+    '../_GroupListMixin',
     '../_MetricListMixin',
     '../_RightDrawerListMixin',
     '../_CardLayoutListMixin'
 ], function(
     declare,
+    lang,
     string,
     array,
     action,
     format,
-    HistoryRelatedView,
     List,
+    _GroupListMixin,
     _MetricListMixin,
     _RightDrawerListMixin,
     _CardLayoutListMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Ticket.List', [List, _RightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin], {
+    var __class = declare('crm.Views.Ticket.List', [List, _RightDrawerListMixin, _MetricListMixin, _CardLayoutListMixin, _GroupListMixin], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.TicketNumber %}</h3>',
             '<h4>{%: $.Subject %}</h3>',
-            '{% if($.Account) { %}',
+            '{% if(($.Account) && (!$.Contact)) { %}',
+                '<h4>{%: $$.viewContactActionText + ": " + $.Account.AccountName %}</h4>',
+            '{% } %}',
+            '{% if(($.Account) && ($.Contact)) { %}',
                 '<h4>{%: $$.viewContactActionText + ": " + $.Contact.NameLF + " | " + $.Account.AccountName %}</h4>',
             '{% } %}',
             '<h4> {%: $.AssignedTo ? ($$.assignedToText + $.AssignedTo.OwnerDescription) : this.notAssignedText %}</h4>',
@@ -41,13 +59,13 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
                 '<h4>{%: $$._areaCategoryIssueText($) %}</h4>',
             '{% } %}',
             '{% if($.CreateDate) { %}',
-                '<h4>{%: $$.createdOnText %}  {%: Mobile.SalesLogix.Format.relativeDate($.CreateDate) %}</h4>',
+                '<h4>{%: $$.createdOnText %}  {%: crm.Format.relativeDate($.CreateDate) %}</h4>',
             '{% } %}',
             '{% if($.ModifyDate) { %}',
-                '<h4>{%: $$.modifiedText %}  {%: Mobile.SalesLogix.Format.relativeDate($.ModifyDate) %}</h4>',
+                '<h4>{%: $$.modifiedText %}  {%: crm.Format.relativeDate($.ModifyDate) %}</h4>',
             '{% } %}',
             '{% if($.NeededByDate) { %}',
-                '<h4>{%: $$.neededByText %}  {%: Mobile.SalesLogix.Format.relativeDate($.NeededByDate) %}</h4>',
+                '<h4>{%: $$.neededByText %}  {%: crm.Format.relativeDate($.NeededByDate) %}</h4>',
             '{% } %}'
         ]),
 
@@ -75,9 +93,9 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
         modifiedText: 'Modified ',
         neededByText: 'Needed  ',
 
-        //View Properties       
+        //View Properties
         detailView: 'ticket_detail',
-        icon: 'content/images/icons/Ticket_24x24.png',
+        itemIconClass: 'fa fa-clipboard fa-2x',
         id: 'ticket_list',
         security: 'Entities/Ticket/View',
         insertView: 'ticket_edit',
@@ -103,33 +121,18 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
         ],
         resourceKind: 'tickets',
         entityName: 'Ticket',
+        groupsEnabled: true,
         allowSelection: true,
         enableActions: true,
-        defaultSearchTerm: function() {
-            return '#' + this.hashTagQueriesText['assigned-to-me'];
-        },
-        hashTagQueries: {
-            'assigned-to-me': function() {
-                return 'AssignedTo.OwnerDescription eq "' + App.context.user.$descriptor + '"';
-            },
-            'completed-by-me': function() {
-                return 'CompletedBy.OwnerDescription eq "' + App.context.user.$descriptor + '"';
-            }
-        },
-        hashTagQueriesText: {
-            'assigned-to-me': 'assigned-to-me',
-            'completed-by-me': 'completed-by-me'
-        },
 
         createActionLayout: function() {
             return this.actions || (this.actions = [{
                 id: 'edit',
-                icon: 'content/images/icons/edit_24.png',
+                cls: 'fa fa-pencil fa-2x',
                 label: this.editActionText,
                 action: 'navigateToEditView'
             }, {
                 id: 'viewAccount',
-                icon: 'content/images/icons/Company_24.png',
                 label: this.viewAccountActionText,
                 enabled: action.hasProperty.bindDelegate(this, 'Account.$key'),
                 fn: action.navigateToEntity.bindDelegate(this, {
@@ -139,7 +142,6 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
                 })
             }, {
                 id: 'viewContact',
-                icon: 'content/images/icons/Contacts_24x24.png',
                 label: this.viewContactActionText,
                 enabled: action.hasProperty.bindDelegate(this, 'Contact.$key'),
                 fn: action.navigateToEntity.bindDelegate(this, {
@@ -149,17 +151,17 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
                 })
             }, {
                 id: 'addNote',
-                icon: 'content/images/icons/New_Note_24x24.png',
+                cls: 'fa fa-edit fa-2x',
                 label: this.addNoteActionText,
                 fn: action.addNote.bindDelegate(this)
             }, {
                 id: 'addActivity',
-                icon: 'content/images/icons/Schedule_ToDo_24x24.png',
+                cls: 'fa fa-calendar fa-2x',
                 label: this.addActivityActionText,
                 fn: action.addActivity.bindDelegate(this)
             }, {
                 id: 'addAttachment',
-                icon: 'content/images/icons/Attachment_24.png',
+                cls: 'fa fa-paperclip fa-2x',
                 label: this.addAttachmentActionText,
                 fn: action.addAttachment.bindDelegate(this)
             }]
@@ -171,17 +173,10 @@ define('Mobile/SalesLogix/Views/Ticket/List', [
                 'TicketNumber like "${0}%" or AlternateKeySuffix like "${0}%" or upper(Subject) like "${0}%" or Account.AccountNameUpper like "${0}%"',
                 [this.escapeSearchQuery(searchQuery.toUpperCase())]
             );
-        },
-        createRelatedViewLayout: function() {
-            return this.relatedViews || (this.relatedViews = [{
-                widgetType: HistoryRelatedView,
-                id: 'ticket_relatedNotes',
-                autoLoad:true,
-                enabled: true,
-                relatedProperty: 'TicketId',
-                where: function(entry) { return "TicketId eq '" + entry.$key + "' and Type ne 'atDatabaseChange'"; }
-            }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Ticket.List', __class);
+    return __class;
 });
 

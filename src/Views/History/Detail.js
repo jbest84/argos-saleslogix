@@ -1,17 +1,27 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/History/Detail', [
+
+/**
+ * @class crm.Views.History.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires argos.ErrorManager
+ *
+ * @requires crm.Format
+ * @requires crm.Template
+ */
+define('crm/Views/History/Detail', [
     'dojo/_base/declare',
     'dojo/string',
     'dojo/_base/lang',
     'dojo/query',
     'dojo/dom-class',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/Detail',
-    'dojo/NodeList-manipulate'
+    '../../Format',
+    'argos/ErrorManager',
+    '../../Template',
+    'argos/Detail'
 ], function(
     declare,
     string,
@@ -24,7 +34,7 @@ define('Mobile/SalesLogix/Views/History/Detail', [
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.History.Detail', [Detail], {
+    var __class = declare('crm.Views.History.Detail', [Detail], {
         //Templates
         createUserTemplate: template.nameLF,
 
@@ -92,7 +102,8 @@ define('Mobile/SalesLogix/Views/History/Detail', [
             'LeadName',
             'Timeless',
             'Type',
-            'UserName'
+            'UserName',
+            'UserId'
         ],
 
         formatActivityType: function(val) {
@@ -128,7 +139,7 @@ define('Mobile/SalesLogix/Views/History/Detail', [
                 return request;
             }
         },
-        requestCodeData: function(row, node, value, entry, predicate) {
+        requestCodeData: function(row, node, value, entry) {
             var request = this.requestCompletedUser(entry);
             if (request) {
                 request.read({
@@ -137,7 +148,7 @@ define('Mobile/SalesLogix/Views/History/Detail', [
                     scope: this
                 });
             } else {
-               this.onCodeDataNull();
+                this.onCodeDataNull();
             }
         },
         onRequestCodeDataSuccess: function(row, node, value, entry, data) {
@@ -166,6 +177,17 @@ define('Mobile/SalesLogix/Views/History/Detail', [
         },
         createLayout: function() {
             return this.layout || (this.layout = [{
+                    title: this.notesText,
+                    name: 'NotesSection',
+                    children: [{
+                        name: 'LongNotes',
+                        property: 'LongNotes',
+                        encode: false,
+                        label: this.longNotesText,
+                        provider: this.provideText.bindDelegate(this),
+                        use: template.noteDetailProperty
+                    }]
+                }, {
                     title: this.detailsText,
                     name: 'DetailsSection',
                     children: [{
@@ -197,22 +219,7 @@ define('Mobile/SalesLogix/Views/History/Detail', [
                             value: this.loadingText,
                             cls: 'content-loading',
                             onCreate: this.requestCodeData.bindDelegate(this)
-                        }]
-                }, {
-                    title: this.notesText,
-                    name: 'NotesSection',
-                    children: [{
-                        name: 'LongNotes',
-                        property: 'LongNotes',
-                        encode: false,
-                        label: this.longNotesText,
-                        provider: this.provideText.bindDelegate(this),
-                        use: template.noteDetailProperty
-                    }]
-                }, {
-                    title: this.relatedItemsText,
-                    name: 'RelatedItemsSection',
-                    children: [{
+                        }, {
                             name: 'AccountName',
                             property: 'AccountName',
                             exclude: this.isHistoryForLead,
@@ -264,7 +271,6 @@ define('Mobile/SalesLogix/Views/History/Detail', [
                     name: 'RelatedItemsSection',
                     children: [{
                         name: 'AttachmentRelated',
-                        icon: 'content/images/icons/Attachment_24.png',
                         label: this.relatedAttachmentText,
                         where: this.formatRelatedQuery.bindDelegate(this, 'historyId eq "${0}"'),// must be lower case because of feed
                         view: 'history_attachment_related',
@@ -273,5 +279,8 @@ define('Mobile/SalesLogix/Views/History/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.History.Detail', __class);
+    return __class;
 });
 

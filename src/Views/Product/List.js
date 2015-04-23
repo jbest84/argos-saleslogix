@@ -1,19 +1,29 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Product/List', [
+
+/**
+ * @class crm.Views.Product.List
+ *
+ * @extends argos.List
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/Product/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/List'
+    '../../Format',
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     format,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Product.List', [List], {
+    var __class = declare('crm.Views.Product.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.Name %} | {%: $.Description %}</h3>',
@@ -25,10 +35,9 @@ define('Mobile/SalesLogix/Views/Product/List', [
         //Localization
         titleText: 'Products',
 
-        //View Properties       
+        //View Properties
         id: 'product_list',
         security: 'Entities/Product/View',
-        icon: 'content/images/icons/product_24.png',
         queryOrderBy: 'Name',
         querySelect: [
             'Description',
@@ -44,5 +53,8 @@ define('Mobile/SalesLogix/Views/Product/List', [
             return string.substitute('(upper(Name) like "${0}%" or upper(Family) like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Product.List', __class);
+    return __class;
 });
 

@@ -1,19 +1,30 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/OpportunityContact/Detail', [
+
+/**
+ * @class crm.Views.OpportunityContact.Detail
+ *
+ * @extends argos.Detail
+ * @mixins argos._LegacySDataDetailMixin
+ */
+define('crm/Views/OpportunityContact/Detail', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/_base/connect',
     'dojo/string',
-    'Sage/Platform/Mobile/Detail'
+    'argos/Detail',
+    'argos/_LegacySDataDetailMixin'
 ], function(
     declare,
+    lang,
     connect,
     string,
-    Detail
+    Detail,
+    _LegacySDataDetailMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.OpportunityContact.Detail', [Detail], {
+    var __class = declare('crm.Views.OpportunityContact.Detail', [Detail, _LegacySDataDetailMixin], {
         //Localization
         titleText: 'Opportunity Contact',
         accountText: 'account',
@@ -59,13 +70,18 @@ define('Mobile/SalesLogix/Views/OpportunityContact/Detail', [
             return entry;
         },
         removeContact: function() {
-            var confirmMessage = string.substitute(this.confirmDeleteText, [this.entry.Contact.NameLF]);
+            var confirmMessage,
+                entry,
+                request;
+
+            confirmMessage = string.substitute(this.confirmDeleteText, [this.entry.Contact.NameLF]);
             if (!confirm(confirmMessage)) {
                 return;
             }
 
-            var entry = this.createEntryForDelete(),
-                request = this.createRequest();
+            entry = this.createEntryForDelete();
+            request = this.createRequest();
+
             if (request) {
                 request['delete'](entry, {
                     success: this.onDeleteSuccess,
@@ -85,10 +101,11 @@ define('Mobile/SalesLogix/Views/OpportunityContact/Detail', [
                 'tbar': [{
                         id: 'edit',
                         action: 'navigateToEditView',
+                        cls: 'fa fa-pencil fa-fw fa-lg',
                         security: App.getViewSecurity(this.editView, 'update')
                     }, {
                         id: 'removeContact',
-                        icon: 'content/images/icons/del_24.png',
+                        cls: 'fa fa-times-circle fa-lg',
                         action: 'removeContact',
                         title: this.removeContactTitleText
                     }]
@@ -149,5 +166,8 @@ define('Mobile/SalesLogix/Views/OpportunityContact/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.OpportunityContact.Detail', __class);
+    return __class;
 });
 

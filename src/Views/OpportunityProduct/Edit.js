@@ -1,25 +1,40 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
+
+/**
+ * @class crm.Views.OpportunityProduct.Edit
+ *
+ * @extends argos.Edit
+ *
+ * @requires argos.Utility
+ *
+ * @requires crm.Validator
+ * @requires crm.Template
+ */
+define('crm/Views/OpportunityProduct/Edit', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/_base/array',
     'dojo/string',
-    'Mobile/SalesLogix/Validator',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit'
+    '../../Validator',
+    '../../Template',
+    'argos/Utility',
+    'argos/Edit',
+    'argos/Utility'
 ], function(
     declare,
+    lang,
     array,
     string,
     validator,
     template,
     utility,
-    Edit
+    Edit,
+    Utility
 ) {
 
-    return declare('Mobile.SalesLogix.Views.OpportunityProduct.Edit', [Edit], {
+    var __class = declare('crm.Views.OpportunityProduct.Edit', [Edit], {
         //Localization
         titleText: 'Opportunity Product',
         detailsText: 'Details',
@@ -68,12 +83,12 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
         },
         setValues: function(values) {
             this.inherited(arguments);
-            var adjusted, myCode, oppCode, baseCode;
+            var adjusted, myCode, baseCode;
             this.fields['Program'].setValue({'$key': '', 'Program': values.Program});
 
             if (values.Discount > 0) {
                 adjusted = values.Price - (values.Discount * values.Price);
-                // transform the discount into a percentage number 0.10 to 10.00% 
+                // transform the discount into a percentage number 0.10 to 10.00%
                 this.fields['Discount'].setValue(values.Discount * 100);
             } else {
                 adjusted = values.Price;
@@ -135,14 +150,9 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
 
             return o;
         },
-        applyContext: function(templateEntry) {
-            var context, view, entry;
-            context = App.queryNavigationContext(function(o) {
-                return (/^(opportunities)$/).test(o.resourceKind) && o.key;
-            });
+        applyContext: function() {
+            var entry = this.options && this.options.selectedEntry;
 
-            view = App.getView(context && context.id);
-            entry = view && view.entry;
             if (entry) {
                 this.fields['Opportunity'].setValue(entry);
             }
@@ -178,8 +188,8 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
                 this._enableUI(true);
             }
         },
-        onDiscountChange: function(value, field) {
-            var price, discount, adjusted, quantity, extended;
+        onDiscountChange: function() {
+            var price, discount, adjusted, quantity;
             price = parseFloat(this.fields['Price'].getValue(), 10) || 0;
             discount = this.fields['Discount'].getValue();
             quantity = parseFloat(this.fields['Quantity'].getValue(), 10) || 0;
@@ -190,7 +200,7 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
             this._updateAdjustedPrices(adjusted);
             this._updateExtendedPrice();
         },
-        onAdjustedPriceChange: function(value, field) {
+        onAdjustedPriceChange: function() {
             var price, discount, adjusted, myadjusted;
             price = parseFloat(this.fields['Price'].getValue(), 10) || 0;
             adjusted = parseFloat(this.fields['CalculatedPrice'].getValue(), 10) || 0;
@@ -204,7 +214,7 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
             }
             this._updateExtendedPrice();
         },
-        onAdjustedPriceMineChange: function(value, field) {
+        onAdjustedPriceMineChange: function() {
             var price, myprice, discount, myadjusted, adjusted, myrate;
             myadjusted = this.fields['CalculatedPriceMine'].getValue();
             price = this.fields['Price'].getValue() || 0;
@@ -220,7 +230,7 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
 
             this._updateExtendedPrice();
         },
-        onQuantityChange: function(value, field) {
+        onQuantityChange: function(value) {
             if (isNaN(value)) {
                 this.fields['Quantity'].setValueNoTrigger(0);
             }
@@ -259,11 +269,11 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
             extended = adjusted * quantity;
             this.fields['ExtendedPrice'].setValueNoTrigger(extended);
         },
-        onUpdateCompleted: function(entry) {
+        onUpdateCompleted: function() {
             this._refreshOpportunityViews();
             this.inherited(arguments);
         },
-        onInsertCompleted: function(entry) {
+        onInsertCompleted: function() {
             this._refreshOpportunityViews();
             this.inherited(arguments);
         },
@@ -327,7 +337,7 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
                         validator: validator.exists,
                         where: (function() {
                             var val = this.fields['Product'].getValue();
-                            return string.substitute('Product.Name eq "${0}"', [val.Name]);
+                            return string.substitute('Product.Name eq "${0}"', [Utility.escapeSearchQuery(val.Name)]);
                         }).bindDelegate(this)
                     },
                     {
@@ -421,5 +431,8 @@ define('Mobile/SalesLogix/Views/OpportunityProduct/Edit', [
             return layout;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.OpportunityProduct.Edit', __class);
+    return __class;
 });
 

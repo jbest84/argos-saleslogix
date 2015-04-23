@@ -1,16 +1,28 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Address/List', [
+
+/**
+ * @class crm.Views.Address.List
+ *
+ * @extends argos.List
+ *
+ * @requires argos.List
+ *
+ * @requires crm.Format
+ *
+ */
+define('crm/Views/Address/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/dom-attr',
     'dojo/query',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/List',
-    'dojo/NodeList-traverse'
+    '../../Format',
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     domAttr,
     query,
@@ -18,11 +30,11 @@ define('Mobile/SalesLogix/Views/Address/List', [
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Address.List', [List], {
+    var __class = declare('crm.Views.Address.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.$descriptor %}</h3>',
-            '<h4>{%= Mobile.SalesLogix.Format.address($, true) %}</h4>'
+            '<h4>{%= crm.Format.address($, true) %}</h4>'
         ]),
 
         //Localization
@@ -30,7 +42,6 @@ define('Mobile/SalesLogix/Views/Address/List', [
 
         //View Properties
         detailView: null,
-        icon: 'content/images/icons/Map_24.png',
         id: 'address_list',
         security: null, //'Entities/Address/View',
         insertSecurity: 'Entities/Address/Add',
@@ -57,5 +68,8 @@ define('Mobile/SalesLogix/Views/Address/List', [
             }
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Address.List', __class);
+    return __class;
 });
 

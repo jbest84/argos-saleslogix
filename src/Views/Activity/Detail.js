@@ -1,21 +1,41 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Activity/Detail', [
+
+/**
+ * @class crm.Views.Activity.Detail
+ *
+ *
+ * @extends argos.Detail
+ * @mixins argos.Detail
+ *
+ * @requires argos.Detail
+ * @requires argos.Utility
+ * @requires argos.Convert
+ * @requires crm.Format
+ * @requires crm.Template
+ * @requires crm.Environment
+ * @requires crm.Recurrence
+ * @requires crm.Utility
+ *
+ */
+define('crm/Views/Activity/Detail', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/query',
     'dojo/dom-class',
-    'Mobile/SalesLogix/Template',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Environment',
-    'Sage/Platform/Mobile/Convert',
-    'Sage/Platform/Mobile/Detail',
-    'Mobile/SalesLogix/Recurrence',
-    'Mobile/SalesLogix/Utility',
-    'Sage/Platform/Mobile/Utility'
+    '../../Template',
+    '../../Format',
+    '../../Environment',
+    'argos/Convert',
+    'argos/Detail',
+    '../../Recurrence',
+    '../../Utility',
+    'argos/Utility'
 ], function(
     declare,
+    lang,
     string,
     query,
     domClass,
@@ -29,7 +49,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
     platformUtility
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Activity.Detail', [Detail], {
+    var __class = declare('crm.Views.Activity.Detail', [Detail], {
         //Templates
         leaderTemplate: template.nameLF,
 
@@ -72,11 +92,12 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
         timelessDateFormatText: 'M/D/YYYY',
         alarmDateFormatText: 'M/D/YYYY h:mm:ss A',
         recurrenceText: 'recurrence',
-        confirmEditRecurrenceText: 'Edit all Occurrences?\nCancel to edit single Occurrence.',
+        confirmEditRecurrenceText: 'Edit all Occurrences? Cancel to edit single Occurrence.',
         relatedAttachmentText: 'Attachments',
         relatedAttachmentTitleText: 'Activity Attachments',
         relatedItemsText:'Related Items',
         phoneText: 'phone',
+        moreDetailsText: 'More Details',
 
         //View Properties
         id: 'activity_detail',
@@ -115,7 +136,12 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             'RecurPeriod',
             'RecurPeriodSpec',
             'RecurIterations',
-            'RecurrenceState'
+            'RecurrenceState',
+            'AllowAdd',
+            'AllowEdit',
+            'AllowDelete',
+            'AllowComplete'
+
         ],
         resourceKind: 'activities',
         recurringActivityIdSeparator: ';',
@@ -124,7 +150,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
         formatActivityType: function(val) {
             return this.activityTypeText[val] || val;
         },
-        navigateToEditView: function(el) {
+        navigateToEditView: function() {
             var view = App.getView(this.editView);
 
             if (view) {
@@ -187,6 +213,9 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
         },
         processOccurance: function(feed) {
             if (feed && feed.$resources && feed.$resources.length > 0) {
+                if (this.entry.Leader) {
+                    feed.$resources[0].Leader = this.entry.Leader;
+                }
                 this.entry = feed.$resources[0];
                 this.navigateToCompleteView(this.completeOccurrenceText);
             }
@@ -195,7 +224,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             this.navigateToCompleteView(this.completeSeriesText, true);
         },
         isActivityRecurring: function(entry) {
-            return entry && (entry['Recurring'] || entry['RecurrenceState'] == 'rstOccurrence');
+            return entry && (entry['Recurring'] || entry['RecurrenceState'] === 'rstOccurrence');
         },
         isActivityRecurringSeries: function(entry) {
             return this.isActivityRecurring(entry) && !recur.isAfterCompletion(entry['RecurPeriod']);
@@ -210,7 +239,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
             return convert.toBoolean(entry && entry['Alarm']);
         },
         requestLeader: function(userId) {
-            var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
+            var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getConnection())
                 .setResourceKind('users')
                 .setResourceSelector(string.substitute("'${0}'", [userId]))
                 .setQueryArg('select', [
@@ -218,27 +247,29 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                     'UserInfo/LastName'
                 ].join(','));
 
-            request.allowCacheUse = true;
             request.read({
                 success: this.processLeader,
                 failure: this.requestLeaderFailure,
                 scope: this
             });
         },
-        requestLeaderFailure: function(xhr, o) {
+        requestLeaderFailure: function() {
         },
         processLeader: function(leader) {
             if (leader) {
                 this.entry['Leader'] = leader;
 
+                // There could be a timing issue here. The call to request the leader is done before the layout is processed,
+                // so we could potentially end up in here before any dom was created for the view.
+                // TODO: Fix
                 var rowNode = query('[data-property="Leader"]'),
                     contentNode = rowNode && query('[data-property="Leader"] > span', this.domNode);
 
-                if (rowNode) {
+                if (rowNode && rowNode.length > 0) {
                     domClass.remove(rowNode[0], 'content-loading');
                 }
 
-                if (contentNode) {
+                if (contentNode && contentNode.length > 0) {
                     contentNode[0].innerHTML = this.leaderTemplate.apply(leader['UserInfo']);
                 }
             }
@@ -267,36 +298,36 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                 rowNode = query('[data-property="RecurrenceUI"]');
                 contentNode = rowNode && query('[data-property="RecurrenceUI"] > span', this.domNode);
 
-                if (rowNode) {
+                if (rowNode && rowNode.length > 0) {
                     domClass.remove(rowNode[0], 'content-loading');
                 }
 
-                if (contentNode) {
+                if (contentNode && contentNode.length > 0) {
                     contentNode[0].innerHTML = recur.toString(this.recurrence);
                 }
             }
         },
-        requestRecurrenceFailure: function(xhr, o) {
+        requestRecurrenceFailure: function() {
         },
         checkCanComplete: function(entry) {
-            return !entry || (entry['Leader']['$key'] !== App.context['user']['$key']);
+            return !(entry && (entry['AllowComplete']));
         },
-        processEntry: function(entry) {
-            this.inherited(arguments);
-
+        preProcessEntry: function(entry) {
             if (entry && entry['Leader']['$key']) {
                 this.requestLeader(entry['Leader']['$key']);
             }
             if (this.isActivityRecurring(entry)) {
                 this.requestRecurrence(entry['$key'].split(this.recurringActivityIdSeparator).shift());
             }
+
+            return entry;
         },
         formatRelatedQuery: function(entry, fmt, property) {
             if (property === 'activityId') {
-                  return string.substitute(fmt, [utility.getRealActivityId(entry.$key)]);
+                return string.substitute(fmt, [utility.getRealActivityId(entry.$key)]);
             } else {
                 property = property || '$key';
-                return string.substitute(fmt, [platformUtility.getValue(entry, property, "")]);
+                return string.substitute(fmt, [platformUtility.getValue(entry, property, '')]);
             }
         },
         createLayout: function() {
@@ -309,7 +340,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             name: 'CompleteActivityAction',
                             property: 'Description',
                             label: this.completeActivityText,
-                            icon: 'content/images/icons/Clear_Activity_24x24.png',
+                            iconClass: 'fa fa-check-square fa-lg',
                             action: 'completeActivity',
                             disabled: this.checkCanComplete,
                             exclude: this.isActivityRecurringSeries
@@ -317,7 +348,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             name: 'completeOccurrenceAction',
                             property: 'StartDate',
                             label: this.completeOccurrenceText,
-                            icon: 'content/images/icons/Clear_Activity_24x24.png',
+                            iconClass: 'fa fa-check-square fa-lg',
                             action: 'completeOccurrence',
                             disabled: this.checkCanComplete,
                             renderer: format.date.bindDelegate(this, this.startDateFormatText, false),
@@ -326,7 +357,7 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             name: 'completeSeriesAction',
                             property: 'Description',
                             label: this.completeSeriesText,
-                            icon: 'content/images/icons/Clear_Activity_24x24.png',
+                            iconClass: 'fa fa-check-square fa-lg',
                             action: 'completeSeries',
                             disabled: this.checkCanComplete,
                             include: this.isActivityRecurringSeries
@@ -344,26 +375,14 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             property: 'Description',
                             label: this.regardingText
                         }, {
-                            name: 'Category',
-                            property: 'Category',
-                            label: this.categoryText
-                        }, {
-                            name: 'Location',
-                            property: 'Location',
-                            label: this.locationText
-                        }, {
-                            name: 'Priority',
-                            property: 'Priority',
-                            label: this.priorityText
-                        }, {
-                            name: 'LongNotes',
-                            property: 'LongNotes',
-                            label: this.longNotesText
-                        }, {
                             name: 'PhoneNumber',
                             property: 'PhoneNumber',
                             label: this.phoneText,
                             renderer: format.phone.bindDelegate(this, false)
+                        }, {
+                            name: 'LongNotes',
+                            property: 'LongNotes',
+                            label: this.longNotesText
                         }]
                 }, {
                     title: this.whenText,
@@ -473,13 +492,29 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                             include: this.isActivityForLead,
                             label: this.companyText
                         }]
-                },{
+                }, {
+                    title: this.moreDetailsText,
+                    name: 'MoreDetailsSection',
+                    collapsed: true,
+                    children: [{
+                            name: 'Category',
+                            property: 'Category',
+                            label: this.categoryText
+                        }, {
+                            name: 'Location',
+                            property: 'Location',
+                            label: this.locationText
+                        }, {
+                            name: 'Priority',
+                            property: 'Priority',
+                            label: this.priorityText
+                        }]
+                }, {
                     title: this.relatedItemsText,
                     list: true,
                     name: 'RelatedItemsSection',
                     children: [{
                         name: 'AttachmentRelated',
-                        icon: 'content/images/icons/Attachment_24.png',
                         label: this.relatedAttachmentText,
                         where: this.formatRelatedQuery.bindDelegate(this, 'activityId eq "${0}"', 'activityId'),// must be lower case because of feed
                         view: 'activity_attachment_related',
@@ -488,5 +523,8 @@ define('Mobile/SalesLogix/Views/Activity/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Activity.Detail', __class);
+    return __class;
 });
 

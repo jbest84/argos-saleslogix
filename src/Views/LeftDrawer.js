@@ -1,33 +1,52 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/LeftDrawer', [
+
+/**
+ * @class crm.Views.LeftDrawer
+ *
+ *
+ * @extends argos.GroupedList
+ *
+ */
+define('crm/Views/LeftDrawer', [
     'dojo/_base/declare',
     'dojo/_base/array',
     'dojo/_base/lang',
-    'Mobile/SalesLogix/SpeedSearchWidget',
-    'Sage/Platform/Mobile/GroupedList'
+    'dojo/store/Memory',
+    '../SpeedSearchWidget',
+    'argos/GroupedList'
 ], function(
     declare,
     array,
     lang,
+    Memory,
     SpeedSearchWidget,
     GroupedList
 ) {
 
-    return declare('Mobile.SalesLogix.Views.LeftDrawer', [GroupedList], {
+    var __class = declare('crm.Views.LeftDrawer', [GroupedList], {
         //Templates
         cls: ' contextualContent',
         rowTemplate: new Simplate([
             '<li data-action="{%= $.action %}" {% if ($.view) { %}data-view="{%= $.view %}"{% } %}>',
-            '<div class="list-item-static-selector">',
-                '{% if ($.icon) { %}',
-                '<img src="{%: $.icon %}" alt="icon" class="icon" />',
-                '{% } %}',
-            '</div>',
+            '{% if ($$._hasIcon($)) { %}',
+                '<div class="list-item-static-selector">',
+                    '{% if ($.iconTemplate) { %}',
+                        '{%! $.iconTemplate %}',
+                    '{% } else if ($.cls) { %}',
+                        '<div class="{%: $.cls %}"></div>',
+                    '{% } else if ($.icon) { %}',
+                        '<img src="{%: $.icon %}" alt="icon" class="icon" />',
+                    '{% } %}',
+                '</div>',
+            '{% } %}',
             '<div class="list-item-content">{%! $$.itemTemplate %}</div>',
             '</li>'
         ]),
+        _hasIcon: function(entry) {
+            return entry.iconTemplate || entry.cls || entry.icon;
+        },
         itemTemplate: new Simplate([
             '<h3>{%: $.title %}</h3>'
         ]),
@@ -63,7 +82,7 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 App.logOut();
             }
         },
-        loadAndNavigateToView: function (params) {
+        loadAndNavigateToView: function(params) {
             var view = App.getView(params && params.view);
             this.navigateToView(view);
         },
@@ -73,13 +92,11 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 view.show();
             }
         },
-        addAccountContact: function(params) {
-            var view = App.getView(this.addAccountContactView);
+        addAccountContact: function() {
+            App.snapper.close();
+            var view = App.getView('add_account_contact');
             if (view) {
-                App.snapper.close();
-                view.show({
-                    insert: true
-                });
+                view.show({insert: true});
             }
         },
         navigateToConfigurationView: function() {
@@ -140,7 +157,14 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 return this.layout;
             }
 
-            var quickActions, goTo, footer, layout, configured;
+            var quickActions,
+                goTo,
+                footer,
+                layout,
+                configured,
+                view,
+                i;
+
             layout = [];
 
             quickActions = {
@@ -149,7 +173,7 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                     {
                         'name': 'AddAccountContactAction',
                         'action': 'addAccountContact',
-                        'icon': 'content/images/icons/New_Contact_24x24.png',
+                        //'cls': 'fa fa-plus-square-o',
                         'title': this.addAccountContactText
                     }
                 ]
@@ -163,19 +187,21 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             };
 
             configured = lang.getObject('preferences.home.visible', false, window.App);
-            for (var i = 0; i < configured.length; i++) {
-                var view = App.getView(configured[i]);
+            for (i = 0; i < configured.length; i++) {
+                view = App.getView(configured[i]);
                 if (view) {
                     goTo.children.push({
                         'action': 'loadAndNavigateToView',
                         'view': view.id,
-                        'icon': view.icon,
+                        //'icon': view.icon,
+                        //'cls': view.iconClass,
+                        //'iconTemplate': view.iconTemplate,
                         'title': view.titleText,
                         'security': view.getSecurity()
                     });
                 }
             }
-            
+
             layout.push(goTo);
 
             footer = {
@@ -184,22 +210,22 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                     {
                         'name': 'ConfigureMenu',
                         'action': 'navigateToConfigurationView',
-                        'icon': 'content/images/icons/Tools_24x24.png',
-                        'title': this.configureText 
+                        //'cls': 'fa fa-wrench fa-lg',
+                        'title': this.configureText
                     }, {
                         'name': 'SettingsAction',
                         'action': 'navigateToSettingsView',
-                        'icon': 'content/images/icons/settings_24.png',
-                        'title': this.settingsText 
+                        //'cls': 'fa fa-cog fa-lg',
+                        'title': this.settingsText
                     }, {
                         'name': 'HelpAction',
                         'action': 'navigateToHelpView',
-                        'icon': 'content/images/icons/help_24.png',
+                        //'cls': 'fa fa-question fa-lg',
                         'title': this.helpText
                     }, {
                         'name': 'Logout',
                         'action': 'logOut',
-                        'icon': 'content/images/icons/login_24.png',
+                        //'cls': 'fa fa-sign-out fa-lg',
                         'title': this.logOutText
                     }
                 ]
@@ -209,15 +235,23 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
 
             return layout;
         },
-        requestData: function() {
+        createStore: function() {
             var layout = this._createCustomizedLayout(this.createLayout()),
-                list = [];
+                list = [],
+                store,
+                i,
+                section,
+                j,
+                row,
+                total = 0;
 
-            for (var i = 0; i < layout.length; i++) {
-                var section = layout[i].children;
+            for (i = 0; i < layout.length; i++) {
+                section = layout[i].children;
 
-                for (var j = 0; j < section.length; j++) {
-                    var row = section[j];
+                for (j = 0; j < section.length; j++) {
+                    total = total + 1;
+                    row = section[j];
+                    row.$key = total;
 
                     if (row['security'] && !App.hasAccessTo(row['security'])) {
                         continue;
@@ -228,7 +262,9 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 }
             }
 
-            this.processFeed({'$resources': list});
+            store = new Memory({data: list});
+            store.idProperty = '$key';
+            return store;
         },
         /**
          * Override the List refresh to also clear the view (something the beforeTransitionTo handles, but we are not using)
@@ -237,26 +273,29 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             this.clear();
             this.requestData();
         },
-        /**
-         * Override the List show to not use RUI (this view will always be on the screen, just hidden behind the main content)
-         */
+        clear: function() {
+            this.inherited(arguments);
+            this.layout = null;
+            this.store = null;
+        },
         show: function() {
-            if (this.onShow(this) === false){
+            if (this.onShow(this) === false) {
                 return;
             }
 
             this.refresh();
         },
-        refreshRequiredFor: function(options) {
+        refreshRequiredFor: function() {
             var visible = lang.getObject('preferences.home.visible', false, App) || [],
+                i,
                 shown = this.feed && this.feed['$resources'];
 
-            if (!visible || !shown || (visible.length != shown.length)) {
+            if (!visible || !shown || (visible.length !== shown.length)) {
                 return true;
             }
 
-            for (var i = 0; i < visible.length; i++) {
-                if (visible[i] != shown[i]['$key']) {
+            for (i = 0; i < visible.length; i++) {
+                if (visible[i] !== shown[i]['$key']) {
                     return true;
                 }
             }
@@ -266,7 +305,7 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
         _onRegistered: function() {
             this.refreshRequired = true;
         },
-        _onSearchExpression: function(expression, widget) {
+        _onSearchExpression: function(expression) {
             var view, current;
             view = App.getView(this.searchView);
             current = App.getPrimaryActiveView();
@@ -280,7 +319,7 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
                 }
 
                 // Set the search term on the list and call search.
-                // This will keep the search terms on each widget in sync. 
+                // This will keep the search terms on each widget in sync.
                 setTimeout(function() {
                     view.setSearchTerm(expression);
                     if (current && current.id === view.id) {
@@ -292,5 +331,8 @@ define('Mobile/SalesLogix/Views/LeftDrawer', [
             App.snapper.close();
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.LeftDrawer', __class);
+    return __class;
 });
 

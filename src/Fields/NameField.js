@@ -1,24 +1,29 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Fields/NameField', [
+define('crm/Fields/NameField', [
     'dojo/_base/declare',
-    'Sage/Platform/Mobile/Fields/EditorField',
-    'Sage/Platform/Mobile/FieldManager'
+    'dojo/_base/lang',
+    'argos/Fields/EditorField',
+    'argos/FieldManager'
 ], function(
     declare,
+    lang,
     EditorField,
     FieldManager
 ) {
-    var control = declare('Mobile.SalesLogix.Fields.NameField', [EditorField], {
+    var control = declare('crm.Fields.NameField', [EditorField], {
         // Localization
         emptyText: '',
 
         widgetTemplate: new Simplate([
             '<label for="{%= $.name %}">{%: $.label %}</label>',
-            '<button class="button simpleSubHeaderButton" aria-label="{%: $.lookupLabelText %}"><span>{%: $.lookupText %}</span></button>',
+            '<button class="button simpleSubHeaderButton {% if ($$.iconClass) { %} {%: $$.iconClass %} {% } %}" aria-label="{%: $.lookupLabelText %}"><span>{%: $.lookupText %}</span></button>',
             '<input data-dojo-attach-point="inputNode" readonly="readonly" type="text" />'
         ]),
+
+        iconClass: 'fa fa-pencil fa-lg',
+
         createNavigationOptions: function() {
             var options = this.inherited(arguments);
             //Name does not have an entity.
@@ -28,5 +33,6 @@ define('Mobile/SalesLogix/Fields/NameField', [
         }
     });
 
+    lang.setObject('Mobile.SalesLogix.Fields.NameField', control);
     return FieldManager.register('name', control);
 });

@@ -1,7 +1,17 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/SpeedSearchList', [
+
+/**
+ * @class crm.Views.SpeedSearchList
+ *
+ *
+ * @extends argos.List
+ * @mixins crm.Views._SpeedSearchRightDrawerListMixin
+ * @mixins crm.Views._CardLayoutListMixin
+ *
+ */
+define('crm/Views/SpeedSearchList', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/_base/array',
@@ -10,10 +20,11 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
     'dojo/string',
     'dojo/query',
     'dojo/dom-attr',
-    'Mobile/SalesLogix/SpeedSearchWidget',
-    'Sage/Platform/Mobile/List',
-    'Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin',
-    'Mobile/SalesLogix/Views/_CardLayoutListMixin'
+    '../SpeedSearchWidget',
+    'argos/List',
+    'argos/_LegacySDataListMixin',
+    './_SpeedSearchRightDrawerListMixin',
+    './_CardLayoutListMixin'
 ], function(
     declare,
     lang,
@@ -25,27 +36,24 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
     domAttr,
     SpeedSearchWidget,
     List,
+    _LegacySDataListMixin,
     _SpeedSearchRightDrawerListMixin,
     _CardLayoutListMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.SpeedSearchList', [List, _SpeedSearchRightDrawerListMixin, _CardLayoutListMixin], {
+    var __class = declare('crm.Views.SpeedSearchList', [List, _LegacySDataListMixin, _SpeedSearchRightDrawerListMixin, _CardLayoutListMixin], {
         //Templates
-        //Used when card layout is not mixed in
-        rowTemplate: new Simplate([
-            '<li data-action="activateEntry" data-key="{%= $.$key %}" data-descriptor="{%: $.type %}">',
-            '<div class="item-static-icon"><img src="{%: $$.iconPathsByType[$.type] %}" alt="{%: $.type %}" /></div>',
-            '{%! $$.itemTemplate %}',
-            '</li>'
-        ]),
-
         itemTemplate: new Simplate([
           '<h4><strong>{%: $.$heading %}</strong></h4>',
-          '{% if ($$.showSynopsis) { %}',
-               '<div class="card-layout-speed-search-synopsis note-text-wrap">',
-                '{%= $.synopsis %}',
-               '</div>',
-           '{% } %}'
+          '{%! $$.fieldTemplate %}'
+        ]),
+
+        fieldTemplate: new Simplate([
+          '<ul class="speedsearch-fields">',
+            '{% for(var i = 0; i < $.fields.length; i++) { %}',
+                '<li><h4><span>{%= $.fields[i].fieldName %}</span> {%= $.fields[i].fieldValue %}</h4></li>',
+            '{% } %}',
+          '</ul>'
         ]),
 
         //Localization
@@ -53,12 +61,10 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
 
         //View Properties
         id: 'speedsearch_list',
-        icon: 'content/images/icons/SpeedSearch_24x24.png',
         enableSearch: true,
-        enableActions:true,
+        enableActions: true,
         searchWidgetClass: SpeedSearchWidget,
         expose: false,
-        showSynopsis: false,
         activeIndexes: ['Account', 'Contact', 'Lead', 'Activity', 'History', 'Opportunity', 'Ticket'],
         indexes: [
             {indexName: 'Account', indexType: 1, isSecure: true},
@@ -69,25 +75,7 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             {indexName: 'Opportunity', indexType: 1, isSecure: true},
             {indexName: 'Ticket', indexType: 1, isSecure: false}
         ],
-        types: ['Account', 'Activity','Contact', 'History', 'Lead', 'Opportunity', 'Ticket'],
-        iconPathsByType: {
-            'Account': 'content/images/icons/Company_24.png',
-            'Activity': 'content/images/icons/To_Do_24x24.png',
-            'Contact': 'content/images/icons/Contacts_24x24.png',
-            'History': 'content/images/icons/journal_24.png',
-            'Lead': 'content/images/icons/Leads_24x24.png',
-            'Opportunity': 'content/images/icons/opportunity_24.png',
-            'Ticket': 'content/images/icons/Ticket_24x24.png'
-        },
-        iconPathsByType2: {
-            'Account': 'Company_24.png',
-            'Activity': 'To_Do_24x24.png',
-            'Contact': 'Contacts_24x24.png',
-            'History': 'journal_24.png',
-            'Lead': 'Leads_24x24.png',
-            'Opportunity': 'opportunity_24.png',
-            'Ticket': 'Ticket_24x24.png'
-        },
+        types: ['Account', 'Activity', 'Contact', 'History', 'Lead', 'Opportunity', 'Ticket'],
         indexesText: {
             'Account': 'Account',
             'Activity': 'Activity',
@@ -97,11 +85,36 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             'Opportunity': 'Opportunity',
             'Ticket': 'Ticket'
         },
+        itemIconByType: {
+            'Contact': 'fa-user',
+            'Account': 'fa-building-o',
+            'Opportunity': 'fa-money',
+            'Ticket': 'fa-clipboard',
+            'Lead': 'fa-filter',
+            'Activity': 'fa-calendar-o',
+            'History': 'fa-history'
+        },
         currentPage: null,
 
         clear: function() {
             this.inherited(arguments);
             this.currentPage = 0;
+        },
+        _formatFieldName: function() {
+        },
+        getItemIconClass: function(entry) {
+            var cls, typeCls, type = entry && entry.type;
+            cls = this.itemIconClass;
+            typeCls = this.itemIconByType[type];
+            if (typeCls) {
+                cls = typeCls;
+            }
+
+            if (cls) {
+                cls = 'fa ' + cls + ' fa-2x';
+            }
+
+            return cls;
         },
         extractTypeFromItem: function(item) {
             for (var i = 0; i < this.types.length; i++) {
@@ -112,33 +125,18 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
 
             return null;
         },
-        extractDescriptorFromItem: function(item, type) {
-            var descriptor = '';
+        extractDescriptorFromItem: function(item) {
+            var descriptor, entityName, rest;
 
-            switch (type) {
-                case 'Account':
-                    descriptor = this.getFieldValue(item.fields, 'account');
-                    break;
-                case 'Activity':
-                    descriptor = string.substitute('${subject} (${date_created})', this.getFieldValues(item.fields, ['subject', 'date_created']));
-                    break;
-                case 'Contact':
-                    descriptor = string.substitute('${firstname} ${lastname} (${account})', this.getFieldValues(item.fields, ['firstname', 'lastname', 'account']));
-                    break;
-                case 'Lead':
-                    descriptor = string.substitute('${firstname} ${lastname} (${account})', this.getFieldValues(item.fields, ['firstname', 'lastname', 'account']));
-                    break;
-                case 'Opportunity':
-                    descriptor = this.getFieldValue(item.fields, 'subject');
-                    break;
-                case 'History':
-                    descriptor = string.substitute('${subject} (${date_created})', this.getFieldValues(item.fields, ['subject', 'date_created']));
-                    break;
-                case 'Ticket':
-                    descriptor = item.uiDisplayName;
-                    break;
+            descriptor = item && item.uiDisplayName;
+
+            if (descriptor) {
+                descriptor = descriptor.split(':');
+                entityName = descriptor[0];
+                rest = descriptor[1];
             }
-            return descriptor;
+
+            return rest;
         },
         extractKeyFromItem: function(item) {
             // Extract the entityId from the display name, which is the last 12 characters
@@ -151,35 +149,6 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             len = displayName.length;
             return displayName.substring(len - 12);
         },
-        getFieldValue: function(fields, name) {
-            for (var i = 0; i < fields.length; i++) {
-                var field = fields[i];
-                if (field.fieldName == name) {
-                    return field.fieldValue;
-                }
-            }
-
-            return '';
-        },
-        getFieldValues: function(fields, names) {
-            var results = {};
-
-            // Assign each field in the results to an empty string,
-            // so that dojo's string substitute won't blow up on undefined.
-            array.forEach(names, function(name) {
-                results[name] = '';
-            });
-
-            array.forEach(fields, function(field) {
-                array.forEach(names, function(name, i) {
-                    if (field.fieldName === name) {
-                        results[name] = field.fieldValue;
-                    }
-                });
-            });
-
-            return results;
-        },
         more: function() {
             this.currentPage += 1;
             this.inherited(arguments);
@@ -191,6 +160,12 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             return count < total;
         },
         processFeed: function(feed) {
+            var i,
+                entry,
+                docfrag,
+                remaining,
+                rowNode;
+
             if (!this.feed) {
                 this.set('listContent', '');
             }
@@ -200,18 +175,19 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             if (feed.totalCount === 0) {
                 this.set('listContent', this.noDataTemplate.apply(this));
             } else if (feed.items) {
+                docfrag = document.createDocumentFragment();
 
-                var docfrag = document.createDocumentFragment();
-
-                for (var i = 0; i < feed.items.length; i++) {
-                    var entry = feed.items[i];
-                    var rowNode;
-                    var synopNode;
+                for (i = 0; i < feed.items.length; i++) {
+                    entry = feed.items[i];
                     entry.type = this.extractTypeFromItem(entry);
-                    entry.$descriptor = entry.$descriptor || entry.uiDisplayName; 
+                    entry.$descriptor = entry.$descriptor || entry.uiDisplayName;
                     entry.$key = this.extractKeyFromItem(entry);
-                    entry.$heading = this.extractDescriptorFromItem(entry, entry.type);
+                    entry.$heading = this.extractDescriptorFromItem(entry);
                     entry.synopsis = unescape(entry.synopsis);
+                    entry.fields = array.filter(entry.fields, function(field) {
+                        return field.fieldName !== 'seccodelist' && field.fieldName !== 'filename';
+                    });
+
                     this.entries[entry.$key] = entry;
                     rowNode = domConstruct.toDom(this.rowTemplate.apply(entry, this));
                     docfrag.appendChild(rowNode);
@@ -221,11 +197,10 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
                 if (docfrag.childNodes.length > 0) {
                     domConstruct.place(docfrag, this.contentNode, 'last');
                 }
-               
             }
 
             if (typeof feed.totalCount !== 'undefined') {
-                var remaining = this.feed.totalCount - ((this.currentPage + 1) * this.pageSize);
+                remaining = this.feed.totalCount - ((this.currentPage + 1) * this.pageSize);
                 this.set('remainingContent', string.substitute(this.remainingText, [remaining]));
             }
 
@@ -276,7 +251,6 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             var request = this.createRequest(),
                 entry = this.createSearchEntry();
 
-            this.showSearchExpression(entry);
             request.execute(entry, {
                 success: lang.hitch(this, this.onRequestDataSuccess),
                 failture: lang.hitch(this, this.onRequestDataFailure)
@@ -296,9 +270,6 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
                 'tbar': []
             });
         },
-        getItemIconSource: function(entry) {
-            return   this.itemIcon || this.iconPathsByType[entry.type] ;
-        },
         getItemIconAlt: function(entry) {
             return entry.type;
         },
@@ -309,7 +280,7 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             return this.itemIndicators || (this.itemIndicators = [{
                 id: 'speadSearchIcon',
                 icon: '',
-                label: 'speadSearch',
+                location: 'top',
                 onApply: function(entry, parent) {
                     parent.applyActivityIndicator(entry, this);
                 }
@@ -317,10 +288,10 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             );
         },
         applyActivityIndicator: function(entry, indicator) {
-            var dataType = entry['type'];
             indicator.isEnabled = true;
-            indicator.showIcon = true;
-            indicator.icon = this.iconPathsByType2[entry.type];
+            indicator.showIcon = false;
+            indicator.label = this.indexesText[entry.type];
+            indicator.valueText = this.indexesText[entry.type];
 
         },
         _intSearchExpressionNode: function() {
@@ -331,8 +302,7 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
                 domConstruct.place(html, listNode[0], 'first');
             }
         },
-        _isIndexActive:function(indexName)
-        {
+        _isIndexActive:function(indexName) {
             var indexFound = false;
             if (this.activeIndexes.indexOf(indexName) > -1) {
                 indexFound = true;
@@ -341,16 +311,14 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
         },
         selectIndex: function(e) {
             var button = e.$source,
-            indexName = domAttr.get(button, 'data-index'), 
+            indexName = domAttr.get(button, 'data-index'),
             activated = this.activateIndex(indexName);
             if (activated) {
                 domClass.add(button, 'card-layout-speed-search-index-selected');
             } else {
                 domClass.remove(button, 'card-layout-speed-search-index-selected');
             }
-            
         },
-        
         activateIndex: function(indexName) {
             var activated = false,
             tempActiveIndex = [],
@@ -373,18 +341,10 @@ define('Mobile/SalesLogix/Views/SpeedSearchList', [
             }
 
             return activated;
-        },
-        showSearchExpression: function(entry) {
-            var html, searchNode, searchText;
-            searchText =  entry.request.searchText ||'';
-            if (this.searchWidget) {
-                searchNode = query('#' + this.id + '_search-expression');
-                if (searchNode[0]) {
-                    html = '<div>' + searchText + '</div>';
-                    domAttr.set(searchNode[0], { innerHTML: html });
-                }
-            }
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.SpeedSearchList', __class);
+    return __class;
 });
 

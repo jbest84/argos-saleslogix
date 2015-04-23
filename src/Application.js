@@ -1,7 +1,17 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Application', [
+
+/**
+ * @class crm.Application
+ *
+ * @extends argos.Application
+ * @requires argos.ErrorManager
+ * @requires crm.Environment
+ * @requires moment
+ *
+ */
+define('crm/Application', [
     'dojo/_base/window',
     'dojo/_base/declare',
     'dojo/_base/array',
@@ -10,12 +20,12 @@ define('Mobile/SalesLogix/Application', [
     'dojo/_base/lang',
     'dojo/has',
     'dojo/string',
-    'dojo/text!Mobile/SalesLogix/DefaultMetrics.txt',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Mobile/SalesLogix/Environment',
-    'Sage/Platform/Mobile/Application',
+    'dojo/Deferred',
+    './DefaultMetrics',
+    'argos/ErrorManager',
+    './Environment',
+    'argos/Application',
     'dojo/sniff',
-    'dojox/mobile/sniff',
     'moment'
 ], function(
     win,
@@ -26,20 +36,22 @@ define('Mobile/SalesLogix/Application', [
     lang,
     has,
     string,
+    Deferred,
     DefaultMetrics,
     ErrorManager,
     environment,
     Application,
     sniff,
-    mobileSniff,
     moment
 ) {
 
-    return declare('Mobile.SalesLogix.Application', [Application], {
+    var __class = declare('crm.Application', [Application], {
         navigationState: null,
         rememberNavigationState: true,
         enableUpdateNotification: false,
         multiCurrency: false,
+        enableGroups: true,
+        enableHashTags: true,
         speedSearch: {
             includeStemming: true,
             includePhonic: true,
@@ -50,6 +62,11 @@ define('Mobile/SalesLogix/Application', [
         enableCaching: true,
         userDetailsQuerySelect: ['UserName', 'UserInfo/UserName', 'UserInfo/FirstName', 'UserInfo/LastName', 'DefaultOwner/OwnerDescription'],
         userOptionsToRequest: [
+            'DefaultGroup;ACCOUNT',
+            'DefaultGroup;CONTACT',
+            'DefaultGroup;OPPORTUNITY',
+            'DefaultGroup;LEAD',
+            'DefaultGroup;TICKET',
             'General;InsertSecCodeID',
             'General;Currency',
             'Calendar;DayStartTime',
@@ -73,6 +90,7 @@ define('Mobile/SalesLogix/Application', [
             'ChangeOpportunityRate',
             'LockOpportunityRate'
         ],
+        appName: 'argos-saleslogix',
         serverVersion: {
             'major': 8,
             'minor': 0,
@@ -80,18 +98,34 @@ define('Mobile/SalesLogix/Application', [
         },
         mobileVersion: {
             'major': 3,
-            'minor': 0,
-            'revision': 2
+            'minor': 3,
+            'revision': 0
         },
-        versionInfoText: 'Mobile v${0}.${1}.${2} / Saleslogix v${3} platform',
+        versionInfoText: 'Mobile v${0}.${1}.${2}',
+        loadingText: 'Loading application state',
+        authText: 'Authenticating',
+        homeViewId: 'myactivity_list',
+        loginViewId: 'login',
+        logOffViewId: 'logoff',
+
         init: function() {
+            var original,
+                self = this;
             if (has('ie') && has('ie') < 9) {
                 window.location.href = 'unsupported.html';
             }
 
             this.inherited(arguments);
             this._loadNavigationState();
-            this._loadPreferences();
+            this._saveDefaultPreferences();
+
+            original = Sage.SData.Client.SDataService.prototype.executeRequest;
+
+            Sage.SData.Client.SDataService.prototype.executeRequest = function(request) {
+                request.setRequestHeader('X-Application-Name', self.appName);
+                request.setRequestHeader('X-Application-Version', string.substitute('${major}.${minor}.${revision}', self.mobileVersion));
+                original.apply(this, arguments);
+            };
         },
         initConnects: function() {
             this.inherited(arguments);
@@ -100,14 +134,34 @@ define('Mobile/SalesLogix/Application', [
                 this._connects.push(connect.connect(window.applicationCache, 'updateready', this, this._checkForUpdate));
             }
         },
-        onSetOrientation: function(value) {
+        isOnFirstView: function() {
+            var history, isOnFirstView = false, length, current, previous;
+            history = ReUI.context.history;
+            length = history.length;
+            current = history[length - 1];
+            previous = history[length - 2];
+
+            if ((current && current.page === this.loginViewId) || (current && current.page === this.logOffViewId)) {
+                isOnFirstView = true;
+            } else if (previous && previous.page === this.loginViewId) {
+                isOnFirstView = true;
+            } else if (length === 1) {
+                isOnFirstView = true;
+            }
+
+            return isOnFirstView;
+        },
+        onSetOrientation: function() {
             if (App.snapper) {
                 App.snapper.close();
             }
         },
-        _viewTransitionTo: function(view) {
+        _viewTransitionTo: function() {
             this.inherited(arguments);
             this._checkSaveNavigationState();
+            if (App.snapper) {
+                App.snapper.close();
+            }
         },
         _checkSaveNavigationState: function() {
             if (this.rememberNavigationState !== false) {
@@ -144,7 +198,7 @@ define('Mobile/SalesLogix/Application', [
             }
 
             /*if (this.context &&
-                this.context['systemOptions'] && 
+                this.context['systemOptions'] &&
                 this.context['systemOptions']['MultiCurrency'] === 'True') {
                 return true;
             }*/
@@ -186,7 +240,7 @@ define('Mobile/SalesLogix/Application', [
             return results;
         },
         getBaseExchangeRate: function() {
-            var baseCode, baseRate, convertedValue, results = {code: '', rate: 1};
+            var baseCode, baseRate, results = {code: '', rate: 1};
 
             if (this.hasMultiCurrency() &&
                 this.context &&
@@ -273,9 +327,8 @@ define('Mobile/SalesLogix/Application', [
             if (callback) {
                 callback.call(scope || this, {user: user});
             }
-
         },
-        onAuthenticateUserFailure: function(callback, scope, response, ajax) {
+        onAuthenticateUserFailure: function(callback, scope, response) {
             var service = this.getService();
             if (service) {
                 service
@@ -288,11 +341,14 @@ define('Mobile/SalesLogix/Application', [
             }
         },
         authenticateUser: function(credentials, options) {
-            var service = this.getService()
+            var service,
+                request;
+
+            service = this.getService()
                 .setUserName(credentials.username)
                 .setPassword(credentials.password || '');
 
-            var request = new Sage.SData.Client.SDataServiceOperationRequest(service)
+            request = new Sage.SData.Client.SDataServiceOperationRequest(service)
                 .setContractName('system')
                 .setOperationName('getCurrentUser');
 
@@ -322,26 +378,30 @@ define('Mobile/SalesLogix/Application', [
             return !!userSecurity[security];
         },
         reload: function() {
+            ReUI.disableLocationCheck();
+            this.hash('');
             window.location.reload();
         },
         logOut: function() {
-            if (window.localStorage) {
-                window.localStorage.removeItem('credentials');
-                window.localStorage.removeItem('navigationState');
-            }
+            this.removeCredentials();
+            this._clearNavigationState();
 
-            var service = this.getService();
+            var service = this.getService(),
+                view;
             if (service) {
                 service
                     .setUserName(false)
                     .setPassword(false);
             }
 
-            this.reload();
-        },
-        handleAuthentication: function() {
-            var stored, encoded, credentials;
+            view = this.getView(this.logOffViewId);
 
+            if (view) {
+                view.show();
+            }
+        },
+        getCredentials: function() {
+            var stored, encoded, credentials;
             try {
                 if (window.localStorage) {
                     stored = window.localStorage.getItem('credentials');
@@ -351,16 +411,36 @@ define('Mobile/SalesLogix/Application', [
             } catch(e) {
             }
 
+            return credentials;
+        },
+        removeCredentials: function() {
+            try {
+                if (window.localStorage) {
+                    window.localStorage.removeItem('credentials');
+                }
+            } catch(e) {
+            }
+        },
+        handleAuthentication: function() {
+            var credentials;
+
+            credentials = this.getCredentials();
+
             if (credentials) {
+                this.setPrimaryTitle(this.authText);
                 this.authenticateUser(credentials, {
-                    success: function(result) {
-                        this.requestUserDetails();
-                        this.navigateToInitialView();
+                    success: function() {
+                        this.setPrimaryTitle(this.loadingText);
+                        this.initAppState().then(function() {
+                            this.navigateToInitialView();
+                        }.bind(this));
+
                     },
-                    failure: function(result) {
+                    failure: function() {
                         this.navigateToLoginView();
+                        this.removeCredentials();
                     },
-                    aborted: function(result) {
+                    aborted: function() {
                         this.navigateToLoginView();
                     },
                     scope: this
@@ -387,62 +467,77 @@ define('Mobile/SalesLogix/Application', [
             } catch(e) {
             }
         },
-        _loadPreferences: function() {
-            try {
-                if (window.localStorage) {
-                    this.preferences = json.parse(window.localStorage.getItem('preferences'));
+        _saveDefaultPreferences: function() {
+            if (this.preferences) {
+                return;
+            }
+
+            var views = this.getDefaultViews();
+
+            this.preferences = {
+                home: {
+                    visible: views
+                },
+                configure: {
+                    order: views.slice(0)
                 }
-            } catch(e) {
+            };
+        },
+        getMetricsByResourceKind: function(resourceKind) {
+            var prefs,
+                results = [];
+
+            prefs = this.preferences && this.preferences.metrics && this.preferences.metrics;
+
+            if (prefs) {
+                prefs = array.filter(prefs, function(item) {
+                    return item.resourceKind === resourceKind;
+                });
+
+                if (prefs.length === 1) {
+                    results = prefs[0].children;
+                }
             }
 
-            //Probably, the first time, its being accessed, or user cleared
-            //the data. So lets initialize the object, with default ones.
-            if (!this.preferences) {
-                var views = this.getDefaultViews();
-
-                this.preferences = {
-                    home: {
-                        visible: views
-                    },
-                    configure: {
-                        order: views.slice(0)
-                    }
-                };
-            }
+            return results;
         },
         setDefaultMetricPreferences: function() {
             var defaults;
             if (!this.preferences.metrics) {
-                defaults = json.parse(DefaultMetrics);
-                this.preferences.metrics = defaults;
+                defaults = new DefaultMetrics();
+                this.preferences.metrics = defaults.getDefinitions();
                 this.persistPreferences();
             }
         },
         requestUserDetails: function() {
-            var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
+            var request, def;
+
+            request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
                 .setResourceKind('users')
                 .setResourceSelector(string.substitute('"${0}"', [this.context['user']['$key']]))
                 .setQueryArg('select', this.userDetailsQuerySelect.join(','));
 
-            request.read({
-                success: this.onRequestUserDetailsSuccess,
-                failure: this.onRequestUserDetailsFailure,
-                scope: this,
-                async: false
-            });
-        },
-        onRequestUserDetailsSuccess: function(entry) {
-            this.context['user'] = entry;
-            this.context['defaultOwner'] = entry && entry['DefaultOwner'];
+            def = new Deferred();
 
-            this.requestUserOptions();
-            this.requestSystemOptions();
-            this.setDefaultMetricPreferences();
-        },
-        onRequestUserDetailsFailure: function(response, o) {
+            request.read({
+                success: function(entry) {
+                    this.context['user'] = entry;
+                    this.context['defaultOwner'] = entry && entry['DefaultOwner'];
+                    this.setDefaultMetricPreferences();
+                    def.resolve(entry);
+                },
+                failure: function() {
+                    def.reject();
+                },
+                scope: this
+            });
+
+            return def.promise;
         },
         requestUserOptions: function() {
-            var batch = new Sage.SData.Client.SDataBatchRequest(this.getService())
+            var batch, def;
+
+            batch = new Sage.SData.Client.SDataBatchRequest(this.getService())
                 .setContractName('system')
                 .setResourceKind('useroptions')
                 .setQueryArg('select', 'name,value')
@@ -457,33 +552,42 @@ define('Mobile/SalesLogix/Application', [
                     }, service);
                 }, this);
 
+            def = new Deferred();
             batch.commit({
-                success: this.onRequestUserOptionsSuccess,
-                failure: this.onRequestUserOptionsFailure,
-                scope: this,
-                async: false
+                success:function(feed) {
+                    var userOptions,
+                        insertSecCode,
+                        currentDefaultOwner;
+
+                    userOptions = this.context['userOptions'] = this.context['userOptions'] || {};
+
+                    array.forEach(feed && feed['$resources'], function(item) {
+                        var key = item && item['$descriptor'],
+                            value = item && item['value'];
+
+                        if (value && key) {
+                            userOptions[key] = value;
+                        }
+                    });
+
+                    insertSecCode = userOptions['General:InsertSecCodeID'];
+                    currentDefaultOwner = this.context['defaultOwner'] && this.context['defaultOwner']['$key'];
+
+                    if (insertSecCode && (!currentDefaultOwner || (currentDefaultOwner !== insertSecCode))) {
+                        this.requestOwnerDescription(insertSecCode);
+                    }
+
+                    this.loadCustomizedMoment();
+                    def.resolve(feed);
+                },
+                failure:function(response, o) {
+                    def.reject();
+                    ErrorManager.addError(response, o, {}, 'failure');
+                },
+                scope: this
             });
-        },
-        onRequestUserOptionsSuccess: function(feed) {
-            var userOptions = this.context['userOptions'] = this.context['userOptions'] || {};
 
-            array.forEach(feed && feed['$resources'], function(item) {
-                var key = item && item['$descriptor'],
-                    value = item && item['value'];
-
-                if (value && key) {
-                    userOptions[key] = value;
-                }
-            });
-
-            var insertSecCode = userOptions['General:InsertSecCodeID'],
-                currentDefaultOwner = this.context['defaultOwner'] && this.context['defaultOwner']['$key'];
-
-            if (insertSecCode && (!currentDefaultOwner || (currentDefaultOwner != insertSecCode))) {
-                this.requestOwnerDescription(insertSecCode);
-            }
-
-            this.loadCustomizedMoment();
+            return def.promise;
         },
         /*
          * Loads a custom object to pass into the current moment language. The object for the language gets built in buildCustomizedMoment.
@@ -494,6 +598,7 @@ define('Mobile/SalesLogix/Application', [
 
             currentLang = moment.lang();
             moment.lang(currentLang, custom);
+            this.moment = moment().lang(currentLang, custom);
         },
         /*
          * Builds an object that will get passed into moment.lang()
@@ -516,73 +621,83 @@ define('Mobile/SalesLogix/Application', [
 
             return results;
         },
-        onRequestUserOptionsFailure: function(response, o) {
-            ErrorManager.addError(response, o, {}, 'failure');
-        },
         requestSystemOptions: function() {
-            var request = new Sage.SData.Client.SDataResourceCollectionRequest(this.getService())
+            var request, def;
+
+            request = new Sage.SData.Client.SDataResourceCollectionRequest(this.getService())
                 .setContractName('system')
                 .setResourceKind('systemoptions')
                 .setQueryArg('select', 'name,value');
 
+            def = new Deferred();
             request.read({
-                success: this.onRequestSystemOptionsSuccess,
-                failure: this.onRequestSystemOptionsFailure,
-                scope: this,
-                async: false
+                success: function(feed) {
+                    var systemOptions, multiCurrency;
+                    systemOptions = this.context['systemOptions'] = this.context['systemOptions'] || {};
+
+                    array.forEach(feed && feed['$resources'], function(item) {
+                        var key = item && item['name'],
+                            value = item && item['value'];
+
+                        if (value && key && array.indexOf(this.systemOptionsToRequest, key) > -1) {
+                            systemOptions[key] = value;
+                        }
+                    }, this);
+
+                    multiCurrency = systemOptions['MultiCurrency'];
+
+                    if (multiCurrency && multiCurrency === 'True') {
+                        this.requestExchangeRates().then(function() {
+                            def.resolve(feed);
+                        }, function() {
+                            def.reject();
+                        });
+                    } else {
+                        def.resolve(feed);
+                    }
+                },
+                failure: function(response, o) {
+                    ErrorManager.addError(response, o, {}, 'failure');
+                    def.reject();
+                },
+                scope: this
             });
-        },
-        onRequestSystemOptionsSuccess: function(feed) {
-            // TODO: Would be nice if the systemoptions feed supported batch operations like useroptions
-            var systemOptions, multiCurrency;
-            systemOptions = this.context['systemOptions'] = this.context['systemOptions'] || {};
 
-            array.forEach(feed && feed['$resources'], function(item) {
-                var key = item && item['name'],
-                    value = item && item['value'];
-
-                if (value && key && array.indexOf(this.systemOptionsToRequest, key) > -1) {
-                    systemOptions[key] = value;
-                }
-            }, this);
-
-            multiCurrency = systemOptions['MultiCurrency'];
-
-            if (multiCurrency && multiCurrency === 'True') {
-                this.requestExchangeRates();
-            }
-        },
-        onRequestSystemOptionsFailure: function(response, o) {
-            ErrorManager.addError(response, o, {}, 'failure');
+            return def.promise;
         },
         requestExchangeRates: function() {
-            var request = new Sage.SData.Client.SDataResourceCollectionRequest(this.getService())
+            var request,
+                def;
+
+            request = new Sage.SData.Client.SDataResourceCollectionRequest(this.getService())
                 .setContractName('dynamic')
                 .setResourceKind('exchangeRates')
                 .setQueryArg('select', 'Rate');
 
+            def = new Deferred();
             request.read({
-                success: this.onRequestExchangeRatesSuccess,
-                failure: this.onRequestExchangeRatesFailure,
-                scope: this,
-                async: false
+                success: function(feed) {
+                    var exchangeRates = this.context['exchangeRates'] = this.context['exchangeRates'] || {};
+
+                    array.forEach(feed && feed['$resources'], function(item) {
+                        var key = item && item['$key'],
+                            value = item && item['Rate'];
+
+                        if (value && key) {
+                            exchangeRates[key] = value;
+                        }
+                    }, this);
+
+                    def.resolve(feed);
+                },
+                failure: function(response, o) {
+                    def.reject();
+                    ErrorManager.addError(response, o, {}, 'failure');
+                },
+                scope: this
             });
-        },
-        onRequestExchangeRatesSuccess: function(feed) {
-            var exchangeRates;
-            exchangeRates = this.context['exchangeRates'] = this.context['exchangeRates'] || {};
 
-            array.forEach(feed && feed['$resources'], function(item) {
-                var key = item && item['$key'],
-                    value = item && item['Rate'];
-
-                if (value && key) {
-                    exchangeRates[key] = value;
-                }
-            }, this);
-        },
-        onRequestExchangeRatesFailure: function(response, o) {
-            ErrorManager.addError(response, o, {}, 'failure');
+            return def.promise;
         },
         requestOwnerDescription: function(key) {
             var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
@@ -604,14 +719,6 @@ define('Mobile/SalesLogix/Application', [
         onRequestOwnerDescriptionFailure: function(response, o) {
             ErrorManager.addError(response, o, {}, 'failure');
         },
-        persistPreferences: function() {
-            try {
-                if (window.localStorage) {
-                    window.localStorage.setItem('preferences', json.stringify(App.preferences));
-                }
-            } catch(e) {
-            }
-        },
         getDefaultViews: function() {
             return [
                 'myactivity_list',
@@ -626,27 +733,33 @@ define('Mobile/SalesLogix/Application', [
             ];
         },
         getExposedViews: function() {
-            var exposed = [];
+            var exposed = [], id, view;
 
-            for (var id in this.views) {
-                var view = App.getView(id);
+            for (id in this.views) {
+                if (this.views.hasOwnProperty(id)) {
+                    view = App.getView(id);
 
-                if (view.id == 'home') {
-                    continue;
-                }
+                    if (view.id === 'home') {
+                        continue;
+                    }
 
-                if (view.expose) {
-                    exposed.push(id);
+                    if (view.expose) {
+                        exposed.push(id);
+                    }
                 }
             }
 
             return exposed;
         },
         cleanRestoredHistory: function(restoredHistory) {
-            var result = [],
-                hasRoot = false;
+            var result,
+                hasRoot,
+                i;
 
-            for (var i = restoredHistory.length - 1; i >= 0 && !hasRoot; i--) {
+            result = [];
+            hasRoot = false;
+
+            for (i = restoredHistory.length - 1; i >= 0 && !hasRoot; i--) {
                 if (restoredHistory[i].data.options && restoredHistory[i].data.options.negateHistory) {
                     result = [];
                     continue;
@@ -666,6 +779,10 @@ define('Mobile/SalesLogix/Application', [
 
             try {
                 var restoredState = this.navigationState,
+                    i,
+                    last,
+                    view,
+                    options,
                     restoredHistory = restoredState && json.parse(restoredState),
                     cleanedHistory = this.cleanRestoredHistory(restoredHistory);
 
@@ -675,15 +792,15 @@ define('Mobile/SalesLogix/Application', [
                     ReUI.context.transitioning = true;
                     ReUI.context.history = ReUI.context.history.concat(cleanedHistory.slice(0, cleanedHistory.length - 1));
 
-                    for (var i = 0; i < cleanedHistory.length - 1; i++) {
+                    for (i = 0; i < cleanedHistory.length - 1; i++) {
                         window.location.hash = cleanedHistory[i].hash;
                     }
 
                     ReUI.context.transitioning = false;
 
-                    var last = cleanedHistory[cleanedHistory.length - 1],
-                        view = App.getView(last.page),
-                        options = last.data && last.data.options;
+                    last = cleanedHistory[cleanedHistory.length - 1];
+                    view = App.getView(last.page);
+                    options = last.data && last.data.options;
 
                     view.show(options);
                 } else {
@@ -694,11 +811,29 @@ define('Mobile/SalesLogix/Application', [
                 this.navigateToHomeView();
             }
         },
+        setupRedirectHash: function() {
+            var split;
+            if (this._hasValidRedirect()) {
+                // Split by "/redirectTo/"
+                split = this.redirectHash.split(/\/redirectTo\//gi);
+                if (split.length === 2) {
+                    this.redirectHash = split[1];
+                }
+            } else {
+                this.redirectHash = '';
+            }
+        },
         navigateToLoginView: function() {
-            var view = this.getView('login');
+            this.setupRedirectHash();
+
+            var view = this.getView(this.loginViewId);
             if (view) {
                 view.show();
             }
+
+        },
+        _hasValidRedirect: function() {
+            return this.redirectHash !== '' && this.redirectHash.indexOf('/redirectTo/') > 0;
         },
         showLeftDrawer: function() {
             var view = this.getView('left_drawer');
@@ -713,16 +848,45 @@ define('Mobile/SalesLogix/Application', [
             }
         },
         navigateToHomeView: function() {
+            this.setupRedirectHash();
+
+            var visible, view, split, key, viewId, redirectView;
             this.loadSnapper();
-            var view = this.getView('myactivity_list');
+
+            visible = this.preferences && this.preferences.home && this.preferences.home.visible;
+            if (visible && visible.length > 0) {
+                this.homeViewId = visible[0];
+            }
+
+            // Default view will be the home view, overwritten below if a redirect hash is supplied
+            view = this.getView(this.homeViewId);
+
+            if (this.redirectHash) {
+                split = this.redirectHash.split(';');
+                if (split.length > 0) {
+                    viewId = split[0];
+                    key = split[1];
+
+                    redirectView = this.getView(viewId);
+                    if (redirectView) {
+                        view = redirectView;
+                        if (key) {
+                            redirectView.show({
+                                key: key
+                            });
+                        }
+                    }
+                }
+            }
+
             if (view) {
                 view.show();
             }
         },
-        navigateToActivityInsertView: function(options) {
+        navigateToActivityInsertView: function() {
             var view = this.getView('activity_types_list');
             if (view) {
-                view.show(options || {});
+                view.show();
             }
         },
         initiateCall: function() {
@@ -748,5 +912,7 @@ define('Mobile/SalesLogix/Application', [
             return info;
         }
     });
-});
 
+    lang.setObject('Mobile.SalesLogix.Application', __class);
+    return __class;
+});

@@ -1,13 +1,22 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
+
+/**
+ * @class crm.Views._SpeedSearchRightDrawerListMixin
+ *
+ * Speedsearch specific mixin for right drawer functionality.
+ *
+ * @mixins crm.Views._RightDrawerBaseMixin
+ *
+ */
+define('crm/Views/_SpeedSearchRightDrawerListMixin', [
     'dojo/_base/declare',
     'dojo/_base/array',
     'dojo/_base/lang',
     'dojo/dom-construct',
     'dojo/dom-attr',
-    'Mobile/SalesLogix/Views/_RightDrawerBaseMixin'
+    './_RightDrawerBaseMixin'
 ], function(
     declare,
     array,
@@ -17,18 +26,18 @@ define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
     _RightDrawerBaseMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views._SpeedSearchRightDrawerListMixin', [_RightDrawerBaseMixin], {
+    var mixinName,
+        __class;
+
+    mixinName = 'crm.Views._SpeedSearchRightDrawerListMixin';
+
+    __class = declare('crm.Views._SpeedSearchRightDrawerListMixin', [_RightDrawerBaseMixin], {
         //Localization
         indexSectionText: 'Indexes',
-        configureText: 'Configure',
 
         _hasChangedIndexPrefs: false,// Dirty flag so we know when to reload the widgets
 
         onShow: function() {
-            var drawer = App.getView('right_drawer');
-            if (drawer) {
-                domConstruct.place(this.searchWidget.domNode, drawer.domNode, 'first');
-            }
             this.setDefaultIndexPreferences();
         },
         setDefaultIndexPreferences: function() {
@@ -50,15 +59,13 @@ define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
             return defaults;
         },
         setupRightDrawer: function() {
-            var drawer = App.getView('right_drawer'), handle;
+            var drawer = App.getView('right_drawer');
             if (drawer) {
                 lang.mixin(drawer, this._createActions());
                 drawer.setLayout(this.createRightDrawerLayout());
                 drawer.getGroupForEntry = lang.hitch(this, function(entry) {
                     return this.getGroupForRightDrawerEntry(entry);
                 });
-
-                domConstruct.place(this.searchWidget.domNode, drawer.domNode, 'first');
 
                 if (this.rebuildWidgets) {
                     App.snapper.on('close', lang.hitch(this, function() {
@@ -74,15 +81,13 @@ define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
             var drawer = App.getView('right_drawer');
             if (drawer) {
                 drawer.setLayout([]);
-                drawer.getGroupForEntry = function(entry) {};
-                domConstruct.place(this.searchWidget.domNode, this.domNode, 'first');
+                drawer.getGroupForEntry = function() {};
                 App.snapper.off('close');
             }
         },
         _onSearchExpression: function() {
             // TODO: Don't extend this private function - connect to the search widget onSearchExpression instead
             this.inherited(arguments);
-            App.snapper.close();
         },
         _createActions: function() {
             // These actions will get mixed into the right drawer view.
@@ -109,14 +114,15 @@ define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
         },
         getGroupForRightDrawerEntry: function(entry) {
             if (entry.dataProps && entry.dataProps.indexname) {
+                var mixin = lang.getObject(mixinName);
                 return {
                     tag: 'view',
-                    title: this.indexSectionText
+                    title: mixin.prototype.indexSectionText
                 };
             }
         },
         createRightDrawerLayout: function() {
-            var indexSection, index, indexName, layout, prefs, indexPref, i;
+            var indexSection, index, layout, prefs, indexPref, i;
             layout = [];
 
             indexSection = {
@@ -126,28 +132,33 @@ define('Mobile/SalesLogix/Views/_SpeedSearchRightDrawerListMixin', [
             prefs = App.preferences && App.preferences.speedSearchIndexes;
             if (this.indexes) {
                 for (i in this.indexes) {
-                    index = this.indexes[i];
-                    indexPref = array.filter(prefs, function(pref) {
-                        return pref.indexName === index.indexName; 
+                    if (this.indexes.hasOwnProperty(i)) {
+                        index = this.indexes[i];
+                        indexPref = array.filter(prefs, function(pref) {
+                            return pref.indexName === index.indexName;
                         });
-                    index = this.indexes[i];
-                    if (index.hasOwnProperty("indexName")) {
-                        indexSection.children.push({
-                            'name': index.indexName,
-                            'action': 'indexClicked', 
-                            'title': this.indexesText[index.indexName] || index.indexName,
-                            'dataProps': {
-                                'indexname': this.indexesText[index.indexName] || index.indexName,
-                                'enabled':!!indexPref[0].enabled
-                            }
-                        });
+                        index = this.indexes[i];
+                        if (index.hasOwnProperty('indexName')) {
+                            indexSection.children.push({
+                                'name': index.indexName,
+                                'action': 'indexClicked',
+                                'title': this.indexesText[index.indexName] || index.indexName,
+                                'dataProps': {
+                                    'indexname': index.indexName,
+                                    'enabled':!!indexPref[0].enabled
+                                }
+                            });
+                        }
                     }
                 }
             }
 
             layout.push(indexSection);
-           return layout;
+            return layout;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views._SpeedSearchRightDrawerListMixin', __class);
+    return __class;
 });
 

@@ -1,15 +1,24 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Ticket/Detail', [
+
+/**
+ * @class crm.Views.Ticket.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires argos.ErrorManager
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/Ticket/Detail', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/query',
     'dojo/dom-class',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Sage/Platform/Mobile/Detail',
-    'dojo/NodeList-manipulate'
+    '../../Format',
+    'argos/ErrorManager',
+    'argos/Detail'
 ], function(
     declare,
     lang,
@@ -20,7 +29,7 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Ticket.Detail', [Detail], {
+    var __class = declare('crm.Views.Ticket.Detail', [Detail], {
         //Localization
         accountText: 'account',
         areaText: 'area',
@@ -87,10 +96,13 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
         },
 
         createPicklistRequest: function(predicate) {
-            var request = new Sage.SData.Client.SDataResourceCollectionRequest(App.getService())
+            var request,
+                uri;
+
+            request = new Sage.SData.Client.SDataResourceCollectionRequest(App.getService())
                 .setResourceKind('picklists')
                 .setContractName('system');
-            var uri = request.getUri();
+            uri = request.getUri();
 
             uri.setPathSegment(Sage.SData.Client.SDataUri.ResourcePropertyIndex, 'items');
             uri.setCollectionPredicate(predicate);
@@ -120,10 +132,14 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
         },
 
         processCodeDataFeed: function(feed, currentValue, options) {
-            var keyProperty = options && options.keyProperty ? options.keyProperty : '$key';
-            var textProperty = options && options.textProperty ? options.textProperty : 'text';
+            var keyProperty,
+                textProperty,
+                i;
 
-            for (var i = 0; i < feed.$resources.length; i++) {
+            keyProperty = options && options.keyProperty ? options.keyProperty : '$key';
+            textProperty = options && options.textProperty ? options.textProperty : 'text';
+
+            for (i = 0; i < feed.$resources.length; i++) {
                 if (feed.$resources[i][keyProperty] === currentValue) {
                     return feed.$resources[i][textProperty];
                 }
@@ -147,7 +163,7 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
                         name: 'ScheduleActivityAction',
                         property: 'TicketNumber',
                         label: this.scheduleActivityText,
-                        icon: 'content/images/icons/Schedule_ToDo_24x24.png',
+                        iconClass: 'fa fa-calendar fa-lg',
                         action: 'scheduleActivity'
                     }]
                 }, {
@@ -168,6 +184,24 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
                             view: 'contact_detail',
                             key: 'Contact.$key'
                         }, {
+                            label: this.assignedToText,
+                            name: 'AssignedTo.OwnerDescription',
+                            property: 'AssignedTo.OwnerDescription'
+                        }, {
+                            label: this.urgencyText,
+                            name: 'Urgency.Description',
+                            property: 'Urgency.Description'
+                        }, {
+                            label: this.needByText,
+                            name: 'NeededByDate',
+                            property: 'NeededByDate',
+                            renderer: format.date
+                        }]
+                }, {
+                    title: this.moreDetailsText,
+                    name: 'MoreDetailsSection',
+                    collapsed: true,
+                    children: [{
                             label: this.areaText,
                             name: 'Area',
                             property: 'Area'
@@ -195,28 +229,10 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
                             property: 'StatusCode',
                             onCreate: this.requestCodeData.bindDelegate(this, 'name eq "Ticket Status"')
                         }, {
-                            label: this.urgencyText,
-                            name: 'Urgency.Description',
-                            property: 'Urgency.Description'
-                        }, {
-                            label: this.needByText,
-                            name: 'NeededByDate',
-                            property: 'NeededByDate',
-                            renderer: format.date
-                        }, {
-                            label: this.assignedToText,
-                            name: 'AssignedTo.OwnerDescription',
-                            property: 'AssignedTo.OwnerDescription'
-                        }, {
                             label: this.completedByText,
                             name: 'CompletedBy.OwnerDescription',
                             property: 'CompletedBy.OwnerDescription'
-                        }]
-                }, {
-                    title: this.moreDetailsText,
-                    name: 'MoreDetailsSection',
-                    collapsed: true,
-                    children: [{
+                        }, {
                             label: this.contractText,
                             name: 'Contract.ReferenceNumber',
                             property: 'Contract.ReferenceNumber'
@@ -247,19 +263,16 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
                     name: 'RelatedItemsSection',
                     children: [{
                             name: 'ActivityRelated',
-                            icon: 'content/images/icons/To_Do_24x24.png',
                             label: this.relatedActivitiesText,
                             view: 'activity_related',
                             where: this.formatRelatedQuery.bindDelegate(this, 'TicketId eq "${0}"')
                         }, {
                             name: 'TicketActivityRelated',
-                            icon: 'content/images/icons/Schedule_ToDo_24x24.png',
                             label: this.relatedTicketActivitiesText,
                             view: 'ticketactivity_related',
                             where: this.formatRelatedQuery.bindDelegate(this, 'Ticket.Id eq "${0}"')
                         }, {
                             name: 'AttachmentRelated',
-                            icon: 'content/images/icons/Attachment_24.png',
                             label: this.relatedAttachmentText,
                             where: this.formatRelatedQuery.bindDelegate(this, 'ticketId eq "${0}"'),// must be lower case because of feed
                             view: 'ticket_attachment_related',
@@ -268,5 +281,8 @@ define('Mobile/SalesLogix/Views/Ticket/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Ticket.Detail', __class);
+    return __class;
 });
 

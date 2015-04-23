@@ -1,17 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/User/List', [
+
+/**
+ * @class crm.Views.User.List
+ *
+ * @extends argos.List
+ */
+define('crm/Views/User/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Sage/Platform/Mobile/List'
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.User.List', [List], {
+    var __class = declare('crm.Views.User.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.UserInfo.LastName %}, {%: $.UserInfo.FirstName %}</h3>',
@@ -25,7 +33,7 @@ define('Mobile/SalesLogix/Views/User/List', [
         id: 'user_list',
         queryOrderBy: 'UserInfo.LastName asc, UserInfo.FirstName asc',
 
-        // Excluded types for the queryWhere 
+        // Excluded types for the queryWhere
         // Type:
         // 3 - WebViewer
         // 5 - Retired
@@ -44,5 +52,8 @@ define('Mobile/SalesLogix/Views/User/List', [
             return string.substitute('upper(UserInfo.UserName) like "%${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.User.List', __class);
+    return __class;
 });
 

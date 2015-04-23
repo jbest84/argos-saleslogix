@@ -1,18 +1,38 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Activity/Complete', [
+
+/**
+ * @class crm.Views.Activity.Complete
+ *
+ * @extends argos.Edit
+ * @mixins argos.Edit
+ *
+ * @requires argos.Edit
+ * @requires argos.Utility
+ *
+ * @requires crm.Environment
+ * @requires crm.Validator
+ * @requires crm.Template
+ *
+ * @requires moment
+ *
+ */
+define('crm/Views/Activity/Complete', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/_base/array',
     'dojo/_base/connect',
     'dojo/string',
-    'Mobile/SalesLogix/Environment',
-    'Mobile/SalesLogix/Validator',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit'
+    '../../Environment',
+    '../../Validator',
+    '../../Template',
+    'argos/Utility',
+    'argos/Edit',
+    'moment'
 ], function(
     declare,
+    lang,
     array,
     connect,
     string,
@@ -20,10 +40,11 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
     validator,
     template,
     utility,
-    Edit
+    Edit,
+    moment
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Activity.Complete', [Edit], {
+    var __class = declare('crm.Views.Activity.Complete', [Edit], {
         //Localization
         activityInfoText: 'Activity Info',
         accountText: 'account',
@@ -136,7 +157,11 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
             'Timeless',
             'Type',
             'Recurring',
-            'RecurrenceState'
+            'RecurrenceState',
+            'AllowAdd',
+            'AllowEdit',
+            'AllowDelete',
+            'AllowComplete'
         ],
         resourceKind: 'activities',
         contractName: 'system',
@@ -192,7 +217,7 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                 field.enable();
             }
         },
-        onTimelessChange: function(value, field) {
+        onTimelessChange: function(value) {
             this.toggleSelectField(this.fields['Duration'], value);
 
             var startDateField = this.fields['StartDate'],
@@ -232,16 +257,21 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
 
             return true;
         },
-        onAsScheduledChange: function(scheduled, field) {
+        onAsScheduledChange: function(scheduled) {
+            var duration, startDate, completedDate;
             if (scheduled) {
+                duration = this.fields['Duration'].getValue();
+                startDate = moment(this.fields['StartDate'].getValue());
+                completedDate = startDate.add({minutes: duration}).toDate();
+
                 this.toggleSelectField(this.fields['CompletedDate'], true);
-                this.fields['CompletedDate'].setValue(this.fields['StartDate'].getValue());
+                this.fields['CompletedDate'].setValue(completedDate);
             } else {
                 this.toggleSelectField(this.fields['CompletedDate'], false);
                 this.fields['CompletedDate'].setValue(new Date());
             }
         },
-        onFollowupChange: function(value, field) {
+        onFollowupChange: function(value) {
             var disable = (value === 'none' || (value && value.key === 'none'));
             this.toggleSelectField(this.fields['CarryOverNotes'], disable);
         },
@@ -255,7 +285,7 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
         formatPicklistForType: function(type, which) {
             return this.picklistsByType[type] && this.picklistsByType[type][which];
         },
-        setValues: function(values) {
+        setValues: function() {
             this.inherited(arguments);
             this.fields['CarryOverNotes'].setValue(true);
             this.fields['CompletedDate'].setValue(new Date());
@@ -274,25 +304,29 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
             return this.followupValueText[key] || text;
         },
         createDurationData: function() {
-            var list = [];
+            var list = [], duration;
 
-            for (var duration in this.durationValueText) {
-                list.push({
-                    '$key': duration,
-                    '$descriptor': this.durationValueText[duration]
-                });
+            for (duration in this.durationValueText) {
+                if (this.durationValueText.hasOwnProperty(duration)) {
+                    list.push({
+                        '$key': duration,
+                        '$descriptor': this.durationValueText[duration]
+                    });
+                }
             }
 
             return {'$resources': list};
         },
         createFollowupData: function() {
-            var list = [];
+            var list = [], followup;
 
-            for (var followup in this.followupValueText) {
-                list.push({
-                    '$key': followup,
-                    '$descriptor': this.followupValueText[followup]
-                });
+            for (followup in this.followupValueText) {
+                if (this.followupValueText.hasOwnProperty(followup)) {
+                    list.push({
+                        '$key': followup,
+                        '$descriptor': this.followupValueText[followup]
+                    });
+                }
             }
 
             return {'$resources': list};
@@ -311,7 +345,7 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                     'LongNotes': (this.fields['CarryOverNotes'].getValue() && entry['LongNotes']) || '',
                     'OpportunityId': entry.OpportunityId,
                     'OpportunityName': entry.OpportunityName,
-                    'StartDate': Date.now(),
+                    'StartDate': moment().toDate(),
                     'TicketId': entry.TicketId,
                     'TicketNumber': entry.TicketNumber
                 };
@@ -326,19 +360,29 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                 });
         },
         completeActivity: function(entry, callback) {
-            var completeActivityEntry = {
-                "$name": "ActivityComplete",
-                "request": {
-                    "entity": {'$key': entry['$key']},
-                    "ActivityId": entry['$key'],
-                    "userId": entry['Leader']['$key'],
-                    "result": this.fields['Result'].getValue(),
-                    "resultCode": this.fields['ResultCode'].getValue(),
-                    "completeDate": this.fields['CompletedDate'].getValue()
+            if (!entry['$key']) {
+                return;
+            }
+
+            var leader,
+                success,
+                request,
+                completeActivityEntry;
+
+            leader = this.fields['Leader'].getValue();
+            completeActivityEntry = {
+                '$name': 'ActivityComplete',
+                'request': {
+                    'entity': {'$key': entry['$key']},
+                    'ActivityId': entry['$key'],
+                    'userId': leader['$key'],
+                    'result': this.fields['Result'].getValue(),
+                    'resultCode': this.fields['ResultCode'].getValue(),
+                    'completeDate': this.fields['CompletedDate'].getValue()
                 }
             };
 
-            var success = (function(scope, callback, entry) {
+            success = (function(scope, callback, entry) {
                 return function() {
                     environment.refreshStaleDetailViews();
                     connect.publish('/app/refresh', [{
@@ -349,7 +393,7 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                 };
             })(this, callback, entry);
 
-            var request = new Sage.SData.Client.SDataServiceOperationRequest(this.getService())
+            request = new Sage.SData.Client.SDataServiceOperationRequest(this.getService())
                 .setResourceKind('activities')
                 .setContractName('system')
                 .setOperationName('Complete');
@@ -361,9 +405,13 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
             });
         },
         onUpdateCompleted: function(entry) {
-            var followup = this.fields['Followup'].getValue() !== 'none'
-                ? this.navigateToFollowUpView
-                : this.getInherited(arguments);
+            if (!entry) {
+                return;
+            }
+
+            var followup = this.fields['Followup'].getValue() === 'none'
+                ? this.getInherited(arguments)
+                : this.navigateToFollowUpView;
 
             this.completeActivity(entry, followup);
         },
@@ -392,6 +440,14 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                             type: 'picklist',
                             maxTextLength: 64,
                             validator: validator.exceedsMaxTextLength
+                        }, {
+                            label: this.longNotesText,
+                            noteProperty: false,
+                            name: 'LongNotes',
+                            property: 'LongNotes',
+                            title: this.longNotesTitleText,
+                            type: 'note',
+                            view: 'text_edit'
                         }, {
                             label: this.startingText,
                             name: 'StartDate',
@@ -486,14 +542,6 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                             name: 'CarryOverNotes',
                             property: 'CarryOverNotes',
                             type: 'boolean'
-                        }, {
-                            label: this.longNotesText,
-                            noteProperty: false,
-                            name: 'LongNotes',
-                            property: 'LongNotes',
-                            title: this.longNotesTitleText,
-                            type: 'note',
-                            view: 'text_edit'
                         }]
                 }, {
                     title: this.otherInfoText,
@@ -598,5 +646,8 @@ define('Mobile/SalesLogix/Views/Activity/Complete', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Activity.Complete', __class);
+    return __class;
 });
 

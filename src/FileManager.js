@@ -1,20 +1,23 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/FileManager', [
+
+/**
+ * @class crm.FileManager
+ *
+ */
+define('crm/FileManager', [
     'dojo/_base/lang',
     'dojo/_base/declare',
     'dojo/number',
-    'dojo/has',
-    'dojo/_base/sniff'
+    'dojo/has'
 ], function(
     lang,
     declare,
     dNumber,
-    has,
-    sniff
+    has
 ) {
-    return declare('Mobile.SalesLogix.FileManager', null, {
+    var __class = declare('crm.FileManager', null, {
         unableToUploadText: 'This browser does not support HTML5 File API.',
         unknownSizeText: 'unknown',
         unknownErrorText: 'Warning: An error occured and the file failed to upload.',
@@ -29,21 +32,34 @@ define('Mobile/SalesLogix/FileManager', [
         _filesUploadedCount: 0,
         _isUploading: false,
 
+        /**
+         * @constructor
+         */
         constructor: function() {
             this._files = [];
             this.fileUploadOptions.maxFileSize = App.maxUploadFileSize;
         },
-        isHTML5Supported:function(){
+        /**
+         * Checks if the HTML5 file api is supported.
+         * @returns {Boolean}
+         */
+        isHTML5Supported: function() {
             var results = has('html5-file-api');
             return results;
         },
+        /**
+         * Checks the {@link crm.Application}'s maxFileSize to determine
+         * if the file size being added exeeds this limit.
+         * @param {Array}
+         * @returns {Boolean}
+         */
         isFileSizeAllowed: function(files) {
-            var len = 0, maxfileSize, title, msg;
+            var len = 0, maxfileSize, title, msg, i;
             maxfileSize = this.fileUploadOptions.maxFileSize;
             title = this.largeFileWarningTitle;
             msg = this.largeFileWarningText;
 
-            for (var i = 0; i < files.length; i++) {
+            for (i = 0; i < files.length; i++) {
                 if (files[i].size === 0) {
                     // do nothing.
                 } else {
@@ -57,6 +73,19 @@ define('Mobile/SalesLogix/FileManager', [
 
             return true;
         },
+        /**
+         * Uploads a file to a URL.
+         * @param {File} file
+         * @param {String} url
+         * @param {Function} progress Progress callback
+         * @param {Event} progress.e
+         * @param {Function} complete Complete callback
+         * @param {Object} complete.request
+         * @param {Function} error Error callback
+         * @param {Function} error.errorText
+         * @param {Object} scope
+         * @param {Boolean} asPut
+         */
         uploadFile: function(file, url, progress, complete, error, scope, asPut) {
             this.uploadFileHTML5(file, url, progress, complete, error, scope, asPut);
         },
@@ -72,9 +101,9 @@ define('Mobile/SalesLogix/FileManager', [
             }
         },
         _uploadFileHTML5_asBinary: function(file, url, progress, complete, error, scope, asPut) {
-            window.BlobBuilder = window.BlobBuilder || 
-                         window.WebKitBlobBuilder || 
-                         window.MozBlobBuilder || 
+            window.BlobBuilder = window.BlobBuilder ||
+                         window.WebKitBlobBuilder ||
+                         window.MozBlobBuilder ||
                          window.MSBlobBuilder;
             if (!url) {
                 //assume Attachment SData url
@@ -96,9 +125,9 @@ define('Mobile/SalesLogix/FileManager', [
                 var binary, boundary, dashdash, crlf, bb, unknownErrorText, usingBlobBuilder, blobReader, blobData;
                 unknownErrorText = this.unknownErrorText;
                 blobReader = new FileReader();// read the blob as an ArrayBuffer to work around this android issue: https://code.google.com/p/android/issues/detail?id=39882
-                
+
                 try {
-                    new Blob();// This will throw an exception if it is no supported (android)
+                    bb = new Blob();// This will throw an exception if it is not supported (android)
                     bb = [];
                 } catch(e) {
                     bb = new window.BlobBuilder();
@@ -106,7 +135,7 @@ define('Mobile/SalesLogix/FileManager', [
                 }
 
                 binary = evt.target.result;
-                boundary = "---------------------------" + (new Date()).getTime();
+                boundary = '---------------------------' + (new Date()).getTime();
                 dashdash = '--';
                 crlf = '\r\n';
 
@@ -127,7 +156,7 @@ define('Mobile/SalesLogix/FileManager', [
                             if (Math.floor(request.status / 100) !== 2) {
                                 if (error) {
                                     error.call(scope || this, unknownErrorText);
-                                    console.warn(unknownErrorText + " "+ request.responseText);
+                                    console.warn(unknownErrorText + ' ' + request.responseText);
                                 }
                             } else {
                                 complete.call(scope || this, request);
@@ -178,6 +207,11 @@ define('Mobile/SalesLogix/FileManager', [
                 console.warn([msg]);
             }
         },
+        /**
+         * Formats the file size formatted in KB.
+         * @param {Number} size
+         * @returns {String}
+         */
         formatFileSize: function(size) {
             size = parseInt(size, 10);
             if (size === 0) {
@@ -191,14 +225,21 @@ define('Mobile/SalesLogix/FileManager', [
             }
             return dNumber.format(Math.round(size / 1024)) + ' KB';
         },
-        getFile: function(fileUrl, responseType , onSuccess) {
+        /**
+         * Loads a remote file.
+         * @param {String} fileUrl
+         * @param {String} responseType
+         * @param {Function} onSuccess
+         * @param {Object} onSuccess.responseInfo
+         */
+        getFile: function(fileUrl, responseType, onSuccess) {
             var request, service, self;
 
             request = new XMLHttpRequest();
             service = App.getService();
             self = this;
 
-            request.open("GET", fileUrl, true);
+            request.open('GET', fileUrl, true);
 
             if (responseType) {
                 request.responseType = responseType;
@@ -210,12 +251,13 @@ define('Mobile/SalesLogix/FileManager', [
                 request.setRequestHeader('X-Authorization', service.createBasicAuthToken());
                 request.setRequestHeader('X-Authorization-Mode', 'no-challenge');
             }
-            request.addEventListener("load", function() {
+
+            request.addEventListener('load', function() {
                 var data, contentType, contentInfo, responseInfo, fileName;
 
                 data = this.response;
-                contentType = this.getResponseHeader("Content-Type");
-                contentInfo = this.getResponseHeader("Content-Disposition");
+                contentType = this.getResponseHeader('Content-Type');
+                contentInfo = this.getResponseHeader('Content-Disposition');
                 responseInfo = {};
                 fileName = contentInfo.split('=')[1];
 
@@ -225,7 +267,7 @@ define('Mobile/SalesLogix/FileManager', [
                     response: this.response,
                     contentType: contentType,
                     fileName: fileName
-                };                
+                };
                 if (onSuccess) {
                     onSuccess(responseInfo);
                 }
@@ -233,4 +275,8 @@ define('Mobile/SalesLogix/FileManager', [
             request.send(null);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.FileManager', __class);
+    return __class;
 });
+

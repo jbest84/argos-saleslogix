@@ -1,19 +1,27 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Owner/List', [
+
+/**
+ * @class crm.Views.Owner.List
+ *
+ * @extends argos.List
+ */
+define('crm/Views/Owner/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/_base/array',
-    'Sage/Platform/Mobile/List'
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     array,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Owner.List', [List], {
+    var __class = declare('crm.Views.Owner.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.OwnerDescription %}</h3>'
@@ -38,10 +46,9 @@ define('Mobile/SalesLogix/Views/Owner/List', [
         formatSearchQuery: function(searchQuery) {
             return string.substitute('upper(OwnerDescription) like "%${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         },
-        processFeed: function(feed) {
-            // Filter the feed in memory (SData cannot check if owner.User is null)
-            if (feed.$resources) {
-                feed.$resources = array.filter(feed.$resources, function(item) {
+        processData: function(items) {
+            if (items) {
+                items = array.filter(items, function(item) {
                     return this._userEnabled(item) && this._isCorrectType(item);
                 }, this);
             }
@@ -66,5 +73,8 @@ define('Mobile/SalesLogix/Views/Owner/List', [
             return item.User.Type !== 3 && item.User.Type !== 5 && item.User.Type !== 6 && item.User.Type !== 7;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Owner.List', __class);
+    return __class;
 });
 

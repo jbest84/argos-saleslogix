@@ -1,17 +1,23 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Charts/GenericBar', [
+
+/**
+ * @class crm.Views.Charts.GenericBar
+ *
+ * @extends argos.View
+ * @mixins crm.Views.Charts._ChartMixin
+ *
+ * @requires argos.View
+ *
+ */
+define('crm/Views/Charts/GenericBar', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/_base/array',
     'dojo/dom-geometry',
     'dojo/dom-attr',
-    'dojox/charting/Chart',
-    'dojox/charting/plot2d/Bars',
-    'dojox/charting/axis2d/Default',
-    'dojox/charting/themes/Julie',
-    'Sage/Platform/Mobile/View',
+    'argos/View',
     './_ChartMixin'
 ], function(
     declare,
@@ -19,22 +25,21 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
     array,
     domGeo,
     domAttr,
-    Chart,
-    PlotType,
-    Default,
-    JulieTheme,
     View,
     _ChartMixin
 ) {
-    return declare('Mobile.SalesLogix.Views.Charts.GenericBar', [View, _ChartMixin], {
+    var __class = declare('crm.Views.Charts.GenericBar', [View, _ChartMixin], {
         id: 'chart_generic_bar',
         titleText: '',
-        otherText: 'Other',
         expose: false,
         chart: null,
-        legend: null,
-        MAX_ITEMS: 5,
-        MIN_ITEMS: 1,
+        barColor: '#0896e9',
+
+        chartOptions: {
+            scaleBeginAtZero: false,
+            barShowStroke: false,
+            legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>'
+        },
 
         formatter: function(val) {
             return val;
@@ -44,107 +49,44 @@ define('Mobile/SalesLogix/Views/Charts/GenericBar', [
             chartContent: {node: 'contentNode', type: 'innerHTML'}
         },
 
-        widgetTemplate: new Simplate([
-            '<div id="{%= $.id %}" title="{%= $.titleText %}" class="list {%= $.cls %}">',
-                '<div class="chart-hash" data-dojo-attach-point="searchExpressionNode"></div>',
-                '<div class="chart-content" data-dojo-attach-point="contentNode"></div>',
-                '<div class="chart-legend" data-dojo-attach-point="legendNode"></div>',
-            '</div>'
-        ]),
-        createChart: function (feedData) {
+        createChart: function(rawData) {
             this.inherited(arguments);
 
-            if (this.chart) {
-                this.chart.destroy(true);
-            }
-
-            var labels, box, searchExpressionHeight;
+            var ctx, box, data, labels, seriesData;
 
             this.showSearchExpression();
-            searchExpressionHeight = this.getSearchExpressionHeight();
 
-            box = domGeo.getMarginBox(this.domNode);
-            box.h = box.h - searchExpressionHeight;
-            labels = this._labels(feedData);
+            labels = [];
+            seriesData = array.map(rawData, function(item) {
+                labels.push(item.$descriptor);
+                return Math.round(item.value);
+            }.bind(this));
 
-            this.chart = new Chart(this.contentNode);
-            this.chart.setTheme(JulieTheme);
-            this.chart.addPlot('default', {
-                type: PlotType,
-                markers: false,
-                gap: 5,
-                majorLabels: true,
-                minorTicks: false,
-                minorLabels: false,
-                microTicks: false
-            });
-
-            this.chart.addAxis('x', {
-                vertical: true,
-                title: '',
-                minorTicks: false,
-                minorLabels: false,
-                microTicks: false,
+            data = {
                 labels: labels,
-                labelFunc: function(formattedValue, rawValue) {
-                    var item = labels[rawValue - 1];
-                    return item && item.text;
-                }
-            });
+                datasets: [
+                    {
+                        label: 'Default',
+                        fillColor: this.barColor,
+                        data: seriesData
+                    }
+                ]
+            };
 
-            this.chart.addAxis('y', {
-                title: '',
-                titleOrientation: 'away'
-            });
-
-            this.chart.addSeries('default', labels);
-            this.chart.render();
-            this.chart.resize(box.w, box.h);
-        },
-        _labels: function(feedData) {
-            var data = [], otherY = 0, otherText;
-
-            array.forEach(feedData, function(item, index) {
-                if (index < this.MAX_ITEMS) {
-                    data.push({
-                        y: item.value,
-                        text: item.$descriptor + ' (' + this.formatter(item.value) + ')',
-                        value: index
-                    });
-                } else {
-                    otherY = otherY + item.value;
-                    this._insertOther(data, this.MAX_ITEMS, otherY);
-
-                }
-            }, this);
-
-            // Dojo won't draw a single bar, insert a Other group with a 0 value
-            if (feedData.length === this.MIN_ITEMS) {
-                this._insertOther(data, this.MIN_ITEMS, 0);
+            if (this.chart) {
+                this.chart.destroy();
             }
 
-            // Reverse sort to show larger number up top
-            data.sort(function(a, b) {
-                if (a.y > b.y) {
-                    return 1;
-                }
+            box = domGeo.getMarginBox(this.domNode);
+            this.contentNode.width = box.w;
+            this.contentNode.height = box.h;
 
-                if (b.y > a.y) {
-                    return -1;
-                }
+            ctx = this.contentNode.getContext('2d');
 
-                return 0;
-            });
-
-            return data;
-        },
-        _insertOther: function(data, index, value) {
-            var otherText = this.otherText + ' (' + this.formatter(value) + ')';
-            data[index] = {
-                y: value,
-                text: otherText,
-                value: index
-            };
+            this.chart = new window.Chart(ctx).Bar(data, this.chartOptions);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Charts.GenericBar', __class);
+    return __class;
 });

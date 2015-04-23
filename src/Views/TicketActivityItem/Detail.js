@@ -1,17 +1,27 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/TicketActivityItem/Detail', [
+
+/**
+ * @class crm.Views.TicketActivityItem.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/TicketActivityItem/Detail', [
     'dojo/_base/declare',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/Detail'
+    'dojo/_base/lang',
+    '../../Format',
+    'argos/Detail'
 ], function(
     declare,
+    lang,
     format,
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.TicketActivityItem.Detail', [Detail], {
+    var __class = declare('crm.Views.TicketActivityItem.Detail', [Detail], {
         //Localization
         titleText: 'Ticket Activity Part',
         productNameText: 'product',
@@ -68,5 +78,8 @@ define('Mobile/SalesLogix/Views/TicketActivityItem/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.TicketActivityItem.Detail', __class);
+    return __class;
 });
 

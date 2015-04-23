@@ -1,14 +1,23 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Recurrence', [
+
+/**
+ * @class crm.Recurrence
+ *
+ * @requires argos._ActionMixin
+ * @requires argos._CustomizationMixin
+ * @requires argos._Templated
+ *
+ */
+define('crm/Recurrence', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/string',
     'dijit/_Widget',
-    'Sage/Platform/Mobile/_ActionMixin',
-    'Sage/Platform/Mobile/_CustomizationMixin',
-    'Sage/Platform/Mobile/_Templated',
+    'argos/_ActionMixin',
+    'argos/_CustomizationMixin',
+    'argos/_Templated',
     'moment'
 ], function(
     declare,
@@ -20,7 +29,7 @@ define('Mobile/SalesLogix/Recurrence', [
     _Templated,
     moment
 ) {
-    return lang.setObject('Mobile.SalesLogix.Recurrence', {
+    var __class = lang.setObject('crm.Recurrence', {
         // Localization
         neverText: 'Never',
         daysText: 'days',
@@ -39,6 +48,20 @@ define('Mobile/SalesLogix/Recurrence', [
         everyText: 'every ${0} ${1}', // eg. every {2} {weeks}
         afterCompletionText: 'after completion',
         untilEndDateText: '${0} until ${1}', // eg. {daily} until {31/10/2012}
+        dayFormatText: 'DD',
+        monthFormatText: 'MM',
+        monthAndDayFormatText: 'MM/DD',
+        weekdayFormatText: 'dddd',
+        endDateFormatText: 'M/D/YYYY',
+        weekDaysText: [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday'
+        ],
         ordText: [
             'day',
             'first',
@@ -142,33 +165,35 @@ define('Mobile/SalesLogix/Recurrence', [
         ],
 
         createSimplifiedOptions: function(startDate) {
-
             this.recalculateSimplifiedPeriodSpec(startDate);
 
             var list = [],
                 currentDate = startDate || new Date(),
+                recurOption,
                 wrapped = moment(currentDate),
                 day = currentDate.getDate(),
                 ord = this.ordText[parseInt((day - 1) / 7, 10) + 1],
                 textOptions = [
                     null, // scale, replaced in loop
                     day,
-                    wrapped.format('DD'),
+                    wrapped.format(this.dayFormatText),
                     wrapped.lang().weekdays(wrapped),
                     wrapped.lang().monthsShort(wrapped),
                     ord
                 ];
 
-            for (var recurOption in this.simplifiedOptions) {
-                textOptions[0] = this.getPanel(this.simplifiedOptions[recurOption].RecurPeriod);
-                this.simplifiedOptions[recurOption].RecurIterations = this.defaultIterations[this.simplifiedOptions[recurOption].RecurPeriod];
+            for (recurOption in this.simplifiedOptions) {
+                if (this.simplifiedOptions.hasOwnProperty(recurOption)) {
+                    textOptions[0] = this.getPanel(this.simplifiedOptions[recurOption].RecurPeriod);
+                    this.simplifiedOptions[recurOption].RecurIterations = this.defaultIterations[this.simplifiedOptions[recurOption].RecurPeriod] || 0;
 
-                if (this[this.simplifiedOptions[recurOption].label]) {
-                    list.push({
-                        '$key': recurOption, // this.simplifiedOptions[recurOption].RecurPeriod,
-                        '$descriptor': string.substitute(this[this.simplifiedOptions[recurOption].label], textOptions),
-                        'recurrence': this.simplifiedOptions[recurOption]
-                    });
+                    if (this[this.simplifiedOptions[recurOption].label]) {
+                        list.push({
+                            '$key': recurOption, // this.simplifiedOptions[recurOption].RecurPeriod,
+                            '$descriptor': string.substitute(this[this.simplifiedOptions[recurOption].label], textOptions),
+                            'recurrence': this.simplifiedOptions[recurOption]
+                        });
+                    }
                 }
             }
 
@@ -198,22 +223,28 @@ define('Mobile/SalesLogix/Recurrence', [
             return 0 <= '1369'.indexOf(panel);
         },
         recalculateSimplifiedPeriodSpec: function(startDate) {
-            var opt;
-            for (var recurOption in this.simplifiedOptions) {
-                opt = this.simplifiedOptions[recurOption];
-                this.simplifiedOptions[recurOption].RecurPeriodSpec = this.getRecurPeriodSpec(
-                    opt.RecurPeriod,
-                    startDate,
-                    opt.weekdays
-                );
+            var opt,
+                recurOption;
+            for (recurOption in this.simplifiedOptions) {
+                if (this.simplifiedOptions.hasOwnProperty(recurOption)) {
+                    opt = this.simplifiedOptions[recurOption];
+                    this.simplifiedOptions[recurOption].RecurPeriodSpec = this.getRecurPeriodSpec(
+                        opt.RecurPeriod,
+                        startDate,
+                        opt.weekdays
+                    );
+                }
             }
         },
         getWeekdays: function(rps, names) { // pass a RecurPeriodSpec (as long as RecurPeriod corresponds to a Spec with weekdays)
-            var weekdays = [];
-            for (var i = 0; i < this._weekDayValues.length; i++) {
+            var weekdays,
+                i;
+
+            weekdays = [];
+            for (i = 0; i < this._weekDayValues.length; i++) {
                 if (names) {
                     if (rps & this._weekDayValues[i]) {
-                        weekdays.push(moment().lang()._weekdays[i]);
+                        weekdays.push(this.weekDaysText[i]);
                     }
 
                 } else {
@@ -230,7 +261,7 @@ define('Mobile/SalesLogix/Recurrence', [
                 ordBits = entry.RecurPeriodSpec % 524288,
                 monthBits = entry.RecurPeriodSpec % 4194304 - ordBits;
 
-            if (entry && (5 == entry.RecurPeriod || 8 == entry.RecurPeriod)) {
+            if (entry && (5 === entry.RecurPeriod || 8 === entry.RecurPeriod)) {
                 nthWeek = parseInt(ordBits / 65536, 10) + 1;
                 weekday = parseInt(monthBits / 524288, 10) - 1;
                 monthNum = parseInt((entry.RecurPeriodSpec - monthBits - ordBits) / 4194304, 10);
@@ -243,7 +274,13 @@ define('Mobile/SalesLogix/Recurrence', [
             };
         },
         getRecurPeriodSpec: function(recurPeriod, startDate, weekdays, interval) {
-            var spec = 0;
+            var spec,
+                weekDay,
+                nthWeek,
+                monthNum,
+                i;
+
+            spec = 0;
             interval = interval || this.interval;
 
             if (!startDate) {
@@ -260,7 +297,7 @@ define('Mobile/SalesLogix/Recurrence', [
                     break;
                 case 2:
                     // weekly
-                    for (var i = 0; i < weekdays.length; i++) {
+                    for (i = 0; i < weekdays.length; i++) {
                         spec += (weekdays[i] ? this._weekDayValues[i] : 0);
                     }
                     if (0 === spec) {
@@ -278,8 +315,8 @@ define('Mobile/SalesLogix/Recurrence', [
                     break;
                 case 5:
                     // monthly on #ord #weekday
-                    var weekDay = startDate.getDay() + 1;
-                    var nthWeek = parseInt((startDate.getDate() - 1) / 7, 10) + 1;
+                    weekDay = startDate.getDay() + 1;
+                    nthWeek = parseInt((startDate.getDate() - 1) / 7, 10) + 1;
                     spec = ((weekDay * 524288) + ((nthWeek - 1) * 65536));
                     break;
                 case 6:
@@ -294,7 +331,7 @@ define('Mobile/SalesLogix/Recurrence', [
                     // yearly on #ord #weekday of #month
                     spec = 18546688;
                     weekDay = startDate.getDay() + 1;
-                    var monthNum = startDate.getMonth() + 1;
+                    monthNum = startDate.getMonth() + 1;
                     nthWeek = parseInt((startDate.getDate() - 1) / 7, 10) + 1;
                     spec = ((monthNum * 4194304) + (weekDay * 524288) + ((nthWeek - 1) * 65536));
                     break;
@@ -311,7 +348,7 @@ define('Mobile/SalesLogix/Recurrence', [
         },
 
         toString: function(entry, dependsOnPanel) {
-            if (entry.RecurrenceState != 'rstMaster' || !entry.StartDate) {
+            if (entry.RecurrenceState !== 'rstMaster' || !entry.StartDate) {
                 return '';
             }
 
@@ -321,15 +358,15 @@ define('Mobile/SalesLogix/Recurrence', [
                 text = (1 < interval)
                     ? string.substitute(this.everyText, [interval, this.getPanel(rp, true)])
                     : ((true === dependsOnPanel) ? '' : this.getPanel(rp)),
-                currentDate = Sage.Platform.Mobile.Convert.toDateFromString(entry['StartDate']),
+                currentDate = argos.Convert.toDateFromString(entry['StartDate']),
                 day = currentDate.getDate(),
-                weekday = moment(currentDate).format('dddd'),
+                weekday = moment(currentDate).format(this.weekdayFormatText),
                 textOptions = [
                     text,
                     day,
-                    moment(currentDate).format('MM/DD'),
+                    moment(currentDate).format(this.monthAndDayFormatText),
                     this.getWeekdays(recurPeriodSpec, true),
-                    moment(currentDate).format('MMMM'),
+                    moment(currentDate).format(this.monthFormatText),
                     this.ordText[parseInt((day - 1) / 7, 10) + 1]
                 ];
 
@@ -370,16 +407,18 @@ define('Mobile/SalesLogix/Recurrence', [
             }
 
             if (this.isAfterCompletion(rp)) {
-                text = string.substitute("${0} ${1}", [text, this.afterCompletionText]);
+                text = string.substitute('${0} ${1}', [text, this.afterCompletionText]);
             } else {
-                text = string.substitute(this.untilEndDateText, [text, this.calcEndDate(currentDate, entry).format('M/D/YYYY')]);
+                text = string.substitute(this.untilEndDateText, [text, this.calcEndDate(currentDate, entry).format(this.endDateFormatText)]);
             }
 
             return text;
         },
         calcEndDate: function(date, entry) {
             var interval = entry['RecurPeriodSpec'] % 65536,
-                tempDate = moment.isMoment(date) ? 
+                weekDay,
+                nthWeek,
+                tempDate = moment.isMoment(date) ?
                     date.clone() :
                     new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
 
@@ -395,8 +434,8 @@ define('Mobile/SalesLogix/Recurrence', [
                     tempDate.add((interval * (entry['RecurIterations'] - 1)), 'months');
                     break;
                 case 5:
-                    var weekDay = tempDate.day();
-                    var nthWeek = parseInt(tempDate.date() / 7, 10) + 1;
+                    weekDay = tempDate.day();
+                    nthWeek = parseInt(tempDate.date() / 7, 10) + 1;
                     tempDate.add((interval * (entry['RecurIterations'] - 1)), 'months');
                     tempDate = this.calcDateOfNthWeekday(tempDate.toDate(), weekDay, nthWeek);
                     break;
@@ -472,5 +511,8 @@ define('Mobile/SalesLogix/Recurrence', [
             return Math.floor((result / interval) + 1);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Recurrence', __class);
+    return __class;
 });
 

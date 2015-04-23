@@ -1,15 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/TextEdit', [
+
+/**
+ * @class crm.Views.TextEdit
+ *
+ *
+ * @extends argos.Edit
+ *
+ */
+define('crm/Views/TextEdit', [
     'dojo/_base/declare',
-    'Sage/Platform/Mobile/Edit'
+    'dojo/_base/lang',
+    'argos/Edit'
 ], function(
     declare,
+    lang,
     Edit
 ) {
 
-    return declare('Mobile.SalesLogix.Views.TextEdit', [Edit], {
+    var __class = declare('crm.Views.TextEdit', [Edit], {
         //View Properties
         id: 'text_edit',
         titleText: 'Edit Text',
@@ -23,5 +33,8 @@ define('Mobile/SalesLogix/Views/TextEdit', [
             }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.TextEdit', __class);
+    return __class;
 });
 

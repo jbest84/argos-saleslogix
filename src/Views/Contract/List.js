@@ -1,17 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Contract/List', [
+
+/**
+ * @class crm.Views.Contract.List
+ *
+ * @extends argos.List
+ */
+define('crm/Views/Contract/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Sage/Platform/Mobile/List'
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Contract.List', [List], {
+    var __class = declare('crm.Views.Contract.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%= $.Account ? $.Account.AccountName : "" %}</h3>',
@@ -26,7 +34,6 @@ define('Mobile/SalesLogix/Views/Contract/List', [
         detailView: 'contract_detail',
         id: 'contract_list',
         security: 'Entities/Contract/View',
-        icon: 'content/images/contract_16x16.gif',
         insertView: 'contract_edit',
         queryOrderBy: 'ReferenceNumber asc',
         querySelect: [
@@ -40,5 +47,8 @@ define('Mobile/SalesLogix/Views/Contract/List', [
             return string.substitute('(ReferenceNumber like "%${0}%")', [this.escapeSearchQuery(searchQuery)]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Contract.List', __class);
+    return __class;
 });
 

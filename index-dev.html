@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--[if IE 9 ]>    <html lang="en" class="ie9"> <![endif]-->
 <!--[if (gt IE 9)|!(IE)]><!-->
 <html lang="en" class="gtie9 modern">
@@ -9,9 +9,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
+    <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="content/images/72x72.png" />
     <link rel="apple-touch-icon" sizes="76x76" href="content/images/touch-icon-ipad.png" />
@@ -19,10 +21,56 @@
     <link rel="apple-touch-icon" sizes="120x120" href="content/images/touch-icon-iphone-retina.png" />
     <link rel="apple-touch-icon" sizes="144x144" href="content/images/144x144.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="content/images/touch-icon-ipad-retina.png" />
-    <link rel="apple-touch-startup-image" href="content/images/loading.png">
+    <!-- Startup images -->
+
+    <!-- iOS 6 & 7 iPad (retina, portrait) -->
+    <link href="content/images/apple-touch-startup-image-1536x2008.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: portrait)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPad (retina, landscape) -->
+    <link href="content/images/apple-touch-startup-image-1496x2048.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: landscape)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPad (portrait) -->
+    <link href="content/images/apple-touch-startup-image-768x1004.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: portrait)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPad (landscape) -->
+    <link href="content/images/apple-touch-startup-image-748x1024.png"
+          media="(device-width: 768px) and (device-height: 1024px)
+             and (orientation: landscape)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPhone 5 -->
+    <link href="content/images/apple-touch-startup-image-640x1096.png"
+          media="(device-width: 320px) and (device-height: 568px)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 & 7 iPhone (retina) -->
+    <link href="content/images/apple-touch-startup-image-640x920.png"
+          media="(device-width: 320px) and (device-height: 480px)
+             and (-webkit-device-pixel-ratio: 2)"
+          rel="apple-touch-startup-image">
+
+    <!-- iOS 6 iPhone -->
+    <link href="content/images/apple-touch-startup-image-320x480.png"
+          media="(device-width: 320px) and (device-height: 480px)
+             and (-webkit-device-pixel-ratio: 1)"
+          rel="apple-touch-startup-image">
 
     <!-- less files -->
-    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/swiftpage.less" />
+    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/crm.less" />
     <link rel="stylesheet/less" type="text/css" href="content/css/app.less" />
 
     <!-- less -->
@@ -42,21 +90,11 @@
                                 //resource
         };
     </script>
-    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.5.0.min.js"></script>
+
+    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.7.5.min.js"></script>
 
     <!-- JSON -->
     <script type="text/javascript" src="../../argos-sdk/libraries/json2.js"></script>
-
-    <!-- ReUI -->
-    <script type="text/javascript">
-    reConfig = {
-        autoInit: false,
-        legacyMode: false,
-        showInitialPage: false,
-        updateBackButtonText: false
-    };
-    </script>
-    <script type="text/javascript" src="../../argos-sdk/libraries/reui/reui.js"></script>
 
     <!-- SData Client Library -->
     <script type="text/javascript" src="../../argos-sdk/libraries/sdata/sdata-client-dependencies-debug.js"></script>
@@ -65,11 +103,14 @@
     <!-- Simplate -->
     <script type="text/javascript" src="../../argos-sdk/libraries/Simplate.js"></script>
 
-    <!-- Overthrow -->
-    <script type="text/javascript" src="../../argos-sdk/libraries/overthrow/overthrow.js"></script>
-
-    <!-- canvas2image for when HTMLCanvasElement.prototype.toDataURL is not available -->
+    <!-- canvas2image for when HTMLCanvasElement.prototype.toDataURL isn't available -->
     <script type="text/javascript" src="../../argos-sdk/libraries/canvas2image.js"></script>
+
+    <!-- Deep Diff -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/deep-diff/deep-diff-0.2.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/Chart.min.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="../../argos-sdk/libraries/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true, blankGif:'content/images/blank.gif'"></script>
@@ -79,21 +120,21 @@
         packages: [
             { name: 'dojo', location: '../../argos-sdk/libraries/dojo/dojo' },
             { name: 'dijit', location: '../../argos-sdk/libraries/dojo/dijit' },
-            { name: 'dojox', location: '../../argos-sdk/libraries/dojo/dojox' },
             { name: 'snap', location: '../../argos-sdk/libraries/snap', main: 'snap' },
-            { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment' },
-            { name: 'moment_langs', location: '../../argos-sdk/libraries/moment/min', main: 'langs' },
-            { name: 'Sage/Platform/Mobile', location: '../../argos-sdk/src' },
-            { name: 'Mobile/SalesLogix', location: 'src' },
+            { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment-with-langs.min' },
+            { name: 'argos', location: '../../argos-sdk/src' },
+            { name: 'crm', location: 'src' },
             { name: 'Components', location: 'jsx_out' },
             { name: 'React', location: '../../argos-sdk/libraries/react-0.8.0', main: 'react' },
             { name: 'JSXTransformer', location: '../../argos-sdk/libraries/react-0.8.0', main: 'JSXTransformer' },
             { name: 'configuration', location: 'configuration' },
             { name: 'localization', location: 'localization' }
         ],
-        paths: {
-            'Mobile/SalesLogix': './src',
-            'Sage/Platform/Mobile': '../../argos-sdk/src'
+        map: {
+            '*': {
+                'Sage/Platform/Mobile': 'argos',
+                'Mobile/SalesLogix': 'crm'
+            }
         }
     });
     </script>
@@ -105,24 +146,48 @@
                 'configuration/development'
             ];
         require(['moment', application].concat(configuration), function(moment, application, configuration) {
-            var localization = [
+            var localization, bootstrap, fallBackLocalization, completed = false;
+
+            localization = [
                 'localization/en',
                 'localization/saleslogix/en'
             ];
-            require(localization.concat(['moment_langs', 'dojo/domReady!']), function() {
-                moment.lang('en');
-                var instance = new application(configuration);
 
-                instance.activate();
-                instance.init();
-                instance.run();
+            fallBackLocalization = [
+                'localization/en',
+                'localization/saleslogix/en'
+            ];
+
+            bootstrap = function(requires) {
+                require(requires.concat('dojo/domReady!'), function() {
+                    if (completed) {
+                        return;
+                    }
+
+                    moment.lang('en');
+                    window.moment = moment;
+
+                    var instance = new application(configuration);
+
+                    instance.activate();
+                    instance.init();
+                    instance.run();
+                    completed = true;
+                });
+            };
+
+            require.on('error', function(error) {
+                console.log('Error loading localization, falling back to "en"');
+                bootstrap(fallBackLocalization);
             });
+
+            bootstrap(localization);
         });
     })();
     </script>
 </head>
 <body>
-    <!-- Run "grunt watch" to enable this script -->
-    <script src="http://localhost:35729/livereload.js"></script>
+    <!-- Run "grunt watch" to enable this script
+    <script src="http://localhost:35729/livereload.js"></script>-->
 </body>
 </html>

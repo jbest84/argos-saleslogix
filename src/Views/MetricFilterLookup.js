@@ -1,17 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/MetricFilterLookup', [
+
+/**
+ * @class crm.Views.MetricFilterLookup
+ *
+ *
+ * @extends argos.List
+ *
+ */
+define('crm/Views/MetricFilterLookup', [
     'dojo/_base/declare',
     'dojo/_base/lang',
-    'Sage/Platform/Mobile/List'
+    'argos/List'
 ], function(
     declare,
     lang,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.MetricFilterLookup', [List], {
+    var __class = declare('crm.Views.MetricFilterLookup', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.$descriptor %}</h3>'
@@ -32,7 +40,7 @@ define('Mobile/SalesLogix/Views/MetricFilterLookup', [
         resourcePredicate: '',// this should be the entity name
         resourceProperty: 'filters',
 
-        show: function(options, transitionOptions) {
+        show: function(options) {
             if (options.resourcePredicate) {
                 this.resourcePredicate = options.resourcePredicate;
             }
@@ -40,4 +48,7 @@ define('Mobile/SalesLogix/Views/MetricFilterLookup', [
             this.inherited(arguments);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.MetricFilterLookup', __class);
+    return __class;
 });

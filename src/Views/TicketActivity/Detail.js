@@ -1,16 +1,27 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
+
+/**
+ * @class crm.Views.TicketActivity.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires argos.ErrorManager
+ * @requires argos.Format
+ *
+ * @requires crm.Format
+ * @requires crm.Template
+ */
+define('crm/Views/TicketActivity/Detail', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/query',
     'dojo/dom-class',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/Format',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Sage/Platform/Mobile/Detail',
+    '../../Format',
+    '../../Template',
+    'argos/ErrorManager',
+    'argos/Detail',
     'dojo/NodeList-manipulate'
 ], function(
     declare,
@@ -18,13 +29,12 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
     query,
     domClass,
     format,
-    pltFormat,
     template,
     ErrorManager,
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.TicketActivity.Detail', [Detail], {
+    var __class = declare('crm.Views.TicketActivity.Detail', [Detail], {
         //Localization
         titleText: 'Ticket Activity',
 
@@ -80,10 +90,13 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
         resourceKind: 'ticketActivities',
 
         createPicklistRequest: function(predicate) {
-            var request = new Sage.SData.Client.SDataResourceCollectionRequest(App.getService())
+            var request,
+                uri;
+
+            request = new Sage.SData.Client.SDataResourceCollectionRequest(App.getService())
                 .setResourceKind('picklists')
                 .setContractName('system');
-            var uri = request.getUri();
+            uri = request.getUri();
 
             uri.setPathSegment(Sage.SData.Client.SDataUri.ResourcePropertyIndex, 'items');
             uri.setCollectionPredicate(predicate);
@@ -115,10 +128,14 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
         },
 
         processCodeDataFeed: function(feed, currentValue, options) {
-            var keyProperty = options && options.keyProperty ? options.keyProperty : '$key';
-            var textProperty = options && options.textProperty ? options.textProperty : 'text';
+            var keyProperty,
+                textProperty,
+                i;
 
-            for (var i = 0; i < feed.$resources.length; i++) {
+            keyProperty = options && options.keyProperty ? options.keyProperty : '$key';
+            textProperty = options && options.textProperty ? options.textProperty : 'text';
+
+            for (i = 0; i < feed.$resources.length; i++) {
                 if (feed.$resources[i][keyProperty] === currentValue) {
                     return feed.$resources[i][textProperty];
                 }
@@ -137,12 +154,16 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                     title: this.detailsText,
                     name: 'DetailsSection',
                     children: [{
+                            label: this.activityDescriptionText,
+                            name: 'ActivityDescription',
+                            property: 'ActivityDescription'
+                        }, {
                             label: this.ticketNumberText,
                             name: 'Ticket.TicketNumber',
                             property: 'Ticket.TicketNumber',
                             view: 'ticket_detail',
                             key: 'Ticket.$key'
-                        }, {
+                        },  {
                             name: 'Ticket.Account.AccountName',
                             property: 'Ticket.Account.AccountName',
                             descriptor: 'Ticket.Account.AccountName',
@@ -186,10 +207,6 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                             name: 'FollowUp',
                             property: 'FollowUp',
                             renderer: format.yesNo
-                        }, {
-                            label: this.activityDescriptionText,
-                            name: 'ActivityDescription',
-                            property: 'ActivityDescription'
                         }]
                 }, {
                     title: this.moreDetailsText,
@@ -203,7 +220,7 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                             label: this.elapsedUnitsText,
                             name: 'ElapsedUnits',
                             property: 'ElapsedUnits',
-                            renderer: pltFormat.fixed
+                            renderer: format.fixedLocale
                         }, {
                             label: this.rateTypeDescriptionText,
                             name: 'RateTypeDescription.RateTypeCode',
@@ -235,7 +252,6 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                     name: 'RelatedItemsSection',
                     children: [{
                         name: 'TicketActivityItemRelated',
-                        icon: 'content/images/icons/product_24.png',
                         label: this.relatedTicketActivityItemText,
                         where: this.formatRelatedQuery.bindDelegate(this, 'TicketActivity.Id eq "${0}"'),
                         view: 'ticketactivityitem_related'
@@ -243,5 +259,8 @@ define('Mobile/SalesLogix/Views/TicketActivity/Detail', [
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.TicketActivity.Detail', __class);
+    return __class;
 });
 

@@ -1,17 +1,25 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/LeadSource/List', [
+
+/**
+ * @class crm.Views.LeadSource.List
+ *
+ * @extends argos.List
+ */
+define('crm/Views/LeadSource/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Sage/Platform/Mobile/List'
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.LeadSource.List', [List], {
+    var __class = declare('crm.Views.LeadSource.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.Description %}</h3>',
@@ -22,7 +30,6 @@ define('Mobile/SalesLogix/Views/LeadSource/List', [
         titleText: 'Lead Sources',
 
         //View Properties
-        icon: 'content/images/Accounts_24x24.gif',
         id: 'leadsource_list',
         security: 'Entities/LeadSource/View',
         queryOrderBy: 'Description',
@@ -36,5 +43,8 @@ define('Mobile/SalesLogix/Views/LeadSource/List', [
             return string.substitute('upper(Description) like "${0}%"', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.LeadSource.List', __class);
+    return __class;
 });
 

@@ -1,42 +1,44 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/MainToolbar', [
+
+/**
+ * @class crm.Views.MainToolbar
+ *
+ *
+ * @extends argos.MainToolbar
+ *
+ */
+define('crm/Views/MainToolbar', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/dom-style',
     'dojo/has',
-    'dojox/mobile/sniff',
-    'Sage/Platform/Mobile/MainToolbar'
+    'argos/MainToolbar'
 ], function(
     declare,
+    lang,
     domStyle,
     has,
-    mobileSniff,
     MainToolbar
 ) {
 
-    return declare('Mobile.SalesLogix.Views.MainToolbar', [MainToolbar], {
-        titleText: 'Saleslogix',
+    var __class = declare('crm.Views.MainToolbar', [MainToolbar], {
         showTools: function(tools) {
-            var hasLeftDrawer, isOnFirstView, isOnEdit, history;
+            var hasLeftDrawer,
+                isOnFirstView,
+                i,
+                isOnEdit;
 
-            history = ReUI && ReUI.context && ReUI.context.history;
-
-            if (history.length > 0) {
-                if (history[0].page === 'login') {
-                    isOnFirstView = history.length === 2;
-                } else {
-                    isOnFirstView = history.length === 1;
-                }
-            }
+            isOnFirstView = App.isOnFirstView();
 
             if (tools) {
-                for (var i = 0; i < tools.length; i++) {
-                    if (tools[i].id == 'toggleLeftDrawer') {
+                for (i = 0; i < tools.length; i++) {
+                    if (tools[i].id === 'toggleLeftDrawer') {
                         hasLeftDrawer = true;
                     }
 
-                    if (tools[i].id == 'back') {
+                    if (tools[i].id === 'back') {
                         hasLeftDrawer = true;
                     }
 
@@ -52,6 +54,7 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
                 if (!hasLeftDrawer) {
                     tools.unshift({
                         id: 'toggleLeftDrawer',
+                        'cls': 'fa fa-bars fa-fw fa-lg',
                         side: 'left',
                         fn: this.toggleLeftDrawer,
                         scope: this
@@ -61,6 +64,7 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
                 if (!isOnEdit && !isOnFirstView) {
                     tools = tools.concat([{
                             id: 'back',
+                            cls: 'fa fa-angle-left fa-fw fa-lg',
                             side: 'left',
                             fn: this.navigateBack,
                             scope: this
@@ -84,19 +88,20 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
             this._toggleDrawer('left');
         },
         onTitleClick: function() {
-            var view, state;
+            var view, state, scrollerNode;
 
             state = App.snapper && App.snapper.state();
             view = App.getPrimaryActiveView();
 
             if (view && state && state.state === 'closed') {
+                scrollerNode = view.get('scroller');
                 if (has('android')) {
                     // Hack to work around https://code.google.com/p/android/issues/detail?id=19625
-                    domStyle.set(view.domNode, 'overflow', 'hidden');
-                    view.domNode.scrollTop = 0;
-                    domStyle.set(view.domNode, 'overflow', 'auto');
+                    domStyle.set(scrollerNode, 'overflow', 'hidden');
+                    scrollerNode.scrollTop = 0;
+                    domStyle.set(scrollerNode, 'overflow', 'auto');
                 } else {
-                    view.domNode.scrollTop = 0;
+                    scrollerNode.scrollTop = 0;
                 }
             }
         },
@@ -109,5 +114,8 @@ define('Mobile/SalesLogix/Views/MainToolbar', [
             }
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.MainToolbar', __class);
+    return __class;
 });
 

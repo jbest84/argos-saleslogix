@@ -1,15 +1,23 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/AddAccountContact', [
+
+/**
+ * @class crm.Views.AddAccountContact
+ *
+ *
+ * @extends argos.Edit
+ *
+ */
+define('crm/Views/AddAccountContact', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/string',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Validator',
-    'Mobile/SalesLogix/Template',
-    'Sage/Platform/Mobile/Utility',
-    'Sage/Platform/Mobile/Edit'
+    '../Format',
+    '../Validator',
+    '../Template',
+    'argos/Utility',
+    'argos/Edit'
 ], function(
     declare,
     lang,
@@ -21,7 +29,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
     Edit
 ) {
 
-    return declare('Mobile.SalesLogix.Views.AddAccountContact', [Edit], {
+    var __class = declare('crm.Views.AddAccountContact', [Edit], {
         //Localization
         accountNameText: 'account',
         accountStatusTitleText: 'Account Status',
@@ -48,6 +56,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
         titleText: 'Add Account / Contact',
         typeText: 'type',
         webText: 'web',
+        phoneText: 'phone',
         workText: 'work phone',
         industryTitleText: 'Industry',
 
@@ -84,7 +93,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
 
             this.connect(this.fields['Contacts.$resources[0].Address'], 'onChange', this.onContactAddressChange);
         },
-        getValues: function(all) {
+        getValues: function() {
             var values = this.inherited(arguments);
 
             utility.setValue(values, 'Contacts.$resources[0].$name', 'Contact');
@@ -111,8 +120,15 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
                 this.inherited(arguments);
             }
         },
-        onContactAddressChange: function(value, field) {
-            if (this.fields['Address'].getValue() && !this.fields['Address'].getValue().Address1) {
+        onContactAddressChange: function(value) {
+            // Copy contact address down into the account address if the account address is not set
+            var address, address1;
+            if (this.fields['Address']) {
+                address = this.fields['Address'].getValue();
+                address1 = address && address.Address1;
+            }
+
+            if (!address || !address1) {
                 this.fields['Address'].setValue(value);
             }
         },
@@ -161,7 +177,7 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
                     validator: validator.exceedsMaxTextLength
                 },
                 {
-                    label: this.workText,
+                    label: this.phoneText,
                     name: 'MainPhone',
                     property: 'MainPhone',
                     type: 'phone',
@@ -192,6 +208,14 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
                             name: 'Contacts.$resources[0].Mobile',
                             property: 'Contacts.$resources[0].Mobile',
                             label: this.mobileText,
+                            type: 'phone',
+                            maxTextLength: 32,
+                            validator: validator.exceedsMaxTextLength
+                        },
+                        {
+                            name: 'Contacts.$resources[0].WorkPhone',
+                            property: 'Contacts.$resources[0].WorkPhone',
+                            label: this.workText,
                             type: 'phone',
                             maxTextLength: 32,
                             validator: validator.exceedsMaxTextLength
@@ -300,5 +324,8 @@ define('Mobile/SalesLogix/Views/AddAccountContact', [
             ]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.AddAccountContact', __class);
+    return __class;
 });
 

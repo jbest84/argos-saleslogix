@@ -1,15 +1,31 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Contact/Edit', [
+
+/**
+ * @class crm.Views.Contact.Edit
+ *
+ * @extends argos.Edit
+ *
+ * @requires argos.Utility
+ *
+ * @requires crm.Format
+ * @requires crm.Template
+ * @requires crm.Validator
+ */
+define('crm/Views/Contact/Edit', [
     'dojo/_base/declare',
-    'Mobile/SalesLogix/Format',
-    'Mobile/SalesLogix/Template',
-    'Mobile/SalesLogix/Validator',
-    'Sage/Platform/Mobile/Edit',
-    'Sage/Platform/Mobile/Utility'
+    'dojo/_base/lang',
+    'dojo/string',
+    'crm/Format',
+    'crm/Template',
+    'crm/Validator',
+    'argos/Edit',
+    'argos/Utility'
 ], function(
     declare,
+    lang,
+    dString,
     format,
     template,
     validator,
@@ -17,12 +33,12 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
     utility
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Contact.Edit', [Edit], {
+    var __class = declare('crm.Views.Contact.Edit', [Edit], {
         //Localization
         titleText: 'Contact',
         nameText: 'name',
-        workText: 'phone',
-        mobileText: 'mobile',
+        workText: 'work phone',
+        mobileText: 'mobile phone',
         emailText: 'email',
         webText: 'web',
         acctMgrText: 'acct mgr',
@@ -58,6 +74,7 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
             'LastName',
             'MiddleName',
             'Mobile',
+            'Name',
             'NameLF',
             'Owner/OwnerDescription',
             'Prefix',
@@ -72,19 +89,30 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
             this.inherited(arguments);
             this.connect(this.fields['Account'], 'onChange', this.onAccountChange);
         },
-        onAccountChange: function(value, field) {
+        beforeTransitionTo: function() {
+            this.inherited(arguments);
+            if (this.options.insert) {
+                this.fields['Account'].enable();
+            } else {
+                this.fields['Account'].disable();
+            }
+        },
+        onAccountChange: function(value) {
             if (value && value.text) {
                 this.fields['AccountName'].setValue(value.text);
             }
             this.requestAccount(value['key']);
         },
         applyContext: function() {
-            var found = App.queryNavigationContext(function(o) {
+            var found,
+                lookup;
+
+            found = App.queryNavigationContext(function(o) {
                 o = (o.options && o.options.source) || o;
                 return (/^(accounts|opportunities)$/).test(o.resourceKind) && o.key;
             });
 
-            var lookup = {
+            lookup = {
                 'accounts': this.applyAccountContext,
                 'opportunities': this.applyOpportunityContext
             };
@@ -109,7 +137,7 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
         requestAccount: function(accountId) {
             var request = new Sage.SData.Client.SDataSingleResourceRequest(this.getService())
                 .setResourceKind('accounts')
-                .setResourceSelector(dojo.string.substitute("'${0}'", [accountId]))
+                .setResourceSelector(dString.substitute("'${0}'", [accountId]))
                 .setQueryArg('select', [
                     'AccountName',
                     'Address/*',
@@ -125,7 +153,7 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
                 scope: this
             });
         },
-        requestAccountFailure: function(xhr, o) {
+        requestAccountFailure: function() {
         },
         processAccount: function(entry) {
             var account = entry,
@@ -156,9 +184,8 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
         },
         applyOpportunityContext: function(context) {
             var view = App.getView(context.id),
-                entry = view && view.entry;
-
-            var opportunityId = utility.getValue(entry, '$key'),
+                entry = view && view.entry,
+                opportunityId = utility.getValue(entry, '$key'),
                 account = utility.getValue(entry, 'Account'),
                 accountName = utility.getValue(entry, 'Account.AccountName'),
                 webAddress = utility.getValue(entry, 'Account.WebAddress'),
@@ -188,23 +215,6 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
                 this.fields['Fax'].setValue(fax);
             }
         },
-        formatCuisinePrefs: function(selections) {
-            if (typeof selections === 'string') {
-                return selections;
-            }
-
-            var values = [];
-            for (var key in selections) {
-                var data = selections[key].data;
-                if (data && data.text) {
-                    values.push(data.text);
-                } else if (typeof data === 'string') {
-                    values.push(data);
-                }
-            }
-
-            return values.join(', ');
-        },
         cleanAddressEntry: function(address) {
             if (address) {
                 var clean = {},
@@ -217,11 +227,14 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
                         'ModifyUser': true,
                         'CreateDate': true,
                         'CreateUser': true
-                    };
+                    },
+                    name;
 
-                for (var name in address) {
-                    if (!skip[name]) {
-                        clean[name] = address[name];
+                for (name in address) {
+                    if (address.hasOwnProperty(name)) {
+                        if (!skip[name]) {
+                            clean[name] = address[name];
+                        }
                     }
                 }
 
@@ -346,12 +359,13 @@ define('Mobile/SalesLogix/Views/Contact/Edit', [
                     property: 'CuisinePreference',
                     type: 'picklist',
                     picklist: 'CuisinePrefs',
-                    textRenderer: this.formatCuisinePrefs.bindDelegate(this),
-                    formatValue: this.formatCuisinePrefs.bindDelegate(this),
                     singleSelect: false,
                     title: this.cuisinePreferenceTitleText
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Contact.Edit', __class);
+    return __class;
 });
 

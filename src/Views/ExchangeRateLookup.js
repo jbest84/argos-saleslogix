@@ -1,15 +1,28 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/ExchangeRateLookup', [
+
+/**
+ * @class crm.Views.ExchangeRateLookup
+ *
+ *
+ * @extends argos.List
+ * @mixins argos._LegacySDataListMixin
+ *
+ */
+define('crm/Views/ExchangeRateLookup', [
     'dojo/_base/declare',
-    'Sage/Platform/Mobile/List'
+    'dojo/_base/lang',
+    'argos/List',
+    'argos/_LegacySDataListMixin'
 ], function(
     declare,
-    List
+    lang,
+    List,
+    _LegacySDataListMixin
 ) {
 
-    return declare('Mobile.SalesLogix.Views.ExchangeRateLookup', [List], {
+    var __class = declare('crm.Views.ExchangeRateLookup', [List, _LegacySDataListMixin], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.$key %} ({%: $.Rate %})</h3>'
@@ -50,11 +63,14 @@ define('Mobile/SalesLogix/Views/ExchangeRateLookup', [
         hasMoreData: function() {
             return false;
         },
-        refreshRequiredFor: function(options) {
+        refreshRequiredFor: function() {
             return true;
         },
-        formatSearchQuery: function(searchQuery) {
+        formatSearchQuery: function() {
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.ExchangeRateLookup', __class);
+    return __class;
 });
 

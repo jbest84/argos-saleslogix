@@ -1,23 +1,36 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
+
+/**
+ * @class crm.Views.ErrorLog.Detail
+ *
+ * @extends argos.Detail
+ *
+ * @requires crm.Format
+ * @requires argos.ErrorManager
+ */
+define('crm/Views/ErrorLog/Detail', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/_base/json',
     'dojo/string',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/ErrorManager',
-    'Sage/Platform/Mobile/Detail'
+    'dojo/store/Memory',
+    'crm/Format',
+    'argos/ErrorManager',
+    'argos/Detail'
 ], function(
     declare,
+    lang,
     json,
     string,
+    Memory,
     format,
     ErrorManager,
     Detail
 ) {
 
-    return declare('Mobile.SalesLogix.Views.ErrorLog.Detail', [Detail], {
+    var __class = declare('crm.Views.ErrorLog.Detail', [Detail], {
         //Localization
         titleText: 'Error Log',
 
@@ -28,8 +41,6 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
         urlText: 'url',
 
         moreDetailsText: 'More Details',
-        severityText: 'severity',
-        statusCodeText: 'status code',
         errorText: 'error',
 
         emailSubjectText: 'Error received in Saleslogix Mobile Client',
@@ -46,7 +57,7 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
         ]),
         copyButtonTemplate: new Simplate([
             '<div class="copyButton button toolButton toolButton-right">',
-            '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="40" height="36" id="errorlog-detail-copy">',
+            '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="40" height="36" id="errorlog-detail-copy" class="fa fa-clipboard fa-lg">',
             '<param name="movie" value="content/clippy.swf"/>',
             '<param name="allowScriptAccess" value="always" />',
             '<param name="quality" value="high" />',
@@ -74,7 +85,10 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
         },
 
         createToolLayout: function() {
-            var tools = {
+            var tools,
+                flashVars;
+
+            tools = {
                 'tbar': []
             };
 
@@ -82,16 +96,16 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
                 tools.tbar.push({
                     id: 'generateEmail',
                     action: 'constructReport',
-                    icon: 'content/images/icons/Send_Write_email_24x24.png',
+                    cls: 'fa fa-envelope fa-lg',
                     title: 'Generate Email Report'
                 });
             }
 
             if (this.sendType === 'copy') {
-                var flashVars = this.constructFlashVars({
-                    "retrieveFunction": "App.views." + this.id + ".constructReport",
-                    "callbackFunction": "App.views." + this.id + ".onCopySuccess",
-                    "labelVisible": "0"
+                flashVars = this.constructFlashVars({
+                    'retrieveFunction': 'App.views.' + this.id + '.constructReport',
+                    'callbackFunction': 'App.views.' + this.id + '.onCopySuccess',
+                    'labelVisible': '0'
                 });
 
                 tools.tbar.push({
@@ -119,9 +133,11 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
         },
 
         constructFlashVars: function(options) {
-            var flashVars = [];
-            for (var key in options) {
-                flashVars.push(string.substitute('${0}=${1}', [key, options[key]]));
+            var flashVars = [], key;
+            for (key in options) {
+                if (options.hasOwnProperty(key)) {
+                    flashVars.push(string.substitute('${0}=${1}', [key, options[key]]));
+                }
             }
 
             return flashVars.join('&');
@@ -160,39 +176,28 @@ define('Mobile/SalesLogix/Views/ErrorLog/Detail', [
                     name: 'DetailsSection',
                     children: [{
                             label: this.errorDateText,
-                            name: 'errorDateStamp',
-                            property: 'errorDateStamp',
+                            name: 'Date',
+                            property: 'Date',
                             renderer: format.date.bindDelegate(this, this.errorDateFormatText)
                         }, {
                             label: this.statusTextText,
-                            name: 'serverResponse.statusText',
-                            property: 'serverResponse.statusText'
-                        }, {
-                            label: this.urlText,
-                            name: 'url',
-                            property: 'url',
-                            use: this.longDetailProperty
+                            name: 'Description',
+                            property: 'Description'
                         }]
                 }, {
                     title: this.moreDetailsText,
                     collapsed: true,
                     name: 'MoreDetailsTextSection',
                     children: [{
-                            label: this.severityText,
-                            name: 'severity',
-                            property: 'serverResponse.responseText.severity'
-                        }, {
-                            label: this.statusCodeText,
-                            name: 'statusCode',
-                            property: 'serverResponse.status'
-                        }, {
                             label: this.errorText,
-                            name: 'ErrorMessage',
-                            property: 'serverResponse.responseText.message',
-                            use: this.longDetailProperty
+                            name: 'Error',
+                            property: 'Error'
                         }]
                 }]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.ErrorLog.Detail', __class);
+    return __class;
 });
 

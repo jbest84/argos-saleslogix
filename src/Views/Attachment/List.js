@@ -1,40 +1,57 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/Attachment/List', [
+
+/**
+ * @class crm.Views.Attachments.List
+ *
+ * @extends argos.List
+ * @mixins argos.List
+ * @mixins crm.Views._RightDrawerListMixin
+ * @mixins crm.Views._CardLayoutListMixin
+ * @mixins argos._LegacySDataListMixin
+ *
+ * @requires argos.List
+ * @requires argos._LegacySDataListMixin
+ * @requires argos.Convert
+ *
+ * @requires crm.Format
+ * @requires crm.Views._RightDrawerListMixin
+ * @requires crm.Views._CardLayoutListMixin
+ *
+ * @requires moment
+ *
+ */
+define('crm/Views/Attachment/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
     'dojo/has',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/List',
-    'Sage/Platform/Mobile/Convert',
+    '../../Format',
+    '../../Utility',
+    'argos/List',
+    'argos/_LegacySDataListMixin',
+    'argos/Convert',
     '../_RightDrawerListMixin',
     '../_CardLayoutListMixin',
     'moment'
 ], function(
     declare,
+    lang,
     string,
     has,
     format,
+    utility,
     List,
+    _LegacySDataListMixin,
     convert,
     _RightDrawerListMixin,
     _CardLayoutListMixin,
     moment
 ) {
 
-    return declare('Mobile.SalesLogix.Views.Attachment.List', [List, _RightDrawerListMixin, _CardLayoutListMixin], {
+    var __class = declare('crm.Views.Attachment.List', [List, _RightDrawerListMixin, _CardLayoutListMixin, _LegacySDataListMixin], {
         //Templates
-
-        //used when card layout is no used used.
-        rowTemplate: new Simplate([
-            '<li data-action="activateEntry" data-key="{%= $.$key %}" data-descriptor="{%: $.$descriptor %}">',
-                '<button data-action="selectEntry" class="list-item-selector button">',
-                    '<img src="{%= $$.icon || $$.selectIcon %}" class="icon" />',
-                '</button>',
-                '<div class="list-item-content">{%! $$.itemTemplate %}</div>',
-            '</li>'
-        ]),
         itemTemplate: new Simplate([
            '{% if ($.dataType === "R") { %}',
                '{%! $$.fileTemplate %}',
@@ -44,9 +61,9 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
         ]),
         fileTemplate: new Simplate([
              '<h3><span>{%: $.description %}&nbsp;</span></h3>',
-             '<h4><span>({%: $$.uploadedOnText %} {%: Mobile.SalesLogix.Format.relativeDate($.attachDate) %})&nbsp;</span>',
-            '<span>{%: Mobile.SalesLogix.Format.fileSize($.fileSize) %} </span></h4>',
-            '<h4><span>{%: Mobile.SalesLogix.Utility.getFileExtension($.fileName) %} </span></h4>',
+             '<h4><span>({%: $$.uploadedOnText %} {%: crm.Format.relativeDate($.attachDate) %})&nbsp;</span>',
+            '<span>{%: crm.Format.fileSize($.fileSize) %} </span></h4>',
+            '<h4><span>{%: crm.Utility.getFileExtension($.fileName) %} </span></h4>',
             '{% if($.user) { %}',
                 '<h4><span>{%: $.user.$descriptor  %}</span></h4>',
             '{% } %}'
@@ -54,7 +71,7 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
         urlTemplate: new Simplate([
             '<h3><span>{%: $.description %} &nbsp;</span></h3>',
             '{% if ($.attachDate) { %}',
-                '<h4><span>({%: $$.uploadedOnText %} {%: Mobile.SalesLogix.Format.relativeDate($.attachDate) %})&nbsp;</span></h4>',
+                '<h4><span>({%: $$.uploadedOnText %} {%: crm.Format.relativeDate($.attachDate) %})&nbsp;</span></h4>',
             '{% } %}',
             '<h4><span>{%: $.url %}&nbsp;</span></h4>',
             '{% if($.user) { %}',
@@ -67,14 +84,13 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
         attachmentDateFormatText: 'ddd M/D/YYYY hh:mm:ss',
         uploadedOnText: 'Uploaded ',// Uploaded 10 days ago
 
-        //View Properties       
+        //View Properties
         id: 'attachment_list',
         security: null,
         enableActions: true,
         detailView: 'view_attachment',
         insertView: 'attachment_Add',
-        icon: 'content/images/icons/Attachment_24.png',
-        iconurl: 'content/images/icons/Attachment_URL_24.png',
+        iconClass: 'fa fa-paperclip fa-lg',
         queryOrderBy: 'attachDate desc',
         querySelect:  [
             'description',
@@ -101,7 +117,6 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
             'url': 'url',
             'binary': 'binary'
         },
-
         createToolLayout: function() {
             if (!has('html5-file-api')) {
                 this.insertView = null;
@@ -131,39 +146,50 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
                 }
             }
         },
-        getItemIconSource: function(entry) {
-              return "content/images/icons/Attachment_48x48.png";
+        itemIconClass: 'fa-file-o',
+        fileIconByType: {
+            'xls': 'fa-file-excel-o',
+            'xlsx': 'fa-file-excel-o',
+            'doc': 'fa-file-word-o',
+            'docx': 'fa-file-word-o',
+            'ppt': 'fa-file-powerpoint-o',
+            'pptx': 'fa-file-powerpoint-o',
+            'txt': 'fa-file-text-o',
+            'rtf': 'fa-file-text-o',
+            'csv': 'fa-file-text-o',
+            'pdf': 'fa-file-pdf-o',
+            'zip': 'fa-file-zip-o',
+            'png': 'fa-file-image-o',
+            'jpg': 'fa-file-image-o',
+            'gif': 'fa-file-image-o',
+            'bmp': 'fa-file-image-o'
+        },
+        getItemIconClass: function(entry) {
+            var cls, typeCls, type, fileName = entry && entry.fileName;
+            type = utility.getFileExtension(fileName);
+            cls = this.itemIconClass;
+            if (type) {
+                type = type.substr(1); //Remove the '.' from the ext.
+                typeCls = this.fileIconByType[type];
+                if (typeCls) {
+                    cls = typeCls;
+                }
+            }
+            if (cls) {
+                cls = 'fa ' + cls + ' fa-2x';
+            }
+            return cls;
         },
         createIndicatorLayout: function() {
             return this.itemIndicators || (this.itemIndicators = [{
                 id: 'touched',
-                icon: 'Touched_24x24.png',
+                cls: 'fa fa-hand-o-up fa-lg',
                 label: 'Touched',
                 onApply: function(entry, parent) {
                     this.isEnabled = parent.hasBeenTouched(entry);
                 }
-            }, {
-                id: 'attachmentIcon',
-                icon: '',
-                label: 'Activity',
-                onApply: function(entry, parent) {
-                    parent.applyActivityIndicator(entry, this);
-                }
             }]
             );
-        },
-        applyActivityIndicator: function(entry, indicator) {
-            var dataType = entry['dataType'];
-            indicator.isEnabled = true;
-            indicator.showIcon = true;
-            if (dataType === 'R') {
-                indicator.icon = "Attachment_24.png";
-                indicator.label = "file";
-                
-            } else {
-                indicator.icon = "Attachment_URL_24.png";
-                indicator.label = "url";
-            }
         },
         hasBeenTouched: function(entry) {
             var modifiedDate, currentDate, weekAgo;
@@ -178,5 +204,8 @@ define('Mobile/SalesLogix/Views/Attachment/List', [
             return false;
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.Attachment.List', __class);
+    return __class;
 });
 

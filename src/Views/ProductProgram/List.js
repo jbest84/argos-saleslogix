@@ -1,19 +1,29 @@
 /*
  * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
  */
-define('Mobile/SalesLogix/Views/ProductProgram/List', [
+
+/**
+ * @class crm.Views.ProductProgram.List
+ *
+ * @extends argos.List
+ *
+ * @requires crm.Format
+ */
+define('crm/Views/ProductProgram/List', [
     'dojo/_base/declare',
+    'dojo/_base/lang',
     'dojo/string',
-    'Mobile/SalesLogix/Format',
-    'Sage/Platform/Mobile/List'
+    'crm/Format',
+    'argos/List'
 ], function(
     declare,
+    lang,
     string,
     format,
     List
 ) {
 
-    return declare('Mobile.SalesLogix.Views.ProductProgram.List', [List], {
+    var __class = declare('crm.Views.ProductProgram.List', [List], {
         //Templates
         itemTemplate: new Simplate([
             '<h3>{%: $.Program %}</h3>',
@@ -25,10 +35,9 @@ define('Mobile/SalesLogix/Views/ProductProgram/List', [
         //Localization
         titleText: 'Product Programs',
 
-        //View Properties       
+        //View Properties
         id: 'productprogram_list',
         security: 'Entities/ProductProgram/View',
-        icon: 'content/images/icons/product_24.png',
         queryOrderBy: 'Program',
         querySelect: [
             'DefaultProgram',
@@ -41,5 +50,8 @@ define('Mobile/SalesLogix/Views/ProductProgram/List', [
             return string.substitute('(upper(Program) like "${0}%")', [this.escapeSearchQuery(searchQuery.toUpperCase())]);
         }
     });
+
+    lang.setObject('Mobile.SalesLogix.Views.ProductProgram.List', __class);
+    return __class;
 });
 
