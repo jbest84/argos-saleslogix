@@ -14,15 +14,13 @@ define('crm/Views/Login', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/dom-class',
-    'argos/Edit',
-    'React'
+    'argos/Edit'
     //'Components/LoginComponent'
 ], function(
     declare,
     lang,
     domClass,
-    Edit,
-    React
+    Edit
     //LoginComponent
 ) {
 
@@ -97,17 +95,17 @@ define('crm/Views/Login', [
             container = React.createClass({
                 displayName: 'container',
                 render: function() {
-                    return React.DOM.fieldset(null,
+                    return React.DOM.fieldset({ 'data-id': this.props.$$.id },
                                               components.map(function(c, i) {
                                                   return (
                                                       React.DOM.div({'className': 'row row-edit', 'key': i},
-                                                                    c())
+                                                                    React.createElement(c, null))
                                                   );
                                               }));
                 }
             });
 
-            React.renderComponent(container(), this.componentNode);
+            React.render(React.createElement(container, {$: null, $$: this}), this.componentNode);
         },
         createToolLayout: function() {
             return this.tools || (this.tools = {
@@ -126,16 +124,14 @@ define('crm/Views/Login', [
             return this.layout || (this.layout = [
                 {
                     name: 'username',
-                    label: this.userText,
                     type: 'text',
+                    placeHolderText: this.userText,
                     component: React.createClass({
                         displayName: 'text',
                         render: function() {
                             return (
                                 React.DOM.div(null,
-                                              React.DOM.label(null, userText),
-                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input', 'placeholder': this.userText}),
-                                              React.DOM.button({'className': 'clear-button'})
+                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input', 'placeholder': userText})
                                              )
                             );
                         }
@@ -151,9 +147,7 @@ define('crm/Views/Login', [
                         render: function() {
                             return (
                                 React.DOM.div(null,
-                                              React.DOM.label(null, passText),
-                                              React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input'}),
-                                              React.DOM.button({'className': 'clear-button'})
+                                              React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input', 'placeholder': passText})
                                              )
                             );
                         }
