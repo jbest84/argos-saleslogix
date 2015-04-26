@@ -94,18 +94,20 @@ define('crm/Views/Login', [
 
             container = React.createClass({
                 displayName: 'container',
+                componentDidMount: function() {
+                    console.log('Child count: ');
+                    console.log(React.Children.count(this.props.children));
+                },
                 render: function() {
-                    return React.DOM.fieldset({ 'data-id': this.props.$$.id },
-                                              components.map(function(c, i) {
-                                                  return (
-                                                      React.DOM.div({'className': 'row row-edit', 'key': i},
-                                                                    React.createElement(c, null))
-                                                  );
-                                              }));
+                    // Port back the idea of $ and $$ from Simplate?
+                    return React.DOM.fieldset({ 'data-id': this.props.$$.id }, this.props.children);
                 }
             });
 
-            React.render(React.createElement(container, {$: null, $$: this}), this.componentNode);
+            React.render(React.createElement(container, {$: null, $$: this},
+                                             components.map(function(c) {
+                                                 return React.createElement(c, null);
+                                             })), this.componentNode);
         },
         createToolLayout: function() {
             return this.tools || (this.tools = {
@@ -128,10 +130,48 @@ define('crm/Views/Login', [
                     placeHolderText: this.userText,
                     component: React.createClass({
                         displayName: 'text',
+                        componentWillMount: function() {
+                            // Fires before render, can setState here
+                            console.log('componentWillMount');
+                        },
+                        componentDidMount: function() {
+                            // Fires after render
+                            console.log('componentDidMount');
+                        },
+                        componentDidUpdate: function() {
+                            console.log('componentDidUpdate');
+                        },
+                        getInitialState: function() {
+                            console.log('getInitialState');
+                            return {key: ''};
+                        },
+                        getDefaultProps: function() {
+                        },
+                        shouldComponentUpdate: function(nextProps, nextState) {
+                            console.log('shouldComponentUpdate');
+                            if (this.state.key === nextState.key) {
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        },
+                        handleFocus: function() {
+                            this.setState({key: 'value'}, function() {
+                                this.refs.input.getDOMNode().value = this.state.key;
+                            }.bind(this));
+                        },
                         render: function() {
+                            console.log('render');
                             return (
-                                React.DOM.div(null,
-                                              React.DOM.input({'type': 'text', name: 'username', 'className': 'text-input', 'placeholder': userText})
+                                React.DOM.div({'className': 'row row-edit'},
+                                              React.DOM.input({
+                                                  'type': 'text',
+                                                  'name': 'username',
+                                                  'className': 'text-input',
+                                                  'placeholder': userText,
+                                                  'ref': 'input',
+                                                  'onFocus': this.handleFocus
+                                              })
                                              )
                             );
                         }
@@ -146,7 +186,7 @@ define('crm/Views/Login', [
                         displayName: 'password',
                         render: function() {
                             return (
-                                React.DOM.div(null,
+                                React.DOM.div({'className': 'row row-edit'},
                                               React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input', 'placeholder': passText})
                                              )
                             );
