@@ -379,6 +379,7 @@
     <TypeScriptSourceMap>False</TypeScriptSourceMap>
     <TypeScriptOutDir>D:\code\work\mobile\products\argos-saleslogix\src-out</TypeScriptOutDir>
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptModuleKind>amd</TypeScriptModuleKind>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
