@@ -162,9 +162,10 @@ define('crm/Views/Login', [
                         },
                         render: function() {
                             console.log('render');
+                            var {div, input} = React.DOM;
                             return (
-                                React.DOM.div({'className': 'row row-edit'},
-                                              React.DOM.input({
+                                div({'className': 'row row-edit'},
+                                              input({
                                                   'type': 'text',
                                                   'name': 'username',
                                                   'className': 'text-input',
@@ -185,9 +186,10 @@ define('crm/Views/Login', [
                     component: React.createClass({
                         displayName: 'password',
                         render: function() {
+                            var {div, input} = React.DOM;
                             return (
-                                React.DOM.div({'className': 'row row-edit'},
-                                              React.DOM.input({'type': 'password', name: 'password', 'className': 'text-input', 'placeholder': passText})
+                                div({'className': 'row row-edit'},
+                                              input({'type': 'password', name: 'password', 'className': 'text-input', 'placeholder': passText})
                                              )
                             );
                         }
