@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "argos-sdk", "..\..\argos-sdk\argos-sdk.csproj", "{697D1AC7-08CC-4C77-9FEC-F14CC4A8B831}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "argos-saleslogix", "argos-saleslogix.csproj", "{83B54847-144E-49D8-A877-1C4C2DF2E314}"
+	ProjectSection(ProjectDependencies) = postProject
+		{697D1AC7-08CC-4C77-9FEC-F14CC4A8B831} = {697D1AC7-08CC-4C77-9FEC-F14CC4A8B831}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

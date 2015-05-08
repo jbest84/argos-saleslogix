@@ -81,7 +81,7 @@ define('crm/Views/Login', [
             }
         },
         show: function() {
-            var layout, components, container;
+            var layout, components:React.ComponentClass<any>[], container:React.ComponentClass<any>;
 
             this.inherited(arguments);
             layout = this.createLayout();
@@ -97,17 +97,19 @@ define('crm/Views/Login', [
                 componentDidMount: function() {
                     console.log('Child count: ');
                     console.log(React.Children.count(this.props.children));
+                    console.dir(this.props.children);
                 },
                 render: function() {
                     // Port back the idea of $ and $$ from Simplate?
-                    return React.DOM.fieldset({ 'data-id': this.props.$$.id }, this.props.children);
+                    let index = 0;
+                    return React.DOM.fieldset({ 'data-id': this.props.$$.id, ref: 'fields' }, React.Children.map<React.ReactElement<any>>(this.props.children, (child:React.ReactElement<any>) => {
+                        return child;
+                    }));
                 }
             });
 
-            React.render(React.createElement(container, {$: null, $$: this},
-                                             components.map(function(c) {
-                                                 return React.createElement(c, null);
-                                             })), this.componentNode);
+            let children = components.map((c) => React.createElement(c, null));
+            crm.comp = React.render(React.createElement(container, {$: null, $$: this}, children), this.componentNode);
         },
         createToolLayout: function() {
             return this.tools || (this.tools = {
@@ -126,7 +128,7 @@ define('crm/Views/Login', [
             return this.layout || (this.layout = [
                 {
                     name: 'username',
-                    type: 'text',
+                    type: 'text_component',
                     placeHolderText: this.userText,
                     component: React.createClass({
                         displayName: 'text',
@@ -137,6 +139,7 @@ define('crm/Views/Login', [
                         componentDidMount: function() {
                             // Fires after render
                             console.log('componentDidMount');
+                            crm.username = this;
                         },
                         componentDidUpdate: function() {
                             console.log('componentDidUpdate');
@@ -171,7 +174,8 @@ define('crm/Views/Login', [
                                                   'className': 'text-input',
                                                   'placeholder': userText,
                                                   'ref': 'input',
-                                                  'onFocus': this.handleFocus
+                                                  'onFocus': this.handleFocus,
+                                                  'value': this.state.key
                                               })
                                              )
                             );
