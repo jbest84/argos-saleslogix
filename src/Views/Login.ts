@@ -13,12 +13,14 @@ define('crm/Views/Login', [
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/dom-class',
-    'argos/Edit'
+    'argos/Edit',
+    '../Fields/TextField'
 ], function(
     declare,
     lang,
     domClass,
-    Edit
+    Edit,
+    TextField
 ) {
 
     var __class = declare('crm.Views.Login', [Edit], {
@@ -27,6 +29,9 @@ define('crm/Views/Login', [
             '<div id="{%= $.id %}" title="{%: $.titleText %}" class="panel {%= $.cls %}" hideBackButton="true">',
             '<p class="logo"><img src="content/images/logo-64.png" /><span>{%: $.logoText %}<span></p>',
             '<div class="panel-content" data-dojo-attach-event="onkeypress: _onKeyPress, onkeyup: _onKeyUp" data-dojo-attach-point="contentNode"></div>',
+            '<div class="row row-edit">',
+            '<text-field id="uname" label="User ID:" fieldName="username"></text-field>',
+            '</div>',
             '<button class="button actionButton" data-action="authenticate"><span class="indicator fa fa-spinner fa-spin"></span><span>{%: $.logOnText %}</span></button>',
             '<span class="copyright">{%= $.copyrightText %}</span>',
             '<span class="copyright">{%= App.getVersionInfo() %}</span>',

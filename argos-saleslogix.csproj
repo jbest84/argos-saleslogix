@@ -52,6 +52,7 @@
     <Content Include="content\images\touch-icon-ipad.png" />
     <Content Include="content\images\touch-icon-iphone-retina.png" />
     <Content Include="content\images\touch-icon-iphone.png" />
+    <Content Include="elements\textfield.html" />
     <Content Include="grunt-tasks\grunt-clean.js" />
     <Content Include="grunt-tasks\grunt-connect.js" />
     <Content Include="grunt-tasks\grunt-copy.js" />
@@ -240,6 +241,7 @@
     <TypeScriptCompile Include="src\Fields\NameField.ts" />
     <TypeScriptCompile Include="src\Fields\PicklistField.ts" />
     <TypeScriptCompile Include="src\Fields\RecurrencesField.ts" />
+    <TypeScriptCompile Include="src\Fields\TextField.ts" />
     <TypeScriptCompile Include="src\FileManager.ts" />
     <TypeScriptCompile Include="src\Format.ts" />
     <TypeScriptCompile Include="src\GroupUtility.ts" />
