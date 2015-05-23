@@ -17,7 +17,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
     <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
@@ -75,8 +75,11 @@
              and (-webkit-device-pixel-ratio: 1)"
           rel="apple-touch-startup-image">
 
-    <link type="text/css" rel="stylesheet" href="content/css/themes/swiftpage/sdk.min.swiftpage.css" />
+    <link type="text/css" rel="stylesheet" href="content/css/themes/crm/sdk.min.crm.css" />
     <link type="text/css" rel="stylesheet" href="content/css/app.min.css" />
+
+    <!-- Global (window) dependencies. Load these before the AMD loader -->
+    <script type="text/javascript" src="content/javascript/argos-dependencies.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="content/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true, blankGif:'content/images/blank.gif'"></script>
@@ -86,14 +89,19 @@
         packages: [
             { name: 'dojo', location: 'content/dojo/dojo' },
             { name: 'dijit', location: 'content/dojo/dijit' },
-            { name: 'dojox', location: 'content/dojo/dojox' },
             { name: 'configuration', location: 'configuration' },
             { name: 'localization', location: 'localization' }
-        ]
+        ],
+        map: {
+            '*': {
+                'Sage/Platform/Mobile': 'argos',
+                'Mobile/SalesLogix': 'crm'
+            }
+        }
     });
     </script>
     <script type="text/javascript" src="content/dojo/dojo-dependencies.js"></script>
-    <script type="text/javascript" src="content/javascript/argos-dependencies.js"></script>
+    <script type="text/javascript" src="content/javascript/argos-amd-dependencies.js"></script>
     <script type="text/javascript" src="content/javascript/argos-sdk.js"></script>
 
     <!-- Application -->
@@ -105,9 +113,10 @@
     <script type="text/javascript">
     (function() {
         var application = 'Mobile/SalesLogix/Application',
-            configuration = [
-                'configuration/production'
-            ];
+            configuration = <%= Serialize(
+                Enumerate("configuration", (file) => file.Name == "production.js")
+                    .Select(item => item.Path.Substring(0, item.Path.Length - 3))
+            ) %>;
         require(['moment', application].concat(configuration), function(moment, application, configuration) {
             var localization, bootstrap, fallBackLocalization, completed = false;
             bootstrap = function(requires) {
@@ -116,7 +125,7 @@
                         return;
                     }
 
-                    var culture = '<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.Name.ToLower() %>';
+                    var culture = '<%= System.Globalization.CultureInfo.CurrentCulture.Parent.Name.ToLower() %>';
                     moment.lang(culture);
                     configuration.currentCulture = culture;
                     window.moment = moment;
@@ -135,16 +144,17 @@
                     .Select(item => item.Path.Substring(0, item.Path.Length - 3))
             ) %>;
 
+            fallBackLocalization = <%= Serialize(
+                EnumerateLocalizations(string.Empty, "localization", "en")
+                    .Select(item => item.Path.Substring(0, item.Path.Length - 3))
+            ) %>;
+
             require.on('error', function(error) {
                 console.log('Error loading localization, falling back to "en"');
                 bootstrap(fallBackLocalization);
             });
 
             if (localization.length === 0) {
-                fallBackLocalization = <%= Serialize(
-                        EnumerateLocalizations(string.Empty, "localization", "en")
-                            .Select(item => item.Path.Substring(0, item.Path.Length - 3))
-                    ) %>;
                 bootstrap(fallBackLocalization);
             } else {
                 bootstrap(localization);
@@ -158,6 +168,15 @@
 </html>
 
 <script type="text/C#" runat="server">
+
+    protected override void OnPreInit(EventArgs e)
+    {
+        base.OnPreInit(e);
+        Session.Abandon();
+        Response.Cookies.Add(new HttpCookie("ASP.NET_SessionId") {Expires = DateTime.Now.AddDays(-1d)});
+        Response.Cookies.Add(new HttpCookie("SlxStickySessionId") {Expires = DateTime.Now.AddDays(-1d)});
+    }
+
     protected class FileItem
     {
         public string Path { get; set; }

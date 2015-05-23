@@ -12,6 +12,7 @@ define('configuration/development', ['Mobile/SalesLogix/ApplicationModule'], fun
                 isDefault: true,
                 offline: true,
                 url: 'http://localhost/sdata/slx/dynamic/-/',
+                timeout: 30000,
                 json: true
             }
         },
@@ -19,7 +20,8 @@ define('configuration/development', ['Mobile/SalesLogix/ApplicationModule'], fun
         multiCurrency: false,
         enableGroups: true,
         enableHashTags: true,
-        maxUploadFileSize: 40000000
+        maxUploadFileSize: 40000000,
+        enableConcurrencyCheck: false
     };
 
 });

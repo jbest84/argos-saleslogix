@@ -9,8 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
     <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
@@ -69,7 +70,7 @@
           rel="apple-touch-startup-image">
 
     <!-- less files -->
-    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/swiftpage.less" />
+    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/crm.less" />
     <link rel="stylesheet/less" type="text/css" href="content/css/app.less" />
 
     <!-- less -->
@@ -90,7 +91,7 @@
         };
     </script>
 
-    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.7.0.min.js"></script>
+    <script type="text/javascript" src="../../argos-sdk/libraries/less/less-1.7.5.min.js"></script>
 
     <!-- JSON -->
     <script type="text/javascript" src="../../argos-sdk/libraries/json2.js"></script>
@@ -102,11 +103,14 @@
     <!-- Simplate -->
     <script type="text/javascript" src="../../argos-sdk/libraries/Simplate.js"></script>
 
-    <!-- Overthrow -->
-    <script type="text/javascript" src="../../argos-sdk/libraries/overthrow/overthrow.js"></script>
-
     <!-- canvas2image for when HTMLCanvasElement.prototype.toDataURL isn't available -->
     <script type="text/javascript" src="../../argos-sdk/libraries/canvas2image.js"></script>
+
+    <!-- Deep Diff -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/deep-diff/deep-diff-0.2.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/Chart.min.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="../../argos-sdk/libraries/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true, blankGif:'content/images/blank.gif'"></script>
@@ -116,17 +120,18 @@
         packages: [
             { name: 'dojo', location: '../../argos-sdk/libraries/dojo/dojo' },
             { name: 'dijit', location: '../../argos-sdk/libraries/dojo/dijit' },
-            { name: 'dojox', location: '../../argos-sdk/libraries/dojo/dojox' },
             { name: 'snap', location: '../../argos-sdk/libraries/snap', main: 'snap' },
             { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment-with-langs.min' },
-            { name: 'Sage/Platform/Mobile', location: '../../argos-sdk/src' },
-            { name: 'Mobile/SalesLogix', location: 'src' },
+            { name: 'argos', location: '../../argos-sdk/src-out' },
+            { name: 'crm', location: 'src-out' },
             { name: 'configuration', location: 'configuration' },
             { name: 'localization', location: 'localization' }
         ],
-        paths: {
-            'Mobile/SalesLogix': './src',
-            'Sage/Platform/Mobile': '../../argos-sdk/src'
+        map: {
+            '*': {
+                'Sage/Platform/Mobile': 'argos',
+                'Mobile/SalesLogix': 'crm'
+            }
         }
     });
     </script>
@@ -179,7 +184,7 @@
     </script>
 </head>
 <body>
-    <!-- Run "grunt watch" to enable this script -->
-    <script src="http://localhost:35729/livereload.js"></script>
+    <!-- Run "grunt watch" to enable this script
+    <script src="http://localhost:35729/livereload.js"></script>-->
 </body>
 </html>

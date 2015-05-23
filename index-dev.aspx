@@ -16,8 +16,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no,email=no,address=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
 
-    <title>Saleslogix</title>
+    <title>Infor CRM</title>
 
     <link rel="icon" type="image/png" href="content/images/icon.png" />
     <link rel="apple-touch-icon" href="content/images/touch-icon-iphone.png" />
@@ -76,7 +77,7 @@
           rel="apple-touch-startup-image">
 
     <!-- less files -->
-    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/swiftpage.less" />
+    <link rel="stylesheet/less" type="text/css" href="../../argos-sdk/content/css/themes/crm.less" />
     <link rel="stylesheet/less" type="text/css" href="content/css/app.less" />
 
     <!-- less -->
@@ -108,11 +109,14 @@
     <!-- Simplate -->
     <script type="text/javascript" src="../../argos-sdk/libraries/Simplate.js"></script>
 
-    <!-- Overthrow -->
-    <script type="text/javascript" src="../../argos-sdk/libraries/overthrow/overthrow.js"></script>
-
     <!-- canvas2image for when HTMLCanvasElement.prototype.toDataURL isn't available -->
     <script type="text/javascript" src="../../argos-sdk/libraries/canvas2image.js"></script>
+
+    <!-- Deep Diff -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/deep-diff/deep-diff-0.2.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script type="text/javascript" src="../../argos-sdk/libraries/Chart.min.js"></script>
 
     <!-- Dojo -->
     <script type="text/javascript" src="../../argos-sdk/libraries/dojo/dojo/dojo.js" data-dojo-config="parseOnLoad:false, async:true, blankGif:'content/images/blank.gif'"></script>
@@ -122,17 +126,18 @@
         packages: [
             { name: 'dojo', location: '../../argos-sdk/libraries/dojo/dojo' },
             { name: 'dijit', location: '../../argos-sdk/libraries/dojo/dijit' },
-            { name: 'dojox', location: '../../argos-sdk/libraries/dojo/dojox' },
             { name: 'snap', location: '../../argos-sdk/libraries/snap', main: 'snap' },
             { name: 'moment', location: '../../argos-sdk/libraries/moment', main: 'moment-with-langs.min' },
-            { name: 'Sage/Platform/Mobile', location: '../../argos-sdk/src' },
-            { name: 'Mobile/SalesLogix', location: 'src' },
+            { name: 'argos', location: '../../argos-sdk/src-out' },
+            { name: 'crm', location: 'src-out' },
             { name: 'configuration', location: 'configuration' },
             { name: 'localization', location: 'localization' }
         ],
-        paths: {
-            'Mobile/SalesLogix': './src',
-            'Sage/Platform/Mobile': '../../argos-sdk/src'
+        map: {
+            '*': {
+                'Sage/Platform/Mobile': 'argos',
+                'Mobile/SalesLogix': 'crm'
+            }
         }
     });
     </script>
@@ -151,7 +156,7 @@
                         return;
                     }
 
-                    var culture = '<%= System.Globalization.CultureInfo.CurrentUICulture.Parent.Name.ToLower() %>';
+                    var culture = '<%= System.Globalization.CultureInfo.CurrentCulture.Parent.Name.ToLower() %>';
                     moment.lang(culture);
                     configuration.currentCulture = culture;
                     window.moment = moment;
@@ -189,12 +194,21 @@
     </script>
 </head>
 <body>
-    <!-- Run "grunt watch" to enable this script -->
-    <script src="http://localhost:35729/livereload.js"></script>
+    <!-- Run "grunt watch" to enable this script
+    <script src="http://localhost:35729/livereload.js"></script>-->
 </body>
 </html>
 
 <script type="text/C#" runat="server">
+
+    protected override void OnPreInit(EventArgs e)
+    {
+        base.OnPreInit(e);
+        Session.Abandon();
+        Response.Cookies.Add(new HttpCookie("ASP.NET_SessionId") {Expires = DateTime.Now.AddDays(-1d)});
+        Response.Cookies.Add(new HttpCookie("SlxStickySessionId") {Expires = DateTime.Now.AddDays(-1d)});
+    }
+
     protected class FileItem
     {
         public string Path { get; set; }
@@ -258,7 +272,7 @@
 
     protected IEnumerable<FileItem> EnumerateLocalizations(string root, string path, string culture)
     {
-        var currentCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var currentCulture = System.Globalization.CultureInfo.CurrentCulture;
         var rootDirectory = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Request.PhysicalPath), root));
         var includeDirectory = new DirectoryInfo(Path.Combine(rootDirectory.FullName, path));
         
