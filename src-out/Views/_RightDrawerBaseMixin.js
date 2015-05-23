@@ -71,7 +71,7 @@ define('crm/Views/_RightDrawerBaseMixin', [
                 return;
             }
             if (tools) {
-                tools.tbar.unshift({
+                tools.tbar.push({
                     id: 'toggleRightDrawer',
                     cls: 'fa fa-ellipsis-v fa-fw fa-lg',
                     side: 'right',

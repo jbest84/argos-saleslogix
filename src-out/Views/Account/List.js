@@ -108,7 +108,7 @@ define('crm/Views/Account/List', [
         entityName: 'Account',
         allowSelection: true,
         enableActions: true,
-        pageSize: 10,
+        pageSize: 50,
         callMain: function (params) {
             this.invokeActionItemBy(function (action) {
                 return action.id === 'callMain';

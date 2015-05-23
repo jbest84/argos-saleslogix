@@ -913,6 +913,10 @@ td.entry-table-description {
 .context-snapshot .list-content {
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
 }
 .card-layout .list-content > li.no-data,
 .context-snapshot .list-content > li.no-data,
@@ -936,6 +940,8 @@ td.entry-table-description {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   margin: 3px;
+  flex: 1;
+  flex-basis: 400px;
 }
 .card-layout .list-content > li > img.icon,
 .context-snapshot .list-content > li > img.icon,
