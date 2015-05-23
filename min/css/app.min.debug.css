@@ -941,7 +941,7 @@ td.entry-table-description {
   -moz-border-radius: 3px;
   margin: 3px;
   flex: 1;
-  flex-basis: 400px;
+  flex-basis: 320px;
 }
 .card-layout .list-content > li > img.icon,
 .context-snapshot .list-content > li > img.icon,
