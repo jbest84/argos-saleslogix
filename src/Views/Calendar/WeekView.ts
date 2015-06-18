@@ -587,7 +587,7 @@ define('crm/Views/Calendar/WeekView', [
             }
         },
         selectDateSuccess: function() {
-            var view = App.getPrimaryActiveView<CalendarView>();
+            var view = App.getPrimaryActiveView<argos.CalendarView>();
             this.currentDate = moment(view.getDateTime()).startOf('day');
             this.refresh();
             ReUI.back();
