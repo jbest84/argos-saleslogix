@@ -1,18 +1,12 @@
-/**
- * @class crm.SalesProcessUtility
- *
- * Saleslogix salesprocess utils
- *
- * @singleton
- *
- */
-define('crm/SalesProcessUtility', [
-    'dojo/_base/lang',
-    'dojo/string',
-    'dojo/when',
-    'dojo/_base/Deferred',
-    'argos/Store/SData'
-], function (lang, string, when, Deferred, SData) {
+define(["require", "exports", 'dojo/_base/lang', 'dojo/string', 'dojo/when', 'dojo/_base/Deferred', 'argos/Store/SData'], function (require, exports, lang, string, when, Deferred, SData) {
+    /**
+     * @class crm.SalesProcessUtility
+     *
+     * Saleslogix salesprocess utils
+     *
+     * @singleton
+     *
+     */
     var __class;
     __class = lang.setObject('crm.SalesProcessUtility', {
         store: null,

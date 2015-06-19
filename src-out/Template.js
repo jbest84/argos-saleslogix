@@ -1,23 +1,18 @@
-/*
- * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
- */
-/**
- * @class crm.Template
- *
- * Helper class that contains re-usuable {@link Simplate} templates.
- *
- * @requires argos.Format
- *
- */
-define('crm/Template', [
-    'dojo/_base/lang',
-    'argos/Format'
-], function (lang) {
+define(["require", "exports", 'dojo/_base/lang', 'argos/Format'], function (require, exports, lang, Format) {
+    /**
+     * @class crm.Template
+     *
+     * Helper class that contains re-usuable {@link Simplate} templates.
+     *
+     * @requires argos.Format
+     *
+     */
+    var _ = Format;
     var __class = lang.setObject('crm.Template', {
         /**
-         * @property {Simplate} nameLF
-         * Template for lastname, firstname
-         */
+            * @property {Simplate} nameLF
+            * Template for lastname, firstname
+            */
         nameLF: new Simplate([
             '{% if ($) { %}',
             '{% if ($.LastName && $.FirstName) { %}',
@@ -28,16 +23,16 @@ define('crm/Template', [
             '{% } %}'
         ]),
         /**
-         * @property {Simplate} alternateKeyPrefixSuffix
-         * Template for alternate key, takes a prefix and suffix
-         */
+            * @property {Simplate} alternateKeyPrefixSuffix
+            * Template for alternate key, takes a prefix and suffix
+            */
         alternateKeyPrefixSuffix: new Simplate([
             '{%= $.AlternateKeyPrefix %}-{%= $.AlternateKeySuffix %}'
         ]),
         /**
-         * @property {Simplate} noteDetailPropertyOld
-         * Template for note details
-         */
+            * @property {Simplate} noteDetailPropertyOld
+            * Template for note details
+            */
         noteDetailPropertyOld: new Simplate([
             '{% var F = argos.Format; %}',
             '<div class="row note-text-row {%= $.cls %}" data-property="{%= $.name %}">',
@@ -50,9 +45,9 @@ define('crm/Template', [
             '</div>'
         ]),
         /**
-         * @property {Simplate} noteDetailProperty
-         * Template for note details
-         */
+            * @property {Simplate} noteDetailProperty
+            * Template for note details
+            */
         noteDetailProperty: new Simplate([
             '{% var F = argos.Format; %}',
             '<div class="row note-text-row {%= $.cls %}" data-property="{%= $.name %}">',

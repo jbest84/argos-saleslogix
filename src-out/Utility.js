@@ -1,20 +1,13 @@
-/*
- * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
- */
-/**
- * @class crm.Utility
- *
- * Utility provides functions that are more javascript enhancers than application related code. Mixes in argos.Utility.
- *
- * @requires argos.Utility
- * @singleton
- *
- */
-define('crm/Utility', [
-    'dojo/_base/lang',
-    'dojo/string',
-    'argos/Utility'
-], function (lang, string, Utility) {
+define(["require", "exports", 'dojo/_base/lang', 'argos/Utility'], function (require, exports, lang, Utility) {
+    /**
+     * @class crm.Utility
+     *
+     * Utility provides functions that are more javascript enhancers than application related code. Mixes in argos.Utility.
+     *
+     * @requires argos.Utility
+     * @singleton
+     *
+     */
     var __class = lang.setObject('crm.Utility', lang.mixin({}, Utility, {
         base64ArrayBuffer: function (arrayBuffer) {
             var base64, encodings, bytes, byteLength, mainLength, byteRemainder, a, b, c, d, chunk, i;
@@ -55,11 +48,11 @@ define('crm/Utility', [
             return base64;
         },
         /** Gets the extension for a file.
-         * @param {String} fileName
-         * The file name including the extension
-         * @returns {String}
-         * Returns the file extension, if fileName is null or undefined, returns the string '.'
-         */
+            * @param {String} fileName
+            * The file name including the extension
+            * @returns {String}
+            * Returns the file extension, if fileName is null or undefined, returns the string '.'
+            */
         getFileExtension: function (fileName) {
             if (!fileName) {
                 return '.';
@@ -67,10 +60,10 @@ define('crm/Utility', [
             return fileName.substr(fileName.lastIndexOf('.'));
         },
         /** Parses the activity ID
-         * @param {String} activityId
-         * A string with the activity id seperated by a semi-colon
-         * @returns {String}
-         */
+            * @param {String} activityId
+            * A string with the activity id seperated by a semi-colon
+            * @returns {String}
+            */
         getRealActivityId: function (activityId) {
             var Id = activityId;
             if (activityId) {

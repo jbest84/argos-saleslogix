@@ -1,30 +1,20 @@
-/*
- * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
- */
-/**
- * @class crm.SpeedSearchWidget
- *
- * @mixins argos._Templated
- *
- */
-define('crm/SpeedSearchWidget', [
-    'dojo/_base/declare',
-    'dojo/_base/lang',
-    'dojo/_base/event',
-    'dojo/dom-class',
-    'dijit/_Widget',
-    'argos/_Templated'
-], function (declare, lang, event, domClass, _Widget, _Templated) {
+define(["require", "exports", 'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/event', 'dojo/dom-class', 'dijit/_Widget', 'argos/_Templated'], function (require, exports, declare, lang, event, domClass, _Widget, _Templated) {
+    /**
+     * @class crm.SpeedSearchWidget
+     *
+     * @mixins argos._Templated
+     *
+     */
     var __class = declare('crm.SpeedSearchWidget', [_Widget, _Templated], {
         /**
-         * @property {Object} attributeMap
-         */
+            * @property {Object} attributeMap
+            */
         attributeMap: {
             queryValue: { node: 'queryNode', type: 'attribute', attribute: 'value' }
         },
         /**
-         * @property {Simplate} widgetTemplate
-         */
+            * @property {Simplate} widgetTemplate
+            */
         widgetTemplate: new Simplate([
             '<div class="search-widget">',
             '<div class="table-layout">',
@@ -33,27 +23,27 @@ define('crm/SpeedSearchWidget', [
             '</div>'
         ]),
         /**
-         * @property {DOMNode} queryNode HTML input node. The dojo attach point.
-         */
+            * @property {DOMNode} queryNode HTML input node. The dojo attach point.
+            */
         queryNode: null,
         /**
-         * @property {String} searchText The placeholder text for the input.
-         */
+            * @property {String} searchText The placeholder text for the input.
+            */
         searchText: 'SpeedSearch',
         _setQueryValueAttr: function (value) {
             this._onFocus();
             this.queryNode.value = value;
         },
         /**
-         * Clears the current search query.
-         */
+            * Clears the current search query.
+            */
         clear: function () {
             domClass.remove(this.domNode, 'search-active');
             this.set('queryValue', '');
         },
         /**
-         * Fires onSearchExpression using the current search query.
-         */
+            * Fires onSearchExpression using the current search query.
+            */
         search: function () {
             var queryTerm = this.getQuery();
             if (!lang.trim(queryTerm)) {
@@ -62,9 +52,9 @@ define('crm/SpeedSearchWidget', [
             this.onSearchExpression(queryTerm, this);
         },
         /**
-         * Returns the current search query.
-         * @returns {String}
-         */
+            * Returns the current search query.
+            * @returns {String}
+            */
         getQuery: function () {
             return this.queryNode.value;
         },
@@ -97,10 +87,10 @@ define('crm/SpeedSearchWidget', [
             }
         },
         /**
-         * The event that fires when the search widget provides an explicit search query
-         * @param {String} expression
-         * @param {Object} widget
-         */
+            * The event that fires when the search widget provides an explicit search query
+            * @param {String} expression
+            * @param {Object} widget
+            */
         onSearchExpression: function () {
         },
         getFormattedSearchQuery: function () {
