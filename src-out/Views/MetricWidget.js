@@ -204,9 +204,16 @@ define('crm/Views/MetricWidget', [
                 count: this.pageSize,
                 start: this.position
             };
+            queryResults = [];
             store = this.get('store');
-            queryResults = store.query(null, queryOptions);
-            when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
+            array.forEach(store, function (storeInstance) {
+                queryResults.push(storeInstance.query(null, queryOptions));
+            }, this);
+            //queryResults = store.query(null, queryOptions);
+            array.forEach(queryResults, function (result) {
+                when(result, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
+                //when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
+            }, this);
         },
         _onQuerySuccess: function (queryResults) {
             var total, left;
@@ -232,20 +239,37 @@ define('crm/Views/MetricWidget', [
             this.requestDataDeferred.reject(error);
         },
         createStore: function () {
-            var store = new SDataStore({
-                request: this.request,
-                service: App.services.crm,
-                resourceKind: this.resourceKind,
-                resourcePredicate: this.resourcePredicate,
-                contractName: this.contractName,
-                select: this.querySelect,
-                queryName: this.queryName,
-                queryArgs: this.queryArgs,
-                orderBy: this.queryOrderBy,
-                idProperty: this.keyProperty,
-                applicationName: this.applicationName,
-                scope: this
-            });
+            //var store = new SDataStore({
+            //    request: this.request,
+            //    service: App.services.crm,
+            //    resourceKind: this.resourceKind,
+            //    resourcePredicate: this.resourcePredicate,
+            //    contractName: this.contractName,
+            //    select: this.querySelect,
+            //    queryName: this.queryName,
+            //    queryArgs: this.queryArgs,
+            //    orderBy: this.queryOrderBy,
+            //    idProperty: this.keyProperty,
+            //    applicationName: this.applicationName,
+            //    scope: this
+            //});
+            var store = [];
+            array.forEach(this.queryArgs, function (value) {
+                store.push(new SDataStore({
+                    request: this.request,
+                    service: App.services.crm,
+                    resourceKind: this.resourceKind,
+                    resourcePredicate: this.resourcePredicate,
+                    contractName: this.contractName,
+                    select: this.querySelect,
+                    queryName: this.queryName,
+                    queryArgs: value,
+                    orderBy: this.queryOrderBy,
+                    idProperty: this.keyProperty,
+                    applicationName: this.applicationName,
+                    scope: this
+                }));
+            }, this);
             return store;
         },
         _getStoreAttr: function () {
