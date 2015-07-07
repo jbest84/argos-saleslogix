@@ -120,6 +120,7 @@ define('crm/Views/MetricWidget', [
             if (this.formatModule && this.formatter) {
                 return this._loadModuleFunction(this.formatModule, this.formatter);
             }
+
             // Return the default fn if aggregateModule and aggregate were not assigned
             var d = new Deferred();
             d.resolve(this.formatter);
@@ -142,7 +143,7 @@ define('crm/Views/MetricWidget', [
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
         aggregateModule: 'crm/Aggregate',
-        aggregate: null, //'valueFn',
+        aggregate: null,//'valueFn',
 
         /**
          * Loads a module/function via AMD and wraps it in a deferred
