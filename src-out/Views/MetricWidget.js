@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
- */
+* Copyright (c) 1997-2013, SalesLogix, NA., LLC. All rights reserved.
+*/
 /**
- * @class crm.Views.MetricWidget
- *
- *
- * @requires argos._Templated
- * @requires argos.Store.SData
- *
- */
+* @class crm.Views.MetricWidget
+*
+*
+* @requires argos._Templated
+* @requires argos.Store.SData
+*
+*/
 define('crm/Views/MetricWidget', [
     'dojo/_base/declare',
     'dojo/_base/lang',
@@ -23,8 +23,8 @@ define('crm/Views/MetricWidget', [
 ], function (declare, lang, array, Deferred, when, all, domConstruct, _Widget, _Templated, SDataStore) {
     var __class = declare('crm.Views.MetricWidget', [_Widget, _Templated], {
         /**
-         * @property {Simplate}
-         * Simple that defines the HTML Markup
+            * @property {Simplate}
+            * Simple that defines the HTML Markup
         */
         widgetTemplate: new Simplate([
             '<div class="metric-widget">',
@@ -36,22 +36,22 @@ define('crm/Views/MetricWidget', [
             '</div>'
         ]),
         /**
-         * @property {Simplate}
-         * HTML markup for the metric detail (name/value)
+            * @property {Simplate}
+            * HTML markup for the metric detail (name/value)
         */
         itemTemplate: new Simplate([
             '<h1 class="metric-value">{%: $$.formatter($.value) %}</h1>',
             '<span class="metric-title">{%: $$.title %}</span>'
         ]),
         /**
-         * @property {Simplate}
-         */
+            * @property {Simplate}
+            */
         errorTemplate: new Simplate([
             '<div class="metric-title">{%: $$.errorText %}</div>'
         ]),
         /**
-         * @property {Simplate}
-         * HTML markup for the loading text and icon
+            * @property {Simplate}
+            * HTML markup for the loading text and icon
         */
         loadingTemplate: new Simplate([
             '<div class="metric-title list-loading">',
@@ -92,8 +92,8 @@ define('crm/Views/MetricWidget', [
         formatModule: 'crm/Format',
         formatter: 'bigNumber',
         /**
-         * Loads a module/function via AMD and wraps it in a deferred
-         * @return {object} Returns a deferred with the function loaded via AMD require
+            * Loads a module/function via AMD and wraps it in a deferred
+            * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getFormatterFnDeferred: function () {
             if (this.formatModule && this.formatter) {
@@ -105,9 +105,9 @@ define('crm/Views/MetricWidget', [
             return d.promise;
         },
         /**
-         * Calculates the value shown in the metric widget button.
-         * @param {Array} data Array of data used for the metric
-         * @return {int} Returns a value calculated from data (SUM/AVG/MAX/MIN/Whatever)
+            * Calculates the value shown in the metric widget button.
+            * @param {Array} data Array of data used for the metric
+            * @return {int} Returns a value calculated from data (SUM/AVG/MAX/MIN/Whatever)
         */
         valueFn: function (data) {
             var total = 0;
@@ -120,8 +120,8 @@ define('crm/Views/MetricWidget', [
         aggregateModule: 'crm/Aggregate',
         aggregate: null,
         /**
-         * Loads a module/function via AMD and wraps it in a deferred
-         * @return {object} Returns a deferred with the function loaded via AMD require
+            * Loads a module/function via AMD and wraps it in a deferred
+            * @return {object} Returns a deferred with the function loaded via AMD require
         */
         getValueFnDeferred: function () {
             if (this.aggregateModule && this.aggregate) {
@@ -155,7 +155,7 @@ define('crm/Views/MetricWidget', [
             return def.promise;
         },
         /**
-         * Requests the widget's data, value fn, format fn, and renders it's itemTemplate
+            * Requests the widget's data, value fn, format fn, and renders it's itemTemplate
         */
         requestData: function () {
             var loadFormatter, loadValueFn;
