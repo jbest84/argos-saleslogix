@@ -173,7 +173,7 @@ define('crm/Views/MetricWidget', [
                         def.resolve(mod[fn]);
                     }
                 }));
-            } catch (err) {
+            } catch(err) {
                 def.reject(err);
             }
 
@@ -196,8 +196,8 @@ define('crm/Views/MetricWidget', [
             this.requestDataDeferred = new Deferred();
             this._getData();
 
-            loadFormatter = this.getFormatterFnDeferred(); // deferred for loading in our formatter
-            loadValueFn = this.getValueFnDeferred(); // deferred for loading in value function
+            loadFormatter = this.getFormatterFnDeferred();// deferred for loading in our formatter
+            loadValueFn = this.getValueFnDeferred();// deferred for loading in value function
 
             all([loadValueFn, loadFormatter, this.requestDataDeferred]).then(lang.hitch(this, function(results) {
                 var valueFn, formatterFn, data, value;
