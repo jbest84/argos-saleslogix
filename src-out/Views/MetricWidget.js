@@ -219,6 +219,16 @@ define('crm/Views/MetricWidget', [
             array.forEach(queryResults, function (result) {
                 when(result, lang.hitch(this, this._onQuerySuccess, result), lang.hitch(this, this._onQueryError));
             }, this);
+            all(queryResults).then(lang.hitch(this, function (results) {
+                if (results.length > 1) {
+                    // Is a multi-query, therefore pass the whole array of arrays as the data
+                    this.requestDataDeferred.resolve(results);
+                }
+                else {
+                    // Is a single query, therefore only pass the first array of objects
+                    this.requestDataDeferred.resolve(results[0]);
+                }
+            }));
         },
         _onQuerySuccess: function (queryResults) {
             var total, left;
@@ -235,19 +245,6 @@ define('crm/Views/MetricWidget', [
             if (left > 0) {
                 this.position = this.position + this.pageSize;
                 this._getData();
-            }
-            else {
-                // Signal complete
-                if (this.resultNum === this.resultTotal) {
-                    // Check whether the _dataArray has more than one value (aka is a single query)
-                    if (this._dataArray.length > 1) {
-                        this.requestDataDeferred.resolve(this._dataArray);
-                    }
-                    else {
-                        // Is a single query, thus must be backwards compatible with aggregate functions, pass in the first array element (the only)
-                        this.requestDataDeferred.resolve(this._dataArray[0]);
-                    }
-                }
             }
         },
         _processItem: function (item) {
