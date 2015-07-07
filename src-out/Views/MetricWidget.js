@@ -73,12 +73,9 @@ define('crm/Views/MetricWidget', [
         keyProperty: null,
         applicationName: null,
         position: 0,
-        resultNum: 0,
-        resultTotal: 0,
         pageSize: 100,
         store: null,
         _data: null,
-        _dataArray: null,
         value: null,
         singleQuery: null,
         requestDataDeferred: null,
@@ -167,8 +164,6 @@ define('crm/Views/MetricWidget', [
                 return;
             }
             this._data = [];
-            this._dataArray = [];
-            this.resultNum = 0;
             this.requestDataDeferred = new Deferred();
             this._getData();
             loadFormatter = this.getFormatterFnDeferred(); // deferred for loading in our formatter
@@ -219,6 +214,7 @@ define('crm/Views/MetricWidget', [
             array.forEach(queryResults, function (result) {
                 when(result, lang.hitch(this, this._onQuerySuccess, result), lang.hitch(this, this._onQueryError));
             }, this);
+            // Maintain the query order in the data order passed in the resolve
             all(queryResults).then(lang.hitch(this, function (results) {
                 if (results.length > 1) {
                     // Is a multi-query, therefore pass the whole array of arrays as the data
@@ -234,10 +230,6 @@ define('crm/Views/MetricWidget', [
             var total, left;
             total = queryResults.total;
             queryResults.forEach(lang.hitch(this, this._processItem));
-            // Push the data to the dataArray to be used for multi-queries
-            this._dataArray.push(this._data);
-            this._data = [];
-            this.resultNum++;
             left = -1;
             if (total > -1) {
                 left = total - (this.position + this.pageSize);
