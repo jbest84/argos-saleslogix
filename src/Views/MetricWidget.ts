@@ -109,8 +109,8 @@ define('crm/Views/MetricWidget', [
         },
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
-        formatModule: 'crm/Format',
-        formatter: 'bigNumber',
+        formatModule: 'crm/Format',// AMD Module
+        formatter: 'bigNumber',// Function of formatModule module
 
         /**
          * Loads a module/function via AMD and wraps it in a deferred
@@ -142,7 +142,7 @@ define('crm/Views/MetricWidget', [
 
         // Functions can't be stored in localstorage, save the module/fn strings and load them later via AMD
         aggregateModule: 'crm/Aggregate',
-        aggregate: null,
+        aggregate: null, //'valueFn',
 
         /**
          * Loads a module/function via AMD and wraps it in a deferred
@@ -158,7 +158,6 @@ define('crm/Views/MetricWidget', [
             d.resolve(this.valueFn);
             return d.promise;
         },
-
         _loadModuleFunction: function(module, fn) {
             // Attempt to load the function fn from the AMD module
             var def = new Deferred();
