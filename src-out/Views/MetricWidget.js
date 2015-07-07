@@ -257,20 +257,6 @@ define('crm/Views/MetricWidget', [
             this.requestDataDeferred.reject(error);
         },
         createStore: function () {
-            //var store = new SDataStore({
-            //    request: this.request,
-            //    service: App.services.crm,
-            //    resourceKind: this.resourceKind,
-            //    resourcePredicate: this.resourcePredicate,
-            //    contractName: this.contractName,
-            //    select: this.querySelect,
-            //    queryName: this.queryName,
-            //    queryArgs: this.queryArgs,
-            //    orderBy: this.queryOrderBy,
-            //    idProperty: this.keyProperty,
-            //    applicationName: this.applicationName,
-            //    scope: this
-            //});
             var store = [];
             // Check if queryArgs is an array and if not, make it one to force it to work with array.forEach
             if (!(this.queryArgs instanceof Array)) {
@@ -293,11 +279,6 @@ define('crm/Views/MetricWidget', [
                 }));
             }, this);
             return store;
-        },
-        _isSingleQuery: function (queryArgs) {
-            return queryArgs
-                && queryArgs._filterName
-                && queryArgs._metricName;
         },
         _getStoreAttr: function () {
             return this.store || (this.store = this.createStore());
