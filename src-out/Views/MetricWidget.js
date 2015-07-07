@@ -78,7 +78,7 @@ define('crm/Views/MetricWidget', [
         pageSize: 100,
         store: null,
         _data: null,
-        _dataArray: [],
+        _dataArray: null,
         value: null,
         singleQuery: null,
         requestDataDeferred: null,
@@ -168,6 +168,7 @@ define('crm/Views/MetricWidget', [
             }
             this._data = [];
             this._dataArray = [];
+            this.resultNum = 0;
             this.requestDataDeferred = new Deferred();
             this._getData();
             loadFormatter = this.getFormatterFnDeferred(); // deferred for loading in our formatter
@@ -211,35 +212,22 @@ define('crm/Views/MetricWidget', [
             };
             queryResults = [];
             store = this.get('store');
-            if (!this._isSingleQuery(this.queryArgs)) {
-                array.forEach(store, function (storeInstance) {
-                    queryResults.push(storeInstance.query(null, queryOptions));
-                }, this);
-            }
-            else {
-                queryResults = store.query(null, queryOptions);
-            }
+            array.forEach(store, function (storeInstance) {
+                queryResults.push(storeInstance.query(null, queryOptions));
+            }, this);
             this.resultTotal = queryResults.length;
-            if (!this._isSingleQuery(this.queryArgs)) {
-                array.forEach(queryResults, function (result) {
-                    when(result, lang.hitch(this, this._onQuerySuccess, result), lang.hitch(this, this._onQueryError));
-                    //when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
-                }, this);
-            }
-            else {
-                when(queryResults, lang.hitch(this, this._onQuerySuccess, queryResults), lang.hitch(this, this._onQueryError));
-            }
-            //queryResults = store.query(null, queryOptions);
+            array.forEach(queryResults, function (result) {
+                when(result, lang.hitch(this, this._onQuerySuccess, result), lang.hitch(this, this._onQueryError));
+            }, this);
         },
         _onQuerySuccess: function (queryResults) {
             var total, left;
             total = queryResults.total;
             queryResults.forEach(lang.hitch(this, this._processItem));
+            // Push the data to the dataArray to be used for multi-queries
             this._dataArray.push(this._data);
-            if (!this._isSingleQuery(this.queryArgs)) {
-                this._data = [];
-                this.resultNum++;
-            }
+            this._data = [];
+            this.resultNum++;
             left = -1;
             if (total > -1) {
                 left = total - (this.position + this.pageSize);
@@ -250,13 +238,15 @@ define('crm/Views/MetricWidget', [
             }
             else {
                 // Signal complete
-                if (!this._isSingleQuery(this.queryArgs)) {
-                    if (this.resultNum === this.resultTotal) {
+                if (this.resultNum === this.resultTotal) {
+                    // Check whether the _dataArray has more than one value (aka is a single query)
+                    if (this._dataArray.length > 1) {
                         this.requestDataDeferred.resolve(this._dataArray);
                     }
-                }
-                else {
-                    this.requestDataDeferred.resolve(this._data);
+                    else {
+                        // Is a single query, thus must be backwards compatible with aggregate functions, pass in the first array element (the only)
+                        this.requestDataDeferred.resolve(this._dataArray[0]);
+                    }
                 }
             }
         },
@@ -282,8 +272,12 @@ define('crm/Views/MetricWidget', [
             //    scope: this
             //});
             var store = [];
-            if (this._isSingleQuery(this.queryArgs)) {
-                store = new SDataStore({
+            // Check if queryArgs is an array and if not, make it one to force it to work with array.forEach
+            if (!(this.queryArgs instanceof Array)) {
+                this.queryArgs = [this.queryArgs];
+            }
+            array.forEach(this.queryArgs, function (value) {
+                store.push(new SDataStore({
                     request: this.request,
                     service: App.services.crm,
                     resourceKind: this.resourceKind,
@@ -291,31 +285,13 @@ define('crm/Views/MetricWidget', [
                     contractName: this.contractName,
                     select: this.querySelect,
                     queryName: this.queryName,
-                    queryArgs: this.queryArgs,
+                    queryArgs: value,
                     orderBy: this.queryOrderBy,
                     idProperty: this.keyProperty,
                     applicationName: this.applicationName,
                     scope: this
-                });
-            }
-            else {
-                array.forEach(this.queryArgs, function (value) {
-                    store.push(new SDataStore({
-                        request: this.request,
-                        service: App.services.crm,
-                        resourceKind: this.resourceKind,
-                        resourcePredicate: this.resourcePredicate,
-                        contractName: this.contractName,
-                        select: this.querySelect,
-                        queryName: this.queryName,
-                        queryArgs: value,
-                        orderBy: this.queryOrderBy,
-                        idProperty: this.keyProperty,
-                        applicationName: this.applicationName,
-                        scope: this
-                    }));
-                }, this);
-            }
+                }));
+            }, this);
             return store;
         },
         _isSingleQuery: function (queryArgs) {
