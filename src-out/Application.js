@@ -81,7 +81,7 @@ define('crm/Application', [
         mobileVersion: {
             'major': 3,
             'minor': 3,
-            'revision': 0
+            'revision': 1
         },
         versionInfoText: 'Mobile v${0}.${1}.${2}',
         loadingText: 'Loading application state',
@@ -89,6 +89,7 @@ define('crm/Application', [
         homeViewId: 'myactivity_list',
         loginViewId: 'login',
         logOffViewId: 'logoff',
+        UID: null,
         init: function () {
             var original, self = this;
             if (has('ie') && has('ie') < 9) {
@@ -97,11 +98,12 @@ define('crm/Application', [
             this.inherited(arguments);
             this._loadNavigationState();
             this._saveDefaultPreferences();
+            this.UID = (new Date()).getTime();
             original = Sage.SData.Client.SDataService.prototype.executeRequest;
             Sage.SData.Client.SDataService.prototype.executeRequest = function (request) {
                 request.setRequestHeader('X-Application-Name', self.appName);
-                request.setRequestHeader('X-Application-Version', string.substitute('${major}.${minor}.${revision}', self.mobileVersion));
-                original.apply(this, arguments);
+                request.setRequestHeader('X-Application-Version', string.substitute('${version.major}.${version.minor}.${version.revision};${id}', { version: self.mobileVersion, id: self.UID }));
+                return original.apply(this, arguments);
             };
         },
         initConnects: function () {
@@ -618,18 +620,19 @@ define('crm/Application', [
         onRequestOwnerDescriptionFailure: function (response, o) {
             ErrorManager.addError(response, o, {}, 'failure');
         },
+        defaultViews: [
+            'myactivity_list',
+            'calendar_daylist',
+            'history_list',
+            'account_list',
+            'contact_list',
+            'lead_list',
+            'opportunity_list',
+            'ticket_list',
+            'myattachment_list'
+        ],
         getDefaultViews: function () {
-            return [
-                'myactivity_list',
-                'calendar_daylist',
-                'history_list',
-                'account_list',
-                'contact_list',
-                'lead_list',
-                'opportunity_list',
-                'ticket_list',
-                'myattachment_list'
-            ];
+            return this.defaultViews;
         },
         getExposedViews: function () {
             var exposed = [], id, view;

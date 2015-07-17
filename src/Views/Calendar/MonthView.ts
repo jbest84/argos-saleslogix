@@ -467,8 +467,8 @@ define('crm/Views/Calendar/MonthView', [
                     [App.context['user'] && App.context['user']['$key'],
                     convert.toIsoStringFromDate(startDate.toDate()),
                     convert.toIsoStringFromDate(endDate.toDate()),
-                    startDate.format('YYYY-MM-DDT00:00:00Z'),
-                    endDate.format('YYYY-MM-DDT23:59:59Z')]
+                    startDate.format('YYYY-MM-DDT00:00:00[Z]'),
+                    endDate.format('YYYY-MM-DDT23:59:59[Z]')]
                 );
         },
         getEventQuery: function() {
@@ -926,6 +926,10 @@ define('crm/Views/Calendar/MonthView', [
         },
         navigateToInsertView: function() {
             var view = App.getView(this.insertView || this.editView);
+
+            if (!this.options) {
+                this.options = {};
+            }
 
             this.options.currentDate = this.currentDate.toString('yyyy-MM-dd') || moment().startOf('day');
             if (view) {
