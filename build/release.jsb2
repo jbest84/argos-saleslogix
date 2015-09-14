@@ -514,6 +514,14 @@
           "path": "../src-out/Views/Lead/"
         },
         {
+          "text": "CategoryList.js",
+          "path": "../src-out/Views/LeadQualification/"
+        },
+        {
+          "text": "Edit.js",
+          "path": "../src-out/Views/LeadQualification/"
+        },
+        {
           "text": "List.js",
           "path": "../src-out/Views/LeadSource/"
         },
