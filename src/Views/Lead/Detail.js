@@ -168,12 +168,12 @@ const __class = declare('crm.Views.Lead.Detail', [Detail], {
       });
     }
   },
-  viewQualifications: function() {
+  viewQualifications: function viewQualifications() {
     const view = App.getView('lead_qualifications_edit');
     const options = {
       title: this.title,
       key: this.entry.$key,
-      refreshRequired: true
+      refreshRequired: true,
     };
     if (view) {
       view.show(options);
@@ -222,14 +222,14 @@ const __class = declare('crm.Views.Lead.Detail', [Detail], {
         iconClass: 'fa fa-map-marker fa-lg',
         disabled: this.checkAddress,
         renderer: format.address.bindDelegate(this, true, ' '),
-      },{
+      }, {
         name: 'ViewQualifications',
         label: 'View Qualifications',
         iconClass: 'fa fa-list-ul',
         action: 'viewQualifications',
         tpl: new Simplate([
-        ' '
-        ])
+        ' ',
+        ]),
       }],
     }, {
       title: this.detailsText,

@@ -62,7 +62,7 @@ import LeadList from './Views/Lead/List';
 import LeadDetail from './Views/Lead/Detail';
 import LeadEdit from './Views/Lead/Edit';
 import LeadQualCategoryList from './Views/LeadQualification/CategoryList';
-import LeadQualEdit from    './Views/LeadQualification/Edit';
+import LeadQualEdit from './Views/LeadQualification/Edit';
 import LeadSourceList from './Views/LeadSource/List';
 import OpportunityList from './Views/Opportunity/List';
 import OpportunityDetail from './Views/Opportunity/Detail';
