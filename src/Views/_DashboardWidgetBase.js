@@ -14,6 +14,7 @@ import convert from 'argos/Convert';
 import RelatedViewManager from 'argos/RelatedViewManager';
 import _RelatedViewWidgetBase from 'argos/_RelatedViewWidgetBase';
 import SData from 'argos/Store/SData';
+import Utility from '../Utility';
 
 /**
  * @class crm.Views._DashboardWidgetBase
@@ -84,36 +85,6 @@ const __class = declare('crm.Views._DashboardWidgetBase', [_RelatedViewWidgetBas
     maxItems: 500,
     dayValue: 7,
 
-    // Lookup table for the aggregate functions
-    aggregateLookup: {
-      'calcProfit': function calcProfit(fn, widget, data) {
-        const revenue = data[0];
-        const cost = data[1];
-
-        return fn.call(widget, revenue, cost);
-      },
-      'calcMargin': function calcMargin(fn, widget, data) {
-        const revenue = data[0];
-        const cost = data[1];
-
-        return fn.call(widget, revenue, cost);
-      },
-      'calcYoYRevenue': function calcYoYRevenue(fn, widget, data) {
-        const pastYear = data[0];
-        const between = data[1];
-
-        return fn.call(widget, pastYear, between);
-      },
-      'calcYoYProfit': function calcYoYProfit(fn, widget, data) {
-        return fn.call(widget, data[0], data[2], data[1], data[3]);
-      },
-      'calcYoYMargin': function calcYoYMargin(fn, widget, data) {
-        return fn.call(widget, data[0], data[2], data[1], data[3]);
-      },
-      'sum': function sum(fn, widget, data) {
-        return fn.call(widget, data);
-      },
-    },
     relatedContentTemplate: new Simplate([
       '{%! $$.dashboardTemplate %}',
     ]),
@@ -279,7 +250,7 @@ const __class = declare('crm.Views._DashboardWidgetBase', [_RelatedViewWidgetBas
 
       if (fn) {
         // If there is a function to call, call it and apply that value to the obj.value
-        obj.value = this.aggregateLookup[obj.aggregate](fn, widget, result); // fn.call(widget, result);
+        obj.value = Utility.aggregateLookup[obj.aggregate](fn, widget, result); // fn.call(widget, result);
       }
 
       // get the formatter
