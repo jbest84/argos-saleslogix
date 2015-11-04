@@ -104,6 +104,36 @@ const __class = lang.setObject('crm.Utility', lang.mixin({}, Utility, {
     }
     return text;
   },
+  // Lookup table for the aggregate functions used by DashboardWidget
+  aggregateLookup: {
+    'calcProfit': function calcProfit(fn, widget, data) {
+      const revenue = data[0];
+      const cost = data[1];
+
+      return fn.call(widget, revenue, cost);
+    },
+    'calcMargin': function calcMargin(fn, widget, data) {
+      const revenue = data[0];
+      const cost = data[1];
+
+      return fn.call(widget, revenue, cost);
+    },
+    'calcYoYRevenue': function calcYoYRevenue(fn, widget, data) {
+      const pastYear = data[0];
+      const between = data[1];
+
+      return fn.call(widget, pastYear, between);
+    },
+    'calcYoYProfit': function calcYoYProfit(fn, widget, data) {
+      return fn.call(widget, data[0], data[2], data[1], data[3]);
+    },
+    'calcYoYMargin': function calcYoYMargin(fn, widget, data) {
+      return fn.call(widget, data[0], data[2], data[1], data[3]);
+    },
+    'sum': function sum(fn, widget, data) {
+      return fn.call(widget, data);
+    },
+  },
 }));
 
 lang.setObject('Mobile.SalesLogix.Utility', __class);
