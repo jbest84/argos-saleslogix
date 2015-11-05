@@ -62,6 +62,7 @@ const __class = declare('crm.Models.Contact.Base', [_ModelBase], {
       displayName: opportunityResource.entityDisplayNamePlural,
       type: 'ManyToMany',
       relatedEntity: MODEL_NAMES.OPPORTUNITY_CONTACT,
+      fetchEntity: MODEL_NAMES.OPPORTUNITY,
       relatedProperty: 'Contact',
       relatedPropertyType: 'object',
     }]);
