@@ -123,6 +123,8 @@ import './Models/LeadAddress/Offline';
 import './Models/LeadAddress/SData';
 import './Models/Opportunity/Offline';
 import './Models/Opportunity/SData';
+import './Models/OpportunityContact/Offline';
+import './Models/OpportunityContact/SData';
 import './Models/UserActivity/Offline';
 import './Models/UserActivity/SData';
 import './Models/Address/Offline';

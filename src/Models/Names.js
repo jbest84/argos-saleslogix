@@ -9,4 +9,5 @@ export default {
   USERACTIVITY: 'UserActivity',
   ADDRESS: 'Address',
   HISTORY: 'History',
+  OPPORTUNITY_CONTACT: 'OpportunityContact',
 };

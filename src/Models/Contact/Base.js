@@ -8,6 +8,7 @@ const activityResource = window.localeContext.getEntitySync('activityModel').att
 const historyResource = window.localeContext.getEntitySync('historyModel').attributes;
 const addressResource = window.localeContext.getEntitySync('addressModel').attributes;
 const ticketResource = window.localeContext.getEntitySync('ticketModel').attributes;
+const opportunityResource = window.localeContext.getEntitySync('opportunityModel').attributes;
 
 const __class = declare('crm.Models.Contact.Base', [_ModelBase], {
   resourceKind: 'contacts',
@@ -54,6 +55,13 @@ const __class = declare('crm.Models.Contact.Base', [_ModelBase], {
       displayName: ticketResource.entityDisplayNamePlural,
       type: 'OneToMany',
       relatedEntity: 'Ticket',
+      relatedProperty: 'Contact',
+      relatedPropertyType: 'object',
+    }, {
+      name: 'Opportunities',
+      displayName: opportunityResource.entityDisplayNamePlural,
+      type: 'ManyToMany',
+      relatedEntity: MODEL_NAMES.OPPORTUNITY_CONTACT,
       relatedProperty: 'Contact',
       relatedPropertyType: 'object',
     }]);
