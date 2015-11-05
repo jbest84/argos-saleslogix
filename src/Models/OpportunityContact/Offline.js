@@ -7,7 +7,7 @@ import MODEL_NAMES from '../Names';
 
 const __class = declare('crm.Models.OpportunityContact.Offline', [Base, _OfflineModelBase], {
   entityName: 'OpportunityContact',
-  entityDisplayName: 'OpportunityConctact',
+  entityDisplayName: 'OpportunityContact',// TODO: Localize
   entityDisplayNamePlural: 'OpportunityContacts',
   resourceKind: 'opportunityContacts',
   modelName: MODEL_NAMES.OPPORTUNITY_CONTACT,

@@ -195,6 +195,18 @@ export default declare('crm.Views.Offline.Detail', [_DetailBase, _RelatedWidgetD
     const rel = this._relatedItems[params.name];
     const view = App.getView('offline_list');
     const queryExpression = this._model.buildRelatedQueryExpression(rel.relationship, this.entry);
+    if (rel.relationship.type === 'ManyToMany') {
+      this._model.getRelated(rel.relationship, this.entry).then((results) => {
+        results.forEach((joinRecord) => {
+          const model = App.ModelManager.getModel(rel.relationship.relatedEntity, MODEL_TYPES.OFFLINE);
+          const relationship = model.relationships.filter((r) => r.relatedEntity === rel.relationship.fetchEntity);
+          model.getRelated(relationship[0], joinRecord).then((related) => {
+            console.dir(related);
+          });
+        });
+      });
+    }
+
     const options = {
       title: rel.label,
       offlineContext: {
@@ -254,5 +266,3 @@ export default declare('crm.Views.Offline.Detail', [_DetailBase, _RelatedWidgetD
   },
 
 });
-
-
