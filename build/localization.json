@@ -15,6 +15,13 @@
                     ],
                 "out": "products/argos-saleslogix/localization/saleslogix/de.js"
             },
+            "es": {
+                "in": [
+                        "products/argos-saleslogix/localization/imported/slx-mobile-strings-beta1-format_es.xml",
+                        "products/argos-saleslogix/localization/imported/slx-mobile-strings-beta1-text_es.xml"
+                    ],
+                "out": "products/argos-saleslogix/localization/saleslogix/es.js"
+            },
             "fr": {
                 "in": [
                         "products/argos-saleslogix/localization/imported/slx-mobile-strings-beta1-format_fr.xml",
