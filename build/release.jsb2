@@ -48,6 +48,17 @@
       ]
     },
     {
+      "name": "SalesLogix Mobile Localization (es)",
+      "file": "localization/saleslogix/es.js",
+      "isDebug": true,
+      "fileIncludes": [
+        {
+          "text": "es.js",
+          "path": "../localization/saleslogix/"
+        }
+      ]
+    },
+    {
       "name": "Core Mobile Localization (fr-FR)",
       "file": "localization/fr.js",
       "isDebug": true,
