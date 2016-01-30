@@ -1,4 +1,4 @@
-﻿define('localization/en', ['dojo/_base/lang'], function(lang) {
+﻿define('localization/es', ['dojo/_base/lang'], function(lang) {
 
     return lang.setObject('Mobile.CultureInfo', {
       "name": "es",
