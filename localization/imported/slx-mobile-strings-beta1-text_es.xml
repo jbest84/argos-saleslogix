@@ -61,11 +61,11 @@
   </data>
   <data class="argos.ErrorManager" property="abortedText" type="text">
     <description/>
-    <value>Abortado</value>
+    <value>Anulado</value>
   </data>
   <data class="argos.ErrorManager" property="scopeSaveText" type="text">
     <description/>
-    <value>El ámbito no se salva en el informe de errores</value>
+    <value>El ámbito no se guarda en el reporte de errores</value>
   </data>
   <data class="argos.Fields.DateField" property="emptyText" type="text">
     <description/>
@@ -285,7 +285,7 @@
   </data>
   <data class="argos.RelatedViewWidget" property="nodataText" type="text">
     <description/>
-    <value>no se encontrarón registros...</value>
+    <value>no se encontraron registros ...</value>
   </data>
   <data class="argos.RelatedViewWidget" property="selectMoreDataText" type="text">
     <description/>
@@ -301,7 +301,7 @@
   </data>
   <data class="argos.RelatedViewWidget" property="refreshViewText" type="text">
     <description/>
-    <value>refrescar</value>
+    <value>actualizar</value>
   </data>
   <data class="argos.RelatedViewWidget" property="itemOfCountText" type="text">
     <description/>
@@ -337,7 +337,7 @@
   </data>
   <data class="argos.Views.FileSelect" property="addFileText" type="text">
     <description/>
-    <value>Clic o Tocar aquí para adicionar un archivo.</value>
+    <value>Hacer Clic o Tocar aquí para adicionar un archivo.</value>
   </data>
   <data class="argos.Views.FileSelect" property="uploadText" type="text">
     <description/>
@@ -409,7 +409,7 @@
   </data>
   <data class="argos._EditBase" property="saveText" type="text">
     <description/>
-    <value>Salvar</value>
+    <value>Guardar</value>
   </data>
   <data class="argos._EditBase" property="titleText" type="text">
     <description/>
@@ -605,7 +605,7 @@
   </data>
   <data class="crm.FileManager" property="largeFileWarningText" type="text">
     <description/>
-    <value>Advertencia: Está solicitud excede el tamaño límite configurado por su administrador y falló al cargar.</value>
+    <value>Advertencia: Esta solicitud excede el tamaño límite configurado por su administrador y falló al cargar.</value>
   </data>
   <data class="crm.FileManager" property="percentCompleteText" type="text">
     <description/>
@@ -965,7 +965,7 @@
   </data>
   <data class="crm.Views.Account.Edit" property="descriptionText" type="text">
     <description/>
-    <value>desc</value>
+    <value>desc.</value>
   </data>
   <data class="crm.Views.Account.Edit" property="faxText" type="text">
     <description/>
@@ -1237,7 +1237,7 @@
   </data>
   <data class="crm.Views.Activity.Detail" property="activityTypeText[atLiterature]" type="text">
     <description/>
-    <value>Solicitud de Documentación</value>
+    <value>Solicitud de Literatura</value>
   </data>
   <data class="crm.Views.Activity.Detail" property="activityTypeText[atPersonal]" type="text">
     <description/>
@@ -1309,7 +1309,7 @@
   </data>
   <data class="crm.Views.Activity.Detail" property="timelessText" type="text">
     <description/>
-    <value>sin tiempo</value>
+    <value>sin-tiempo</value>
   </data>
   <data class="crm.Views.Activity.Detail" property="titleText" type="text">
     <description/>
@@ -1645,7 +1645,7 @@
   </data>
   <data class="crm.Views.Activity.List" property="activityTypeText[atEMail]" type="text">
     <description/>
-    <value>Email</value>
+    <value>E-mail</value>
   </data>
   <data class="crm.Views.Activity.List" property="titleText" type="text">
     <description/>
@@ -1925,7 +1925,7 @@
   </data>
   <data class="crm.Views.Activity.TypesList" property="activityTypeText[atLiterature]" type="text">
     <description/>
-    <value>Solicitud de Documentación</value>
+    <value>Solicitud de Literatura</value>
   </data>
   <data class="crm.Views.Activity.TypesList" property="activityTypeText[atPersonal]" type="text">
     <description/>
@@ -1965,7 +1965,7 @@
   </data>
   <data class="crm.Views.AddAccountContact" property="contactTitleText" type="text">
     <description/>
-    <value>Cargo</value>
+    <value>cargo</value>
   </data>
   <data class="crm.Views.AddAccountContact" property="descriptionText" type="text">
     <description/>
@@ -1985,7 +1985,7 @@
   </data>
   <data class="crm.Views.AddAccountContact" property="emailText" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.AddAccountContact" property="faxText" type="text">
     <description/>
@@ -2161,7 +2161,7 @@
   </data>
   <data class="crm.Views.Attachment.ViewAttachment" property="fileSizeText" type="text">
     <description/>
-    <value>tamaño de archivo</value>
+    <value>tamaño del archivo</value>
   </data>
   <data class="crm.Views.Attachment.ViewAttachment" property="userText" type="text">
     <description/>
@@ -2385,7 +2385,7 @@
   </data>
   <data class="crm.Views.Contact.Detail" property="emailText" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.Contact.Detail" property="faxText" type="text">
     <description/>
@@ -2485,7 +2485,7 @@
   </data>
   <data class="crm.Views.Contact.Detail" property="sendEmailText" type="text">
     <description/>
-    <value>Enviar email</value>
+    <value>Enviar E-mail</value>
   </data>
   <data class="crm.Views.Contact.Detail" property="viewAddressText" type="text">
     <description/>
@@ -2513,7 +2513,7 @@
   </data>
   <data class="crm.Views.Contact.Edit" property="emailText" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.Contact.Edit" property="webText" type="text">
     <description/>
@@ -2545,7 +2545,7 @@
   </data>
   <data class="crm.Views.Contact.Edit" property="titleTitleText" type="text">
     <description/>
-    <value>Cargo</value>
+    <value>cargo</value>
   </data>
   <data class="crm.Views.Contact.Edit" property="addressTitleText" type="text">
     <description/>
@@ -2597,7 +2597,7 @@
   </data>
   <data class="crm.Views.Contact.List" property="sendEmailActionText" type="text">
     <description/>
-    <value>Email</value>
+    <value>E-mail</value>
   </data>
   <data class="crm.Views.Contact.List" property="viewAccountActionText" type="text">
     <description/>
@@ -2681,7 +2681,7 @@
   </data>
   <data class="crm.Views.Event.Detail" property="eventTypeText[atLiterature]" type="text">
     <description/>
-    <value>Solicitud de Documentación</value>
+    <value>Solicitud de Literatura</value>
   </data>
   <data class="crm.Views.Event.Detail" property="eventTypeText[atPersonal]" type="text">
     <description/>
@@ -2761,7 +2761,7 @@
   </data>
   <data class="crm.Views.ExchangeRateLookup" property="titleText" type="text">
     <description/>
-    <value>Tasas de Cambio:</value>
+    <value>Tasas de Cambio</value>
   </data>
   <data class="crm.Views.FooterToolbar" property="copyrightText" type="text">
     <description/>
@@ -2825,7 +2825,7 @@
   </data>
   <data class="crm.Views.History.Detail" property="timelessText" type="text">
     <description/>
-    <value>sin tiempo</value>
+    <value>sin-tiempo</value>
   </data>
   <data class="crm.Views.History.Detail" property="companyText" type="text">
     <description/>
@@ -2893,7 +2893,7 @@
   </data>
   <data class="crm.Views.History.Detail" property="activityTypeText[atLiterature]" type="text">
     <description/>
-    <value>Solicitud de Documentación</value>
+    <value>Solicitud de Literatura</value>
   </data>
   <data class="crm.Views.History.Detail" property="activityTypeText[atPersonal]" type="text">
     <description/>
@@ -2993,7 +2993,7 @@
   </data>
   <data class="crm.Views.History.List" property="activityTypeText[atLiterature]" type="text">
     <description/>
-    <value>Solicitud de Documentación</value>
+    <value>Solicitud de Literatura</value>
   </data>
   <data class="crm.Views.History.List" property="activityTypeText[atPersonal]" type="text">
     <description/>
@@ -3029,7 +3029,7 @@
   </data>
   <data class="crm.Views.History.List" property="hashTagQueriesText[email]" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.History.List" property="titleText" type="text">
     <description/>
@@ -3117,7 +3117,7 @@
   </data>
   <data class="crm.Views.Lead.Detail" property="eMailText" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.Lead.Detail" property="leadSourceText" type="text">
     <description/>
@@ -3213,7 +3213,7 @@
   </data>
   <data class="crm.Views.Lead.Detail" property="sendEmailText" type="text">
     <description/>
-    <value>Enviar email</value>
+    <value>Enviar E-mail</value>
   </data>
   <data class="crm.Views.Lead.Detail" property="viewAddressText" type="text">
     <description/>
@@ -3229,7 +3229,7 @@
   </data>
   <data class="crm.Views.Lead.Detail" property="emailedText" type="text">
     <description/>
-    <value>Email Enviado ${0}</value>
+    <value>E-mail Enviado ${0}</value>
   </data>
   <data class="crm.Views.Lead.Edit" property="accountText" type="text">
     <description/>
@@ -3257,7 +3257,7 @@
   </data>
   <data class="crm.Views.Lead.Edit" property="emailText" type="text">
     <description/>
-    <value>email</value>
+    <value>e-mail</value>
   </data>
   <data class="crm.Views.Lead.Edit" property="faxText" type="text">
     <description/>
@@ -3309,7 +3309,7 @@
   </data>
   <data class="crm.Views.Lead.Edit" property="titleTitleText" type="text">
     <description/>
-    <value>Cargo</value>
+    <value>cargo</value>
   </data>
   <data class="crm.Views.Lead.Edit" property="tollFreeText" type="text">
     <description/>
@@ -3365,7 +3365,7 @@
   </data>
   <data class="crm.Views.Lead.List" property="sendEmailActionText" type="text">
     <description/>
-    <value>Email</value>
+    <value>E-mail</value>
   </data>
   <data class="crm.Views.Lead.List" property="addNoteActionText" type="text">
     <description/>
@@ -3441,7 +3441,7 @@
   </data>
   <data class="crm.Views.LogOff" property="loginText" type="text">
     <description/>
-    <value>Haga clic aquí para volver a iniciar sesión.</value>
+    <value>Hacer clic aquí para volver a iniciar sesión.</value>
   </data>
   <data class="crm.Views.LogOff" property="titleText" type="text">
     <description/>
@@ -3457,11 +3457,11 @@
   </data>
   <data class="crm.Views.Login" property="passText" type="text">
     <description/>
-    <value>Contraseña:</value>
+    <value>Contraseña</value>
   </data>
   <data class="crm.Views.Login" property="rememberText" type="text">
     <description/>
-    <value>Recuerdar me</value>
+    <value>Recordarme</value>
   </data>
   <data class="crm.Views.Login" property="titleText" type="text">
     <description/>
@@ -3477,11 +3477,11 @@
   </data>
   <data class="crm.Views.Login" property="missingUserText" type="text">
     <description/>
-    <value>El registro de usuario no fué encontrado.</value>
+    <value>El registro de usuario no fue encontrado.</value>
   </data>
   <data class="crm.Views.Login" property="requestAbortedText" type="text">
     <description/>
-    <value>La solicitud fué abortada.</value>
+    <value>La solicitud fue anulada.</value>
   </data>
   <data class="crm.Views.Login" property="logoText" type="text">
     <description/>
@@ -3613,15 +3613,15 @@
   </data>
   <data class="crm.Views.Opportunity.Detail" property="potentialBaseText" type="text">
     <description/>
-    <value>potencial de venta (tasa base)</value>
+    <value>potencial de ventas (tasa base)</value>
   </data>
   <data class="crm.Views.Opportunity.Detail" property="potentialOpportunityText" type="text">
     <description/>
-    <value>potencial de venta (tasa opor.)</value>
+    <value>potencial de ventas (tasa opor.)</value>
   </data>
   <data class="crm.Views.Opportunity.Detail" property="potentialMyRateText" type="text">
     <description/>
-    <value>potencial de venta (mi tasa)</value>
+    <value>potencial de ventas (mi tasa)</value>
   </data>
   <data class="crm.Views.Opportunity.Detail" property="probabilityText" type="text">
     <description/>
@@ -3745,7 +3745,7 @@
   </data>
   <data class="crm.Views.Opportunity.Edit" property="potentialText" type="text">
     <description/>
-    <value>potencial de venta</value>
+    <value>potencial de ventas</value>
   </data>
   <data class="crm.Views.Opportunity.Edit" property="probabilityText" type="text">
     <description/>
@@ -3897,7 +3897,7 @@
   </data>
   <data class="crm.Views.Opportunity.QuickEdit" property="potentialText" type="text">
     <description/>
-    <value>potencial de venta</value>
+    <value>potencial de ventas</value>
   </data>
   <data class="crm.Views.OpportunityContact.Detail" property="titleText" type="text">
     <description/>
@@ -3957,7 +3957,7 @@
   </data>
   <data class="crm.Views.OpportunityContact.Edit" property="titleText" type="text">
     <description/>
-    <value>Editar Contacto de la Oportunida</value>
+    <value>Editar Contacto de la Oportunidad</value>
   </data>
   <data class="crm.Views.OpportunityContact.Edit" property="nameText" type="text">
     <description/>
@@ -4185,11 +4185,11 @@
   </data>
   <data class="crm.Views.Settings" property="clearLocalStorageTitleText" type="text">
     <description/>
-    <value>Limpiar Memoria</value>
+    <value>Borrar Memoria</value>
   </data>
   <data class="crm.Views.Settings" property="clearAuthenticationTitleText" type="text">
     <description/>
-    <value>Limpiar Credenciales Salvadas</value>
+    <value>Borrar Credenciales Guardadas</value>
   </data>
   <data class="crm.Views.Settings" property="errorLogTitleText" type="text">
     <description/>
@@ -4197,11 +4197,11 @@
   </data>
   <data class="crm.Views.Settings" property="localStorageClearedText" type="text">
     <description/>
-    <value>El almacenamiento local fue limpiado correctamente.</value>
+    <value>El almacenamiento local fue borrado correctamente.</value>
   </data>
   <data class="crm.Views.Settings" property="credentialsClearedText" type="text">
     <description/>
-    <value>Credenciales salvadas se limpiarón satisfactoriamente.</value>
+    <value>Credenciales guardadas se borraron satisfactoriamente.</value>
   </data>
   <data class="crm.Views.Settings" property="titleText" type="text">
     <description/>
@@ -4277,7 +4277,7 @@
   </data>
   <data class="crm.Views.Ticket.Detail" property="descriptionText" type="text">
     <description/>
-    <value>desc</value>
+    <value>desc.</value>
   </data>
   <data class="crm.Views.Ticket.Detail" property="issueText" type="text">
     <description/>
@@ -4389,7 +4389,7 @@
   </data>
   <data class="crm.Views.Ticket.Edit" property="descriptionText" type="text">
     <description/>
-    <value>desc</value>
+    <value>desc.</value>
   </data>
   <data class="crm.Views.Ticket.Edit" property="descriptionTitleText" type="text">
     <description/>
@@ -4689,7 +4689,7 @@
   </data>
   <data class="crm.Views.TicketActivityItem.Detail" property="serialNumberText" type="text">
     <description/>
-    <value>serial #</value>
+    <value>Nº de serie</value>
   </data>
   <data class="crm.Views.TicketActivityItem.Detail" property="itemAmountText" type="text">
     <description/>
@@ -4705,7 +4705,7 @@
   </data>
   <data class="crm.Views.UpdateToolbar" property="updateText" type="text">
     <description/>
-    <value>Una actualización está disponible. Clic para recargar.</value>
+    <value>Una actualización está disponible. Hacer clic para recargar.</value>
   </data>
   <data class="crm.Views.User.CalendarAccessList" property="titleText" type="text">
     <description/>
@@ -4725,7 +4725,7 @@
   </data>
   <data class="crm.Views._GroupListMixin" property="noDefaultGroupText" type="text">
     <description/>
-    <value>No existe un grupo configurado por defecto. Haga clic aquí para configurar los grupos.</value>
+    <value>No existe un grupo configurado por defecto. Hacer clic aquí para configurar los grupos.</value>
   </data>
   <data class="crm.Views._GroupListMixin" property="currentGroupNotFoundText" type="text">
     <description/>
